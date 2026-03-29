@@ -2,44 +2,62 @@
 
 ---
 
-## 当前版本
-- Dashboard（React）：https://t50d9la8qomk.space.minimaxi.com
-- Git: 9 commits
-- 数据：SPY(300d) + BTCUSDT(300d) + A股9标的 本地缓存
+## 六层架构（2026-03-29 重构）
+
+```
+Layer 1 │ 历史数据    │ data/                  ← 待建立
+Layer 2 │ 基础因子库  │ factors/               ← ✅ 已重构（从experts/modules/独立）
+Layer 3 │ 策略库      │ strategies/            ← ⚠️ 部分（5文件）
+Layer 4 │ 专家系统    │ experts/               ← ✅ 基本完整
+Layer 5 │ 回测系统    │ backtest/              ← ✅
+Layer 6 │ 看板系统    │ dashboard/             ← ✅
+```
+
+### Layer 1 — 历史数据（data/）
+- **当前状态**：目录不存在，数据获取分散在 `experts/modules/data_fetcher.py` 和 `experts/modules/__init__.py`
+- **TODO**：建立统一的 `data/` 目录，统一接口
+
+### Layer 2 — 基础因子库（factors/）
+- **当前状态**：✅ 已重构为独立包
+  ```
+  factors/
+  ├── __init__.py          统一导出
+  ├── base_operators.py    底层算子（sma/ema/roc/rsi/atr/BB等）
+  ├── trend.py             趋势因子（Ichimoku/KST/TRIX/Donchian/Aroon/ParabolicSAR）
+  ├── mean_reversion.py    均值回归（MFI/RVI/KDWave/OBOS）
+  ├── momentum.py          动量因子（ForceIndex/ElderRay/PPO/MomentumMatrix）
+  ├── volume.py            量价因子（AD/VPT/MassIndex/Ergodic/SignalHorizon）
+  ├── volatility.py        波幅因子（UltraSpline/UltraBand）
+  ├── chanlun.py           缠论因子（笔/线段）
+  ├── composite.py         综合因子（Chaikin Oscillator）
+  └── signals.py           统一信号生成器 + FACTOR_TABLE
+  ```
+- **已知问题**：`factor_library.py` 原文件引用了未定义的 `sma_cross`/`macd_divergence`/`rsi_divergence` 等，已在 `factors/signals.py` FACTOR_TABLE 中修正
+- **TODO**：补充 `F001-F013` 高优先级独家因子（Ichimoku/缠论/AD线等）的 Qlib Expression 格式封装
+
+### Layer 3 — 策略库（strategies/）
+- **当前文件**：`backtest_engine.py` / `param_optimizer.py` / `regime_engine.py` / `xb_tier1_binance.py` / `xb_tier2_ashare.py`
+- **TODO**：策略独立文件化（每个策略一个 .py，含参数说明和注释）
+
+### Layer 4 — 专家系统（experts/）
+- **TODO**：补充 `expert2_evaluator` 模块（`experts/__init__.py` 导入失败）
+
+### Layer 5 — 回测系统（backtest/）
+- ✅ runner.py / vectorbt_engine.py / local_data.py
+
+### Layer 6 — 看板系统（dashboard/）
+- ✅ React 18 + Tailwind v3 + 5视图 + GitHub Pages CI/CD
 
 ---
 
-## ✅ 全部完成
+## 最新提交
 
-### ✅ TODO-001b: 交易成本模型
-- 佣金 0.03%（双向）+ 滑点 0.05%（双向）= 买入 0.08%
-- 印花税 0.10%（仅卖出）= 卖出 0.18%
-- 已集成至 expert1a / expert1b 的 `_simulate()`
-
-### ✅ TODO-002: Bull/Bear 辩论角色（4-Agent辩论）
-- `bull_researcher.py` ✅ 牛市研究员（规则+LLM双模式）
-- `bear_researcher.py` ✅ 熊市研究员（规则+LLM双模式）
-- `debate_manager.py` ✅ 升级4-Agent辩论（Trend+MR+Bull+Bear）
-
-### ✅ TODO-003: LLM 策略候选生成
-- `llm_proxy.py` ✅ 统一LLM调用接口（MaxClaw llm-task封装）
-- `generate_strategy_candidates_via_llm()` ✅
-- `get_llm_feedback()` ✅
-
-### ✅ TODO-004: 因子库（纯NumPy，零依赖）
-- `factor_library.py` ✅ 28个因子（趋势/均值回归/成交量/情绪/质量）
-
-### ✅ TODO-001: vectorbt 回测引擎
-- `vectorbt_engine.py` ✅ 向量化回测引擎（pip安装成功）
-- 版本：vectorbt 0.28.4 + pandas 2.3.3 + scipy 1.17.1
-- 纯pandas指标 + vectorbt Portfolio 权益曲线
-- 支持参数网格扫描（Top-N 参数组合）
-- 支持 A股印花税（卖出额外0.10%）
-- 佣金: 0.08%（买） 滑点: 0.05%（双向）
+- `b67bf3d` refactor: migrate dashboard to root, clean web/ dir, fix CI/CD paths
+- 全部在 `/home/readm/quant/` (WSL)，Git 统一管理
 
 ---
 
-## 📊 最新回测结果（vectorbt，真实成本）
+## 最新回测结果（vectorbt，真实成本）
 
 ### SPY（300天，2025年）
 | 策略 | 年化 | 夏普 | 最大回撤 | 交易次数 | 胜率 |
@@ -57,26 +75,4 @@
 
 ---
 
-## 架构总览（v4.2）
-
-```
-Orchestrator
-  ├── Expert1a 趋势专家（规则+Jitter）
-  ├── Expert1b 均值回归专家（规则+Jitter）
-  ├── LLM 生成器（MaxClaw LLM）
-  └── Expert2 评估专家
-          ↓
-      BullResearcher（看多）      ← TODO-002 ✅
-      BearResearcher（看空）      ← TODO-002 ✅
-          ↓
-      DebateManager（4-Agent）  ← TODO-002 ✅
-          ↓
-      因子库（28因子 NumPy）    ← TODO-004 ✅
-      vectorbt 引擎（参数扫描）  ← TODO-001 ✅
-          ↓
-      风控 + 组合优化 + Paper Trade
-```
-
----
-
-最后更新：2026-03-27 01:19 UTC
+最后更新：2026-03-29 01:42 UTC
