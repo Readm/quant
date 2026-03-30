@@ -24,9 +24,15 @@ class BacktestReport:
 
 class MeanReversionExpert:
     TEMPLATES = [
-        {"key": "rsi",       "name": "RSI均值回归",  "params": {"period": 14, "lower": 30, "upper": 70}},
-        {"key": "bollinger", "name": "布林带回归",   "params": {"period": 20, "std_mult": 2.0}},
-        {"key": "vol_surge", "name": "成交量异常",   "params": {"vol_ma": 20, "threshold": 2.0}},
+        {"key": "rsi",              "name": "RSI均值回归",    "params": {"period": 14, "lower": 30, "upper": 70}},
+        {"key": "bollinger",        "name": "布林带回归",      "params": {"period": 20, "std_mult": 2.0}},
+        {"key": "vol_surge",        "name": "成交量异常",      "params": {"vol_ma": 20, "threshold": 2.0}},
+        {"key": "mfi_signal",       "name": "MFI资金流",       "params": {"period": 14, "lower": 20, "upper": 80}},
+        {"key": "rvi_signal",       "name": "RVI相对活力",     "params": {"period": 10}},
+        {"key": "kdwave",           "name": "KDJ波形",         "params": {"fastk": 9, "slowk": 3}},
+        {"key": "multi_roc_signal", "name": "ROC多周期",       "params": {"p1": 10, "p2": 20, "p3": 40}},
+        {"key": "obos_composite",   "name": "OBOS超买超卖",    "params": {"period": 20}},
+        {"key": "elder_ray_signal", "name": "Elder Ray信号",   "params": {"ema_period": 13}},
     ]
 
     def __init__(self, seed: int = 42):
@@ -146,6 +152,17 @@ class MeanReversionExpert:
                 return sig_raw  # mean_reversion already has its own debounce
             except Exception:
                 return [0]*n
+        elif key in ("mfi_signal", "rvi_signal", "kdwave", "multi_roc_signal", "obos_composite", "elder_ray_signal"):
+            highs_d = data.get("highs",   closes) if isinstance(data, dict) else closes
+            lows_d  = data.get("lows",    closes) if isinstance(data, dict) else closes
+            vols_d  = data.get("volumes", [1e9]*n) if isinstance(data, dict) else [1e9]*n
+            try:
+                from factors.signals import generate_signal
+                sig_raw = list(generate_signal(key, closes, highs_d, lows_d, vols_d))
+                if len(sig_raw) < n: sig_raw += [0] * (n - len(sig_raw))
+                return sig_raw[:n]
+            except Exception:
+                return [0] * n
         return [0]*n
 
 
@@ -213,7 +230,12 @@ class MeanReversionExpert:
         avg_w = sum(wins) / len(wins)   if wins  else 0.0
         avg_l = abs(sum(loss) / len(loss)) if loss else 1e-9
         pf    = avg_w / avg_l if avg_l > 1e-9 else 0.0
-        name  = {"rsi": "RSI均值回归", "bollinger": "布林带回归", "vol_surge": "成交量异常"}.get(key, key)
+        name  = {
+            "rsi": "RSI均值回归", "bollinger": "布林带回归", "vol_surge": "成交量异常",
+            "mfi_signal": "MFI资金流", "rvi_signal": "RVI相对活力", "kdwave": "KDJ波形",
+            "multi_roc_signal": "ROC多周期", "obos_composite": "OBOS超买超卖",
+            "elder_ray_signal": "Elder Ray信号",
+        }.get(key, key)
         return BacktestReport(
             strategy_id = strategy_id,
             strategy_name = name,

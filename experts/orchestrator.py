@@ -27,7 +27,7 @@ from experts.meta_monitor import MetaMonitor, RoundSnapshot
 from experts.debate_manager import DebateManager
 from experts.structured_feedback import FeedbackHistory
 
-MAX_ROUNDS_DEFAULT   = 3
+MAX_ROUNDS_DEFAULT   = 20
 TOP_N_DEFAULT       = 4
 HOLDOUT_DAYS        = 30
 CORR_THRESHOLD      = 0.75
@@ -90,6 +90,8 @@ class Orchestrator:
         self.fb_history     = FeedbackHistory()
         self.round_reports  = []
         self.prev_top_ids   = set()
+        self.best_score     = 0.0
+        self.no_improve     = 0
         self.monitor        = MetaMonitor(report_every=5)
 
     def run(self):
@@ -106,8 +108,8 @@ class Orchestrator:
             need_div = self.evaluator.need_diversify()
             fb_list  = [fb.to_simple_dict() for fb in self.evaluator.fb_history.entries]
 
-            t_cands  = self._generate_diverse_candidates(self.trend_expert, 4, fb_list, need_div, "trend")
-            mr_cands = self._generate_diverse_candidates(self.mr_expert, 3, fb_list, need_div, "mean_reversion")
+            t_cands  = self._generate_diverse_candidates(self.trend_expert, 30, fb_list, need_div, "trend")
+            mr_cands = self._generate_diverse_candidates(self.mr_expert, 20, fb_list, need_div, "mean_reversion")
             all_cands = t_cands + mr_cands
 
             main_data = symbols_data[0]["data"]
@@ -195,9 +197,16 @@ class Orchestrator:
             snap = self._make_snapshot(rnd, t_evals, mr_evals, debate, risk_results, sent, regime)
             self.monitor.record_round(snap)
 
-            top_ids  = {r.strategy_id for r in final}
-            converged = (top_ids == self.prev_top_ids) if self.prev_top_ids else False
-            self.prev_top_ids = top_ids
+            # 3轮无提升收敛判断
+            top_score = max((float(getattr(e, "composite", 0)) for e in final), default=0.0)
+            if top_score > self.best_score + 0.1:
+                self.best_score = top_score
+                self.no_improve = 0
+                print(f"\n[收敛] 冠军分提升至 {top_score:.1f}")
+            else:
+                self.no_improve += 1
+                print(f"\n[收敛] 冠军分未提升（{self.no_improve}/3），当前={top_score:.1f} 最高={self.best_score:.1f}")
+            converged = (self.no_improve >= 3)
 
             rp = RoundReportFake(rnd)
             rp.trend_evals   = t_evals
@@ -210,8 +219,8 @@ class Orchestrator:
             rp.holdout_results = holdout_ok
             self.round_reports.append(rp)
 
-            if converged and rnd >= 2:
-                print("\n✅ 连续2轮名单一致，已收敛"); break
+            if converged:
+                print("\n✅ 冠军策略连续3轮未提升，已收敛"); break
 
         if self.monitor.should_report():
             meta = self.monitor.generate_report(self.round_reports)
@@ -226,12 +235,29 @@ class Orchestrator:
 
     # 全量参数搜索空间（宽范围随机探索）
     _PARAM_RANGES = {
-        "ma_cross":  {"fast": (5, 60),   "slow": (20, 250)},
-        "macd":      {"fp":   (5, 20),   "sp":   (15, 60),  "sig": (5, 15)},
-        "momentum":  {"lookback": (5, 80), "threshold": (0.01, 0.15)},
-        "adx_trend": {"adx_thr": (15, 40), "atr_mult": (1.0, 4.5)},
-        "rsi":       {"period": (5, 30),   "lower": (15, 40), "upper": (60, 85)},
-        "bband":     {"period": (10, 60),  "num_std": (1.2, 3.5)},
+        # ── 原有趋势策略 ─────────────────────────────────────────────
+        "ma_cross":          {"fast": (5, 60),    "slow": (20, 250)},
+        "macd":              {"fp":   (5, 20),    "sp":   (15, 60),  "sig": (5, 15)},
+        "momentum":          {"lookback": (5, 80), "threshold": (0.01, 0.15)},
+        "adx_trend":         {"adx_thr": (15, 40), "atr_mult": (1.0, 4.5)},
+        # ── 新接入趋势策略（quant独有）────────────────────────────────
+        "ichimoku_signal":   {"tenkan": (5, 20),  "kijun": (15, 55)},
+        "kst":               {"r1": (5, 15),      "r2": (10, 20)},
+        "trix":              {"period": (8, 30)},
+        "donchian_breakout": {"period": (10, 60)},
+        "aroon_signal":      {"period": (10, 50)},
+        # ── 原有均值回归策略 ──────────────────────────────────────────
+        "rsi":               {"period": (5, 30),   "lower": (15, 40), "upper": (60, 85)},
+        "bband":             {"period": (10, 60),  "num_std": (1.2, 3.5)},
+        "bollinger":         {"period": (10, 60),  "std_mult": (1.2, 3.5)},
+        "vol_surge":         {"vol_ma": (10, 40),  "threshold": (1.5, 4.0)},
+        # ── 新接入均值回归策略（quant独有）────────────────────────────
+        "mfi_signal":        {"period": (7, 28),   "lower": (10, 35), "upper": (65, 90)},
+        "rvi_signal":        {"period": (5, 20)},
+        "kdwave":            {"fastk": (5, 18),    "slowk": (2, 6)},
+        "multi_roc_signal":  {"p1": (5, 15),       "p2": (15, 30),    "p3": (25, 60)},
+        "obos_composite":    {"period": (10, 40)},
+        "elder_ray_signal":  {"ema_period": (8, 26)},
     }
 
     def _fresh_random_params(self, template_key: str, rng: random.Random) -> dict:

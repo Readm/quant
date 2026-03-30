@@ -28,10 +28,15 @@ class BacktestReport:
 
 class TrendExpert:
     TEMPLATES = [
-        {"key": "ma_cross",  "name": "双均线交叉",  "params": {"fast": 20,  "slow": 60}},
-        {"key": "macd",      "name": "MACD趋势",     "params": {"fp": 12,   "sp": 26, "sig": 9}},
-        {"key": "momentum",  "name": "动量突破",     "params": {"lookback": 20, "threshold": 0.05}},
-        {"key": "adx_trend", "name": "ADX趋势确认",  "params": {"adx_thr": 25,  "atr_mult": 2.0}},
+        {"key": "ma_cross",          "name": "双均线交叉",    "params": {"fast": 20,  "slow": 60}},
+        {"key": "macd",              "name": "MACD趋势",       "params": {"fp": 12,   "sp": 26, "sig": 9}},
+        {"key": "momentum",          "name": "动量突破",       "params": {"lookback": 20, "threshold": 0.05}},
+        {"key": "adx_trend",         "name": "ADX趋势确认",    "params": {"adx_thr": 25,  "atr_mult": 2.0}},
+        {"key": "ichimoku_signal",   "name": "Ichimoku云图",   "params": {"tenkan": 9, "kijun": 26}},
+        {"key": "kst",               "name": "KST动量",        "params": {"r1": 10, "r2": 13}},
+        {"key": "trix",              "name": "TRIX三重指数",   "params": {"period": 14}},
+        {"key": "donchian_breakout", "name": "Donchian突破",   "params": {"period": 20}},
+        {"key": "aroon_signal",      "name": "Aroon交叉",      "params": {"period": 25}},
     ]
 
     def __init__(self, seed: int = 42):
@@ -167,6 +172,17 @@ class TrendExpert:
                     for i in range(n)]
             # ADX=100 导致翻牌：冷却期3天，连续2天确认
             return self._debounce_signals(raw, min_consecutive=2, cooldown_days=3)
+        elif key in ("ichimoku_signal", "kst", "trix", "donchian_breakout", "aroon_signal"):
+            highs_d = data.get("highs", closes) if data else closes
+            lows_d  = data.get("lows",  closes) if data else closes
+            vols_d  = data.get("volumes", [1.0]*n) if data else [1.0]*n
+            try:
+                from factors.signals import generate_signal
+                raw = list(generate_signal(key, closes, highs_d, lows_d, vols_d))
+                if len(raw) < n: raw += [0] * (n - len(raw))
+                return self._debounce_signals(raw[:n], min_consecutive=2, cooldown_days=2)
+            except Exception:
+                return [0] * n
         return [0]*n
 
     @staticmethod
@@ -222,7 +238,11 @@ class TrendExpert:
         avg_win=sum(wins)/len(wins) if wins else 0.0
         avg_loss=abs(sum(loss)/len(loss)) if loss else 1.0
         pf=avg_win/avg_loss if avg_loss>1e-9 else 0.0
-        name={"ma_cross":"双均线交叉","macd":"MACD趋势","momentum":"动量突破","adx_trend":"ADX趋势确认"}.get(key,key)
+        name={
+            "ma_cross":"双均线交叉","macd":"MACD趋势","momentum":"动量突破","adx_trend":"ADX趋势确认",
+            "ichimoku_signal":"Ichimoku云图","kst":"KST动量","trix":"TRIX三重指数",
+            "donchian_breakout":"Donchian突破","aroon_signal":"Aroon交叉",
+        }.get(key,key)
         return BacktestReport(
             strategy_id=strategy_id, strategy_name=name, strategy_type="trend",
             tags=["趋势跟踪",name], params=params,

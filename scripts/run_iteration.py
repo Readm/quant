@@ -164,7 +164,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--symbols", nargs="+", default=["SPY", "BTCUSDT"])
     parser.add_argument("--days",    type=int,  default=300)
-    parser.add_argument("--rounds",  type=int,  default=3)
+    parser.add_argument("--rounds",  type=int,  default=20)
     parser.add_argument("--seed",    type=int,  default=2026)
     parser.add_argument("--out",     default=str(OUT_PATH))
     args = parser.parse_args()
