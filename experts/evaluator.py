@@ -25,9 +25,9 @@ SOFT_MIN_TRADES   = 3       # 仅作标记，不淘汰（低频=潜在高置信�
 MAX_DRAWDOWN      = 35.0   # 回撤高于此 → REJECT
 
 # ── 打分权重 ────────────────────────────────
-W_SHARPE   = 0.40   # 夏普权重
+W_SHARPE   = 0.35   # 夏普权重
 W_DRAWDOWN = 0.30   # 回撤权重
-W_RETURN   = 0.30   # 年化权重
+W_RETURN   = 0.35   # 年化权重（与夏普同等重要，鼓励高收益探索）
 
 
 @dataclass
@@ -113,21 +113,30 @@ class Evaluator:
 
         # ── PBO 过拟合惩罚（新增）────────────────
         pbo_penalty_ratio, pbo_label, sharpe_after_pbo = self._pbo_penalty(r)
-        # 用 PBO 调整后的夏普计算 composite
         sharpe_pbo_s = max(0.0, sharpe_s - pbo_penalty_ratio * 100)
-        composite = sharpe_pbo_s * W_SHARPE + dd_s * W_DRAWDOWN + ret_s * W_RETURN
-        composite = round(composite, 1)
+        base = sharpe_pbo_s * W_SHARPE + dd_s * W_DRAWDOWN + ret_s * W_RETURN
+
+        # ── 单维度卓越奖励 ──────────────────────
+        # 年化或夏普任意一项突出（>75分），允许其"带动"整体
+        # 目的：年化很高但夏普较低的策略仍是值得探索的方向
+        best_primary = max(sharpe_pbo_s, ret_s)
+        excellence_bonus = max(0.0, (best_primary - 75) * 0.35)
+        composite = min(100.0, round(base + excellence_bonus, 1))
 
         # ── 3. 决策 ────────────────────────────
         if is_rejected:
             decision = "REJECT"
             reason   = elim_note
-        elif composite >= 60:
+        elif composite >= 58:
             decision = "ACCEPT"
             reason   = f"✅ 纳入（综合分={composite}，年化={ann_ret:.1f}%，夏普={sharpe:.2f}）"
-        else:
+        elif composite >= 35:
             decision = "CONDITIONAL"
             reason   = f"⚠️ 待观察（综合分={composite}，建议优化参数）"
+        else:
+            decision = "REJECT"
+            reason   = f"❌ 综合分过低（{composite}），{elim_note}"
+            is_rejected = True
 
         # ── 4. 生成结构化反馈 ─────────────────
         fb_text   = self._make_feedback(ann_ret, sharpe, dd, wr, pf, n_trades)
@@ -135,7 +144,7 @@ class Evaluator:
 
         # 手动构建结构化反馈（不依赖 from_eval_result）
         weakness, adj_dir, adj_param, adj_mag, adj_unit = self._diagnose_and_prescribe(
-            ann_ret, sharpe, dd, wr, pf, n_trades, is_rejected
+            ann_ret, sharpe, dd, wr, pf, n_trades, is_rejected, sid
         )
 
         regime_map   = {"trend": "STRONG_TREND", "mean_reversion": "SIDEWAYS"}
@@ -203,33 +212,61 @@ class Evaluator:
     # ── 弱点诊断 + 处方 ────────────────────
     @staticmethod
     def _diagnose_and_prescribe(ann, sharpe, dd, wr, pf, n_trades,
-                                 is_rejected) -> tuple:
-        """精确诊断弱点 → 生成可执行参数调整指令"""
-        weakness_map = [
-            (lambda: sharpe < MIN_SHARPE,
-             Weakness.LOW_SHARPE,
-             AdjustmentDirection.TIGHTEN_STOP_LOSS,  "atr_mult",   0.5,  "倍"),
-            (lambda: dd > MAX_DRAWDOWN,
-             Weakness.HIGH_DRAWDOWN,
-             AdjustmentDirection.DECREASE_POSITION,    "position",   0.7,  "%"),
-            (lambda: ann < MIN_ANNUAL_RETURN,
-             Weakness.LOW_RETURN,
-             AdjustmentDirection.INCREASE_LOOKBACK,   "lookback",   5,    "天"),
-            (lambda: wr < 40,
-             Weakness.LOW_WIN_RATE,
-             AdjustmentDirection.DECREASE_LOOKBACK,   "period",    -5,    "天"),
-            (lambda: pf < 1.3,
-             Weakness.LOW_PROFIT_FACTOR,
-             AdjustmentDirection.TIGHTEN_STOP_LOSS,   "atr_mult",   0.7,  "倍"),
-            (lambda: n_trades < MIN_TRADES,
-             Weakness.FEW_TRADES,
-             AdjustmentDirection.ADD_FILTER,           "threshold", -0.2,  "%"),
-        ]
+                                 is_rejected, sid: str = "") -> tuple:
+        """诊断弱点 → 从多个候选处方中随机选一个，避免每轮给出相同建议"""
+        import random as _rnd
+        # 用 strategy_id hash 做种子，同一策略同轮给相同建议，不同策略给不同建议
+        _r = _rnd.Random(hash(sid) ^ hash(f"{ann:.1f}{sharpe:.2f}"))
 
-        for check_fn, w, adj, param, mag, unit in weakness_map:
-            if check_fn():
-                return w, adj, param, mag, unit
+        # 每个弱点 → 多个等效处方，系统随机选一个
+        options = {
+            "LOW_SHARPE": [
+                (Weakness.LOW_SHARPE, AdjustmentDirection.TIGHTEN_STOP_LOSS, "atr_mult",   0.6,  "倍"),
+                (Weakness.LOW_SHARPE, AdjustmentDirection.ADD_FILTER,        "threshold",  0.03, "%"),
+                (Weakness.LOW_SHARPE, AdjustmentDirection.DECREASE_LOOKBACK, "fast",       -5,   "天"),
+                (Weakness.LOW_SHARPE, AdjustmentDirection.INCREASE_LOOKBACK, "slow",        15,  "天"),
+            ],
+            "HIGH_DRAWDOWN": [
+                (Weakness.HIGH_DRAWDOWN, AdjustmentDirection.DECREASE_POSITION, "position",   0.6,  "%"),
+                (Weakness.HIGH_DRAWDOWN, AdjustmentDirection.TIGHTEN_STOP_LOSS, "atr_mult",   0.5,  "倍"),
+                (Weakness.HIGH_DRAWDOWN, AdjustmentDirection.ADD_FILTER,        "threshold",  0.05, "%"),
+                (Weakness.HIGH_DRAWDOWN, AdjustmentDirection.INCREASE_LOOKBACK, "slow",        20,  "天"),
+            ],
+            "LOW_RETURN": [
+                (Weakness.LOW_RETURN, AdjustmentDirection.DECREASE_LOOKBACK,  "fast",       -8,   "天"),
+                (Weakness.LOW_RETURN, AdjustmentDirection.INCREASE_LOOKBACK,  "lookback",    10,  "天"),
+                (Weakness.LOW_RETURN, AdjustmentDirection.WIDEN_STOP_LOSS,    "atr_mult",   1.5,  "倍"),
+                (Weakness.LOW_RETURN, AdjustmentDirection.REMOVE_FILTER,      "threshold", -0.02, "%"),
+            ],
+            "LOW_WIN_RATE": [
+                (Weakness.LOW_WIN_RATE, AdjustmentDirection.DECREASE_LOOKBACK, "period",   -8,   "天"),
+                (Weakness.LOW_WIN_RATE, AdjustmentDirection.ADD_FILTER,        "threshold", 0.04, "%"),
+                (Weakness.LOW_WIN_RATE, AdjustmentDirection.TIGHTEN_STOP_LOSS, "atr_mult",  0.7,  "倍"),
+                (Weakness.LOW_WIN_RATE, AdjustmentDirection.INCREASE_LOOKBACK, "slow",       10,  "天"),
+            ],
+            "LOW_PF": [
+                (Weakness.LOW_PROFIT_FACTOR, AdjustmentDirection.TIGHTEN_STOP_LOSS, "atr_mult",  0.6,  "倍"),
+                (Weakness.LOW_PROFIT_FACTOR, AdjustmentDirection.WIDEN_STOP_LOSS,   "atr_mult",  1.4,  "倍"),
+                (Weakness.LOW_PROFIT_FACTOR, AdjustmentDirection.DECREASE_LOOKBACK, "fast",       -5,  "天"),
+                (Weakness.LOW_PROFIT_FACTOR, AdjustmentDirection.ADD_FILTER,        "threshold",  0.03, "%"),
+            ],
+            "FEW_TRADES": [
+                (Weakness.FEW_TRADES, AdjustmentDirection.ADD_FILTER,         "threshold", -0.02, "%"),
+                (Weakness.FEW_TRADES, AdjustmentDirection.DECREASE_LOOKBACK,  "fast",       -10,  "天"),
+                (Weakness.FEW_TRADES, AdjustmentDirection.REMOVE_FILTER,      "threshold", -0.03, "%"),
+                (Weakness.FEW_TRADES, AdjustmentDirection.WIDEN_STOP_LOSS,    "atr_mult",   1.3,  "倍"),
+            ],
+        }
 
+        def pick(key):
+            return _r.choice(options[key])
+
+        if sharpe < MIN_SHARPE:       return pick("LOW_SHARPE")[0], *pick("LOW_SHARPE")[1:]
+        if dd > MAX_DRAWDOWN:          return pick("HIGH_DRAWDOWN")[0], *pick("HIGH_DRAWDOWN")[1:]
+        if ann < MIN_ANNUAL_RETURN:    return pick("LOW_RETURN")[0], *pick("LOW_RETURN")[1:]
+        if wr < 40:                    return pick("LOW_WIN_RATE")[0], *pick("LOW_WIN_RATE")[1:]
+        if pf < 1.3:                   return pick("LOW_PF")[0], *pick("LOW_PF")[1:]
+        if n_trades < MIN_TRADES:      return pick("FEW_TRADES")[0], *pick("FEW_TRADES")[1:]
         if is_rejected:
             return Weakness.OVERFITTED, AdjustmentDirection.DIVERSIFY, "", 0, ""
         return Weakness.NONE, AdjustmentDirection.NONE, "", 0, ""

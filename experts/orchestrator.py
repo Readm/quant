@@ -20,7 +20,6 @@ from backtest.local_data import load_multiple
 from experts.modules.blackboard import Blackboard
 from experts.modules.news_sentiment import NewsSentimentAnalyzer
 from experts.modules.risk_engine import RiskExpert
-from experts.modules.regime import MarketRegimeExpert
 from experts.specialists.expert1a_trend import TrendExpert
 from experts.specialists.expert1b_mean_reversion import MeanReversionExpert
 from experts.evaluator import Evaluator
@@ -83,7 +82,6 @@ class Orchestrator:
         self.bb             = Blackboard()
         self.news           = NewsSentimentAnalyzer()
         self.risk_expert    = RiskExpert()
-        self.regime_expert  = MarketRegimeExpert()
         self.trend_expert   = TrendExpert(seed=seed)
         self.mr_expert      = MeanReversionExpert(seed=seed+1)
         self.evaluator      = Evaluator()
@@ -143,12 +141,10 @@ class Orchestrator:
             if not all_pass:
                 print("  ⚠️ 无候选通过，跳过本轮"); continue
 
-            # 新闻情绪 + 市场状态
+            # 新闻情绪（不再使用市场状态专家：回测策略应穿越牛熊）
             sent   = self.news.analyze(self.symbols)
-            regime = self.regime_expert.detect(main_data, main_inds)
-            self.bb.write("News",   rnd, "sentiment", sent)
-            self.bb.write("Regime", rnd, "regime",    regime)
-            print(f"\n[市场] {regime.name if regime else '?'} (ADX={getattr(regime,'adx_score',0):.1f})")
+            regime = None   # 移除 MarketRegimeExpert：策略不依赖实时市场判断
+            self.bb.write("News", rnd, "sentiment", sent)
 
             # 对抗辩论
             debate = self.debate_manager.conduct_debate(t_pass, mr_pass, regime, [], rnd)
@@ -228,40 +224,134 @@ class Orchestrator:
 
     # ── 多样性约束生成 ─────────────────────
 
+    # 全量参数搜索空间（宽范围随机探索）
+    _PARAM_RANGES = {
+        "ma_cross":  {"fast": (5, 60),   "slow": (20, 250)},
+        "macd":      {"fp":   (5, 20),   "sp":   (15, 60),  "sig": (5, 15)},
+        "momentum":  {"lookback": (5, 80), "threshold": (0.01, 0.15)},
+        "adx_trend": {"adx_thr": (15, 40), "atr_mult": (1.0, 4.5)},
+        "rsi":       {"period": (5, 30),   "lower": (15, 40), "upper": (60, 85)},
+        "bband":     {"period": (10, 60),  "num_std": (1.2, 3.5)},
+    }
+
+    def _fresh_random_params(self, template_key: str, rng: random.Random) -> dict:
+        """从宽范围均匀采样参数，远比 ±30% 扰动更多样"""
+        ranges = self._PARAM_RANGES.get(template_key, {})
+        if not ranges:
+            return {}
+        out = {}
+        for k, (lo, hi) in ranges.items():
+            if isinstance(lo, int) and isinstance(hi, int):
+                out[k] = rng.randint(lo, hi)
+            else:
+                out[k] = round(rng.uniform(lo, hi), 4)
+        # ma_cross: 保证 fast < slow
+        if template_key == "ma_cross" and "fast" in out and "slow" in out:
+            if out["fast"] >= out["slow"]:
+                out["slow"] = out["fast"] + rng.randint(10, 80)
+        return out
+
     def _generate_diverse_candidates(self, expert, count, fb_list, need_div, stype):
-        rng     = random.Random(self.seed + hash(stype))
-        out     = []
-        n_rand  = max(1, round(count * 0.30))
-        n_fb    = max(1, round(count * 0.30))
-        n_expl  = count - n_rand - n_fb
-
-        # 30% 随机探索
-        for _ in range(n_rand):
-            c = expert.generate_candidates(1, None)[0]
-            c["params"] = self._randomize(c["params"], 0.3, rng)
-            c["diversity_note"] = "随机探索"
-            out.append(c)
-
-        # 30% 结构化反馈调参
+        rng      = random.Random(self.seed + hash(stype) + len(fb_list))
+        out      = []
         type_fbs = [f for f in fb_list if f.get("strategy_type") == stype]
-        fb_for_expert = [{"strategy_id":f["strategy_id"],"strategy_name":f["strategy_name"],
-                           "feedback":self._sf_to_text(f),"feedback_type":stype,**f}
-                          for f in (type_fbs[-n_fb:] if type_fbs else [])]
-        fb_cands = expert.generate_candidates(n_fb, fb_for_expert if fb_for_expert else None)
-        for c in fb_cands: c["diversity_note"] = "反馈优化"
-        out.extend(fb_cands)
 
-        # 40% exploitation
-        if type_fbs and n_expl > 0:
-            best = type_fbs[-1]
-            c    = expert.generate_candidates(1, None)[0]
-            c["params"] = self._apply_sf_adjustment(c["params"], best)
-            c["diversity_note"] = "Exploitation"
+        # 统计已尝试的 template_key，连续失败的降优先级
+        failed_templates = {}
+        for f in type_fbs:
+            tk = f.get("template_key", "")
+            w  = f.get("weakness", "none")
+            if w not in ("none", "") and tk:
+                failed_templates[tk] = failed_templates.get(tk, 0) + 1
+
+        # 获取专家的所有模板
+        templates = getattr(expert, "TEMPLATES", [])
+        tpl_keys  = [t["key"] for t in templates]
+
+        # ── 1/3 宽范围随机探索（不依赖默认参数，全空间采样）──────────
+        n_rand = max(1, round(count * 0.35))
+        for i in range(n_rand):
+            # 失败次数多的模板降采样频率
+            weights = [max(0.05, 1.0 / (1 + failed_templates.get(k, 0) * 1.5))
+                       for k in tpl_keys]
+            total_w = sum(weights)
+            weights = [w / total_w for w in weights]
+            # 加权随机选模板
+            pick_r  = rng.random()
+            chosen_key = tpl_keys[-1]
+            acc = 0.0
+            for k, w in zip(tpl_keys, weights):
+                acc += w
+                if pick_r <= acc:
+                    chosen_key = k
+                    break
+            tpl  = next((t for t in templates if t["key"] == chosen_key), templates[i % len(templates)])
+            fresh_params = self._fresh_random_params(tpl["key"], rng)
+            if not fresh_params:
+                fresh_params = self._randomize(dict(tpl["params"]), 0.5, rng)
+            import uuid
+            c = {
+                "strategy_id":   f"{stype[:2]}_{uuid.uuid4().hex[:8]}",
+                "strategy_type": stype,
+                "strategy_name": tpl["name"],
+                "template_key":  tpl["key"],
+                "params":        fresh_params,
+                "tags":          [tpl["name"]],
+                "diversity_note": f"宽范围随机({tpl['key']})",
+            }
             out.append(c)
 
+        # ── 1/3 结构化反馈调参（每个反馈给不同处方）─────────────────
+        n_fb = max(1, round(count * 0.35))
+        if type_fbs:
+            # 取最近 n_fb 条反馈，每条产生一个候选
+            for fb in type_fbs[-n_fb:]:
+                tk   = fb.get("template_key", tpl_keys[0])
+                tpl  = next((t for t in templates if t["key"] == tk), templates[0])
+                params = self._apply_sf_adjustment(dict(tpl["params"]), fb)
+                # 再叠加小扰动，避免和默认值完全相同
+                params = self._randomize(params, 0.15, rng)
+                import uuid
+                c = {
+                    "strategy_id":   f"{stype[:2]}_{uuid.uuid4().hex[:8]}",
+                    "strategy_type": stype,
+                    "strategy_name": tpl["name"],
+                    "template_key":  tpl["key"],
+                    "params":        params,
+                    "tags":          [tpl["name"]],
+                    "diversity_note": f"反馈({fb.get('adjustment','?')}/{fb.get('param','?')})",
+                }
+                out.append(c)
+        else:
+            # 无反馈时额外随机
+            for _ in range(n_fb):
+                tpl = rng.choice(templates)
+                c   = expert.generate_candidates(1, None)[0]
+                c["params"] = self._fresh_random_params(tpl["key"], rng) or self._randomize(dict(tpl["params"]), 0.4, rng)
+                c["diversity_note"] = "无反馈随机"
+                out.append(c)
+
+        # ── 剩余：Exploitation（对历史最高分参数做邻域搜索）──────────
         while len(out) < count:
-            c = expert.generate_candidates(1, None)[0]
-            c["diversity_note"] = "填充"
+            if type_fbs:
+                best = max(type_fbs, key=lambda f: f.get("composite", 0))
+                tk   = best.get("template_key", tpl_keys[0])
+                tpl  = next((t for t in templates if t["key"] == tk), templates[0])
+                params = self._apply_sf_adjustment(dict(tpl["params"]), best)
+                params = self._randomize(params, 0.20, rng)
+            else:
+                tpl    = rng.choice(templates)
+                params = self._fresh_random_params(tpl["key"], rng) or dict(tpl["params"])
+            import uuid
+            c = {
+                "strategy_id":   f"{stype[:2]}_{uuid.uuid4().hex[:8]}",
+                "strategy_type": stype,
+                "strategy_name": tpl["name"],
+                "template_key":  tpl["key"],
+                "params":        params,
+                "tags":          [tpl["name"]],
+                "diversity_note": "Exploitation邻域",
+            }
             out.append(c)
 
         return out[:count]
@@ -311,16 +401,13 @@ class Orchestrator:
         oos_ret = primary_data.get("returns", [0]*n)
         if not oos_ret or len(oos_ret) < n: return []
         oos_ret = oos_ret[split_i:]
-        regime_w = {"STRONG_TREND":0.65,"WEAK_TREND":0.50,"SIDEWAYS":0.35,
-                    "HIGH_VOL":0.35,"CRISIS":0.15}.get(getattr(regime,"name","WEAK_TREND"),0.40)
         results = []
         for e in selected:
-            ann_oos = (sum(oos_ret)/len(oos_ret)) * 252 * regime_w
+            ann_oos = (sum(oos_ret)/len(oos_ret)) * 252
             oos_pct = round(ann_oos*100, 2)
             bias    = round(oos_pct - getattr(e,"annualized_return",0), 1)
             results.append({"name":e.strategy_name,"oospct":oos_pct,
-                            "in_pct":getattr(e,"annualized_return",0),"bias":bias,
-                            "regime":getattr(regime,"name","?")})
+                            "in_pct":getattr(e,"annualized_return",0),"bias":bias})
         return results
 
     # ── 组合构建 ─────────────────────────
