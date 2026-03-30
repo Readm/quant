@@ -79,25 +79,27 @@ def debate_to_dict(d) -> dict:
     if not d:
         return {}
 
-    bull = getattr(d, "bull_case", None)
-    bear = getattr(d, "bear_case", None)
-
-    def case_points(c, field):
-        if not c: return []
-        v = getattr(c, field, [])
-        return list(v) if v else []
+    strategy_verdicts = []
+    for sv in (getattr(d, "strategy_verdicts", None) or []):
+        strategy_verdicts.append({
+            "strategy_id":   sv.strategy_id,
+            "strategy_name": sv.strategy_name,
+            "composite":     safe_float(sv.composite),
+            "verdict":       sv.verdict,
+            "confidence":    safe_float(sv.confidence),
+            "weight_advice": safe_float(sv.weight_advice),
+            "pros":          list(sv.pros  or []),
+            "cons":          list(sv.cons  or []),
+            "analysis":      sv.analysis   or "",
+        })
 
     return {
-        "winner":         getattr(d, "winner",          "TIE"),
-        "trend_weight":   safe_float(getattr(d, "trend_weight", 0.5)),
-        "mr_weight":      safe_float(getattr(d, "mr_weight",    0.5)),
-        "bull_confidence":safe_float(getattr(d, "bull_confidence", 0)),
-        "bear_confidence":safe_float(getattr(d, "bear_confidence", 0)),
-        "final_advice":   getattr(d, "final_advice", ""),
-        "bull_points":    case_points(bull, "bull_points"),
-        "bear_points":    case_points(bear, "bear_risks"),
-        "bull_summary":   getattr(bull, "summary", "") if bull else "",
-        "bear_summary":   getattr(bear, "summary", "") if bear else "",
+        "winner":            getattr(d, "winner",         "TIE"),
+        "trend_weight":      safe_float(getattr(d, "trend_weight",   0.5)),
+        "mr_weight":         safe_float(getattr(d, "mr_weight",      0.5)),
+        "verdict_reason":    getattr(d, "verdict_reason", ""),
+        "final_advice":      getattr(d, "final_advice",   ""),
+        "strategy_verdicts": strategy_verdicts,
     }
 
 

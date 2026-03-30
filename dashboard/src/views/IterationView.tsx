@@ -20,12 +20,15 @@ interface Strategy {
   equity_curve: EquityPoint[]
   selected: boolean
 }
+interface StrategyVerdict {
+  strategy_id: string; strategy_name: string; composite: number
+  verdict: string; confidence: number; weight_advice: number
+  pros: string[]; cons: string[]; analysis: string
+}
 interface Debate {
   winner: string; trend_weight: number; mr_weight: number
-  bull_confidence: number; bear_confidence: number
-  final_advice: string
-  bull_points: string[]; bear_points: string[]
-  bull_summary: string; bear_summary: string
+  verdict_reason: string; final_advice: string
+  strategy_verdicts: StrategyVerdict[]
 }
 interface Round {
   round: number; strategies: Strategy[]
@@ -220,37 +223,51 @@ function DebatePanel({ debate }: { debate: Debate }) {
         <div style={{ width: `${mw}%`, backgroundColor: '#22d3ee' }} />
       </div>
 
-      {/* Bull / Bear */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="bg-green-900/20 border border-green-700/30 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp size={14} className="text-green-400" />
-            <span className="text-green-400 font-semibold text-sm">多头研究员</span>
-            <span className="ml-auto text-xs text-green-300">{Math.round(debate.bull_confidence * 100)}% 置信</span>
-          </div>
-          {debate.bull_summary && <p className="text-slate-300 text-xs mb-2">{debate.bull_summary}</p>}
-          <ul className="space-y-1">
-            {(debate.bull_points || []).map((p, i) => (
-              <li key={i} className="text-xs text-green-200 flex gap-1.5"><span className="text-green-500 mt-0.5">+</span>{p}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="bg-red-900/20 border border-red-700/30 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingDown size={14} className="text-red-400" />
-            <span className="text-red-400 font-semibold text-sm">空头研究员</span>
-            <span className="ml-auto text-xs text-red-300">{Math.round(debate.bear_confidence * 100)}% 置信</span>
-          </div>
-          {debate.bear_summary && <p className="text-slate-300 text-xs mb-2">{debate.bear_summary}</p>}
-          <ul className="space-y-1">
-            {(debate.bear_points || []).map((p, i) => (
-              <li key={i} className="text-xs text-red-200 flex gap-1.5"><span className="text-red-500 mt-0.5">−</span>{p}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      {/* 裁决理由 */}
+      {debate.verdict_reason && (
+        <p className="text-slate-400 text-xs italic">{debate.verdict_reason}</p>
+      )}
 
-      {/* Final advice */}
+      {/* 策略级 LLM 评审 */}
+      {(debate.strategy_verdicts || []).length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">LLM 策略评审</p>
+          {debate.strategy_verdicts.map(sv => {
+            const verdictColor = {
+              STRONG_BUY: 'text-emerald-400 border-emerald-700/40 bg-emerald-900/20',
+              BUY:        'text-green-400  border-green-700/40  bg-green-900/20',
+              HOLD:       'text-yellow-400 border-yellow-700/40 bg-yellow-900/20',
+              SELL:       'text-red-400    border-red-700/40    bg-red-900/20',
+            }[sv.verdict] ?? 'text-slate-400 border-slate-700/40 bg-slate-800/40'
+            return (
+              <div key={sv.strategy_id} className={`border rounded-xl p-3 ${verdictColor}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-sm">{sv.strategy_name}</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-black/30">{sv.verdict}</span>
+                  <span className="ml-auto text-xs opacity-70">
+                    置信 {Math.round(sv.confidence * 100)}% · 仓位 {Math.round(sv.weight_advice * 100)}%
+                  </span>
+                </div>
+                {sv.analysis && <p className="text-xs opacity-80 mb-2">{sv.analysis}</p>}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {sv.pros.length > 0 && (
+                    <ul className="space-y-0.5">
+                      {sv.pros.map((p, i) => <li key={i} className="flex gap-1"><span className="opacity-60">+</span>{p}</li>)}
+                    </ul>
+                  )}
+                  {sv.cons.length > 0 && (
+                    <ul className="space-y-0.5 opacity-70">
+                      {sv.cons.map((c, i) => <li key={i} className="flex gap-1"><span>−</span>{c}</li>)}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* 建议 */}
       {debate.final_advice && (
         <div className="flex gap-2 bg-slate-800 rounded-xl px-4 py-3">
           <MessageSquare size={14} className="text-slate-400 mt-0.5 shrink-0" />
