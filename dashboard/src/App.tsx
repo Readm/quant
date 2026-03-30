@@ -1,22 +1,25 @@
 import { useState } from 'react'
-import { BarChart3, Database, Brain, Layers, ListOrdered, Circle } from 'lucide-react'
+import { BarChart3, Database, Brain, Layers, ListOrdered, Circle, Activity } from 'lucide-react'
 import DataSourceView from './views/DataSourceView'
 import BacktestView from './views/BacktestView'
 import ExpertView from './views/ExpertView'
 import FactorView from './views/FactorView'
 import StrategyView from './views/StrategyView'
+import SystemStatusView from './views/SystemStatusView'
 
-type ViewKey = 'data' | 'backtest' | 'expert' | 'factor' | 'strategy'
+type ViewKey = 'status' | 'data' | 'backtest' | 'expert' | 'factor' | 'strategy'
 
 const NAV = [
+  { key: 'status'   as ViewKey, label: '系统状态', Icon: Activity,    color: '#94a3b8' },
   { key: 'data'     as ViewKey, label: '数据来源', Icon: Database,    color: '#22d3ee' },
   { key: 'backtest' as ViewKey, label: '回测框架', Icon: BarChart3,   color: '#6366f1' },
   { key: 'expert'   as ViewKey, label: '专家框架', Icon: Brain,       color: '#a78bfa' },
   { key: 'factor'   as ViewKey, label: '因子库',   Icon: Layers,      color: '#4ade80' },
-  { key: 'strategy' as ViewKey, label: '策略库',   Icon: ListOrdered,  color: '#fbbf24' },
+  { key: 'strategy' as ViewKey, label: '策略库',   Icon: ListOrdered, color: '#fbbf24' },
 ]
 
 const VIEWS: Record<ViewKey, React.ComponentType> = {
+  status:   SystemStatusView,
   data:     DataSourceView,
   backtest: BacktestView,
   expert:   ExpertView,
@@ -25,7 +28,7 @@ const VIEWS: Record<ViewKey, React.ComponentType> = {
 }
 
 export default function App() {
-  const [active, setActive] = useState<ViewKey>('data')
+  const [active, setActive] = useState<ViewKey>('status')
 
   const View = VIEWS[active]
 

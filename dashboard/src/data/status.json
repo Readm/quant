@@ -1,0 +1,319 @@
+{
+  "generated_at": "2026-03-30T09:27:45.700785",
+  "data": {
+    "status": "ok",
+    "count": 12,
+    "symbols": [
+      {
+        "symbol": "AAPL",
+        "source": "yfinance",
+        "count": 1257,
+        "start": "2020-01-02",
+        "end": "2024-12-30",
+        "last_close": 250.83,
+        "change_pct": 246.4
+      },
+      {
+        "symbol": "BTCUSDT",
+        "source": "yfinance",
+        "count": 1826,
+        "start": "2020-01-01",
+        "end": "2024-12-30",
+        "last_close": 92643.21,
+        "change_pct": 1186.7
+      },
+      {
+        "symbol": "ETHUSDT",
+        "source": "yfinance",
+        "count": 1826,
+        "start": "2020-01-01",
+        "end": "2024-12-30",
+        "last_close": 3356.39,
+        "change_pct": 2466.0
+      },
+      {
+        "symbol": "NVDA",
+        "source": "yfinance",
+        "count": 1257,
+        "start": "2020-01-02",
+        "end": "2024-12-30",
+        "last_close": 137.44,
+        "change_pct": 2202.0
+      },
+      {
+        "symbol": "QQQ",
+        "source": "yfinance",
+        "count": 1257,
+        "start": "2020-01-02",
+        "end": "2024-12-30",
+        "last_close": 513.01,
+        "change_pct": 146.0
+      },
+      {
+        "symbol": "SH000300",
+        "source": "qlib/cn_data",
+        "count": 728,
+        "start": "2020-01-02",
+        "end": "2022-12-30",
+        "last_close": 3871.63,
+        "change_pct": -6.8
+      },
+      {
+        "symbol": "SH600036",
+        "source": "qlib/cn_data",
+        "count": 728,
+        "start": "2020-01-02",
+        "end": "2022-12-30",
+        "last_close": 37.26,
+        "change_pct": -4.2
+      },
+      {
+        "symbol": "SH600519",
+        "source": "qlib/cn_data",
+        "count": 728,
+        "start": "2020-01-02",
+        "end": "2022-12-30",
+        "last_close": 1727.0,
+        "change_pct": 52.8
+      },
+      {
+        "symbol": "SH601318",
+        "source": "qlib/cn_data",
+        "count": 728,
+        "start": "2020-01-02",
+        "end": "2022-12-30",
+        "last_close": 47.0,
+        "change_pct": -45.4
+      },
+      {
+        "symbol": "SOLUSDT",
+        "source": "yfinance",
+        "count": 1726,
+        "start": "2020-04-10",
+        "end": "2024-12-30",
+        "last_close": 191.03,
+        "change_pct": 19985.0
+      },
+      {
+        "symbol": "SPY",
+        "source": "yfinance",
+        "count": 1257,
+        "start": "2020-01-02",
+        "end": "2024-12-30",
+        "last_close": 579.81,
+        "change_pct": 95.3
+      },
+      {
+        "symbol": "SZ000858",
+        "source": "qlib/cn_data",
+        "count": 728,
+        "start": "2020-01-02",
+        "end": "2022-12-30",
+        "last_close": 180.69,
+        "change_pct": 36.8
+      }
+    ]
+  },
+  "factors": {
+    "status": "ok",
+    "errors": [],
+    "files": [
+      "trend.py",
+      "base_operators.py",
+      "volume.py",
+      "mean_reversion.py",
+      "chanlun.py",
+      "composite.py",
+      "volatility.py",
+      "signals.py",
+      "momentum.py"
+    ],
+    "export_count": 58,
+    "factor_table": 32,
+    "factor_ids": [
+      "F17",
+      "F18",
+      "F19",
+      "F20",
+      "F21",
+      "F22",
+      "F23",
+      "F26",
+      "F27",
+      "F31"
+    ]
+  },
+  "strategies": {
+    "status": "ok",
+    "total": 11,
+    "ok": 11,
+    "errors": [],
+    "modules": [
+      {
+        "name": "xb_tier1_binance",
+        "status": "ok"
+      },
+      {
+        "name": "param_optimizer",
+        "status": "ok"
+      },
+      {
+        "name": "regime_engine",
+        "status": "ok"
+      },
+      {
+        "name": "xb_tier2_ashare",
+        "status": "ok"
+      },
+      {
+        "name": "backtest_engine",
+        "status": "ok"
+      },
+      {
+        "name": "expert1b_mean_reversion",
+        "status": "ok"
+      },
+      {
+        "name": "expert3_surveyor",
+        "status": "ok"
+      },
+      {
+        "name": "expert4_dataset_specialist",
+        "status": "ok"
+      },
+      {
+        "name": "xingbuxing_strategies",
+        "status": "ok"
+      },
+      {
+        "name": "bear_researcher",
+        "status": "ok"
+      },
+      {
+        "name": "expert1a_trend",
+        "status": "ok"
+      }
+    ]
+  },
+  "experts": {
+    "status": "warn",
+    "total": 21,
+    "ok": 18,
+    "errors": [
+      "debate_manager: No module named 'experts.specialists.bull_researcher'",
+      "orchestrator: No module named 'experts.modules.blackboard'",
+      "factor_library: name 'Tuple' is not defined"
+    ],
+    "modules": [
+      {
+        "name": "debate_manager",
+        "status": "error",
+        "error": "No module named 'experts.specialists.bull_researcher'"
+      },
+      {
+        "name": "evaluator",
+        "status": "ok"
+      },
+      {
+        "name": "orchestrator",
+        "status": "error",
+        "error": "No module named 'experts.modules.blackboard'"
+      },
+      {
+        "name": "regime_aware_backtest",
+        "status": "ok"
+      },
+      {
+        "name": "realistic_friction",
+        "status": "ok"
+      },
+      {
+        "name": "meta_monitor",
+        "status": "ok"
+      },
+      {
+        "name": "expert1_generator",
+        "status": "ok"
+      },
+      {
+        "name": "coordinator",
+        "status": "ok"
+      },
+      {
+        "name": "regime_detector",
+        "status": "ok"
+      },
+      {
+        "name": "structured_feedback",
+        "status": "ok"
+      },
+      {
+        "name": "backtest_engine",
+        "status": "ok"
+      },
+      {
+        "name": "alpha158",
+        "status": "ok"
+      },
+      {
+        "name": "regime",
+        "status": "ok"
+      },
+      {
+        "name": "data_fetcher",
+        "status": "ok"
+      },
+      {
+        "name": "news_sentiment",
+        "status": "ok"
+      },
+      {
+        "name": "ts_operators",
+        "status": "ok"
+      },
+      {
+        "name": "llm_proxy",
+        "status": "ok"
+      },
+      {
+        "name": "factor_library",
+        "status": "error",
+        "error": "name 'Tuple' is not defined"
+      },
+      {
+        "name": "pbo_analysis",
+        "status": "ok"
+      },
+      {
+        "name": "risk_engine",
+        "status": "ok"
+      },
+      {
+        "name": "walk_forward",
+        "status": "ok"
+      }
+    ]
+  },
+  "backtest": {
+    "status": "warn",
+    "engines": [
+      {
+        "name": "local_data",
+        "status": "ok"
+      },
+      {
+        "name": "runner",
+        "status": "error",
+        "error": "No module named 'experts.specialists.bull_researcher'"
+      },
+      {
+        "name": "vectorbt_engine",
+        "status": "ok"
+      }
+    ]
+  },
+  "config": {
+    "status": "ok",
+    "note": "{'__name__': 'config.settings', '__doc__': '\\nconfig/settings.py — 全局配置\\n所有敏感信息通过环境变量或本文件配置\\n', '__package__': 'config', '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x7f8dbd80"
+  }
+}

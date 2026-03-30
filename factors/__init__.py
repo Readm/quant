@@ -23,7 +23,6 @@ from factors.mean_reversion import (
 from factors.momentum import (
     force_index,
     elder_ray, elder_ray_signal,
-    chaikin_oscillator, chaikin_signal,
     ppo, ppo_signal,
     momentum_matrix, multi_roc_signal,
 )
@@ -62,7 +61,6 @@ __all__ = [
     # momentum
     "force_index",
     "elder_ray", "elder_ray_signal",
-    "chaikin_oscillator", "chaikin_signal",
     "ppo", "ppo_signal",
     "momentum_matrix", "multi_roc_signal",
     # volume

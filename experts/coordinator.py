@@ -7,7 +7,7 @@ from datetime import datetime
 from experts.expert1_generator import (
     BacktestReport, generate_candidates, run_iteration, TEMPLATES
 )
-from experts.expert2_evaluator import evaluate_batch, run_evaluation, print_evaluation_report
+from experts.evaluator import Evaluator
 
 
 class Coordinator:
