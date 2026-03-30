@@ -1,477 +1,663 @@
+/**
+ * ExpertView — 专家系统节点图
+ * 展示每个专家的真实输入/输出连接 + Prompt/指令链
+ * 节点对应 experts/ 下的实际代码
+ */
 import { useState } from 'react'
-import {
-  Brain, TrendingUp, TrendingDown, BarChart2, ShieldAlert,
-  Swords, Scale, ChevronDown, ChevronRight, Database,
-  GitMerge, RefreshCw, Target, Activity, Search, Filter,
-} from 'lucide-react'
+import { Brain, ChevronDown, ChevronRight } from 'lucide-react'
 
-// ── Pipeline Step Descriptor ───────────────────────────────────────
-interface PipelineStep {
+// ── Types ──────────────────────────────────────────────────────────
+interface Port {
+  label: string          // data key name, e.g. "BacktestReport"
+  detail: string         // what it contains
+  color?: string
+}
+interface NodeDef {
   id: string
-  phase: string         // section label (e.g. "A 生成", "B 评估")
-  icon: React.ElementType
-  color: string
-  codeRef: string       // class.method()
   title: string
-  inputLabel: string
-  inputItems: string[]
-  outputLabel: string
-  outputItems: string[]
-  logic: string[]       // bullet points of core logic
-  prompt?: string       // how the "prompt" / instruction is formed
+  codeRef: string        // class.method()
+  file: string
+  color: string
+  instruction: {         // the "prompt" — rule / logic that drives this expert
+    title: string
+    lines: string[]
+  } | null
+  ins: Port[]            // incoming ports (labeled arrows IN)
+  outs: Port[]           // outgoing ports (labeled arrows OUT)
+  note?: string          // footnote
 }
 
-const STEPS: PipelineStep[] = [
-  {
-    id: 'data',
-    phase: '数据',
-    icon: Database,
-    color: '#22d3ee',
-    codeRef: 'Orchestrator._load_data()',
-    title: '数据加载',
-    inputLabel: '配置',
-    inputItems: ['symbols: List[str]', 'n_days: int (default 500)', 'Tencent API: sh000300 / btcusdt'],
-    outputLabel: '输出',
-    outputItems: [
-      'data: {closes, opens, highs, lows, volumes, dates}',
-      'indicators: {MA20, MA60, MA200, RSI14, ATR14, returns}',
-      '降级: 本地缓存 data/raw/{SYMBOL}_{date}.json',
-    ],
-    logic: [
-      '优先 Tencent QFQ K线（前复权日K）',
-      '失败时降级到本地缓存（yfinance / Qlib 离线数据）',
-      '_compute_indicators(): SMA, RSI (EMA平滑), ATR (真实波幅)',
-      '返回 symbols_data[0]（只用第一个 symbol 进行回测）',
-    ],
-  },
-  {
-    id: 'gen',
-    phase: 'A 生成',
-    icon: GitMerge,
-    color: '#6366f1',
-    codeRef: 'TrendExpert / MeanReversionExpert .generate_candidates()',
-    title: '候选策略生成',
-    inputLabel: '输入',
-    inputItems: [
-      'feedback_history: List[StructuredFeedback]（上轮评估产生）',
-      'need_diversify: bool（同质化检测结果）',
-      'count: 4（趋势）+ 3（均值回归）',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      '{strategy_id, template_key, params, tags, diversity_note}',
-      '趋势模板: ma_cross / macd / momentum / adx_trend',
-      '均值回归模板: rsi / bband',
-    ],
-    logic: [
-      '30% 随机探索: _randomize(params, ±30%)',
-      '30% 反馈引导: _tune_from_feedback → increase/decrease_lookback, tighten_stop_loss, add_filter',
+// ── Pipeline definition: each row is either a single node or a parallel pair ──
+type Row =
+  | { kind: 'single'; node: NodeDef }
+  | { kind: 'parallel'; left: NodeDef; right: NodeDef }
+
+// ── All expert nodes (code-accurate) ──────────────────────────────
+const DATA_NODE: NodeDef = {
+  id: 'data', title: '数据加载', codeRef: 'Orchestrator._load_data()', file: 'orchestrator.py',
+  color: '#22d3ee',
+  instruction: null,
+  ins: [
+    { label: 'symbols', detail: 'List[str]  e.g. ["SPY", "BTCUSDT"]', color: '#64748b' },
+    { label: 'n_days',  detail: 'int  历史天数 (default 500)',           color: '#64748b' },
+  ],
+  outs: [
+    { label: 'data',       detail: 'closes[], opens[], highs[], lows[], volumes[], dates[]', color: '#22d3ee' },
+    { label: 'indicators', detail: 'MA20/60/200 · RSI14 · ATR14 · returns[]',                color: '#22d3ee' },
+  ],
+  note: '优先 Tencent QFQ K线 → 降级本地缓存 data/raw/',
+}
+
+const TREND_GEN: NodeDef = {
+  id: 'trendGen', title: 'TrendExpert\n.generate_candidates(4)', codeRef: 'TrendExpert.generate_candidates()',
+  file: 'specialists/expert1a_trend.py', color: '#6366f1',
+  instruction: {
+    title: '参数调参指令链',
+    lines: [
+      '输入: StructuredFeedback.adjustment + param + magnitude + unit',
+      '  LOW_SHARPE      → tighten_stop_loss  → atr_mult ×0.5',
+      '  HIGH_DRAWDOWN   → decrease_position  → position ×0.7',
+      '  LOW_RETURN      → increase_lookback  → lookback +5天',
+      '  LOW_WIN_RATE    → decrease_lookback  → period  −5天',
+      '  FEW_TRADES      → add_filter         → threshold −0.2%',
+      '──────────────────────────────────',
+      '30% 随机探索: params × (1 ± 0.3)',
+      '30% 反馈引导: _tune_from_feedback(tpl, fb)',
       '40% Exploitation: _apply_sf_adjustment(best_params, last_sf)',
-      '不足时填充默认模板参数',
-    ],
-    prompt: '上轮 StructuredFeedback 的 adjustment / param / magnitude / unit → _tune_from_feedback 解析为参数调整指令',
-  },
-  {
-    id: 'bt',
-    phase: 'A 回测',
-    icon: BarChart2,
-    color: '#4ade80',
-    codeRef: 'TrendExpert / MeanReversionExpert .backtest()',
-    title: '策略回测执行',
-    inputLabel: '输入',
-    inputItems: [
-      'data: OHLCV dict',
-      'ind: indicators dict',
-      'params: {fast, slow} / {period, lower, upper} 等',
-      'template_key: "ma_cross" / "rsi" 等',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      'BacktestReport: {strategy_id, daily_returns, annualized_return,',
-      '  sharpe_ratio, max_drawdown_pct, win_rate, profit_factor, total_trades}',
-    ],
-    logic: [
-      '_signal_series(): 生成 Level 信号（1=多仓/-1=空仓/0=空仓）',
-      '  MA交叉: 1 when MA20>MA60; RSI: 1 when RSI<lower',
-      '_debounce_signals(min_consecutive=2, cooldown=2): 过滤噪声',
-      '_simulate(): equity=cash+pos×close，含交易成本(买0.08%+卖0.18%)',
-      '_build_report(): 年化/夏普/最大回撤/胜率/盈亏比',
-    ],
-    prompt: 'template_key 决定信号逻辑分支，params 为信号函数参数（可视为"超参提示"）',
-  },
-  {
-    id: 'eval',
-    phase: 'B 评估',
-    icon: Filter,
-    color: '#f59e0b',
-    codeRef: 'Evaluator.evaluate() / evaluate_batch()',
-    title: '策略评估 + 结构化反馈',
-    inputLabel: '输入',
-    inputItems: [
-      'BacktestReport (每个候选策略)',
-      '历史评估记录 fb_history',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      'EvalResult: {decision: ACCEPT/REJECT/CONDITIONAL, composite_score}',
-      'StructuredFeedback: {weakness, adjustment, param, magnitude, unit}',
-      '  → 下轮 generate_candidates 的调参指令',
-    ],
-    logic: [
-      '硬性过滤: ann_ret<8% | sharpe<0.5 | trades<5 | dd>40% → REJECT',
-      '多维评分: sharpe×40% + drawdown×35% + return×25%',
-      'PBO过拟合惩罚: 样本外调整夏普（pbo_score）',
-      '综合分≥60→ACCEPT，40-60→CONDITIONAL，<40或硬过滤→REJECT',
-      'weakness识别 → adjustment指令（increase_lookback / tighten_stop_loss等）',
-    ],
-    prompt: '弱点→调整映射: low_trades→increase_lookback; high_dd→tighten_stop_loss; low_win_rate→add_filter',
-  },
-  {
-    id: 'regime',
-    phase: 'B 市场状态',
-    icon: Activity,
-    color: '#a78bfa',
-    codeRef: 'MarketRegimeExpert.detect() + NewsSentimentAnalyzer.analyze()',
-    title: '市场状态 + 情绪分析',
-    inputLabel: '输入',
-    inputItems: [
-      'data.closes / data.returns',
-      'indicators: MA20/60, ADX',
-      'symbols: List[str]（情绪分析用）',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      'MarketRegime: {name, confidence, trend_dir, max_position_pct}',
-      '  名称: STRONG_TREND/WEAK_TREND/RANGE_BOUND/HIGH_VOL',
-      'sentiment: {bullish_score, bearish_score, neutral_score}',
-    ],
-    logic: [
-      'ADX均值（最近20天）: >25→趋势, <20→震荡',
-      'vol_ratio = recent_vol / hist_vol: >1.5→高波动',
-      '趋势方向: MA20 vs MA60 + 动量momentum20',
-      'Blackboard.write("Regime", rnd, "regime", regime)',
     ],
   },
-  {
-    id: 'debate',
-    phase: 'C 辩论',
-    icon: Swords,
-    color: '#f87171',
-    codeRef: 'DebateManager.conduct_debate()',
-    title: '对抗辩论（5层）',
-    inputLabel: '输入',
-    inputItems: [
-      'trend_evals: List[EvalResult] (通过评估的趋势策略)',
-      'mr_evals: List[EvalResult] (通过评估的均值回归策略)',
-      'market_regime: MarketRegime',
-      'risk_results: List[RiskResult]',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      'DebateResult: {winner: TREND/MR/TIE, trend_weight, mr_weight}',
-      'bull_case: BullCase (看多论点 + 置信度)',
-      'bear_case: BearCase (看空论点 + 置信度)',
-      'final_advice: str（综合建议）',
-    ],
-    logic: [
-      'L1 开场: TrendExpert 陈述 / MRExpert 陈述（量化指标驱动）',
-      'L2 反驳: 互相攻击对方最弱证据',
-      'L3 Bull/Bear 研究: 对 Top-2 策略做研究（仅有交易的策略）',
-      'L4 判决: _judge() 综合 regime + bull/bear conf → winner',
-      'L5 权重: _weights() → trend_weight + mr_weight = 1.0',
-    ],
-    prompt: 'Bull论据 = market_tailwinds + upside_targets (ann_ret, sharpe, win_rate → BullResearcher.research())\nBear论据 = market_headwinds + downside_risks (ann_ret, sharpe, max_dd → BearResearcher.research())',
-  },
-  {
-    id: 'risk',
-    phase: 'C 风险',
-    icon: ShieldAlert,
-    color: '#fb923c',
-    codeRef: 'RiskExpert.analyze_batch()',
-    title: '风险评估',
-    inputLabel: '输入',
-    inputItems: [
-      '(strategy_name, params, daily_returns, total_trades)',
-      '× 每个通过评估的策略',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      'RiskResult: {risk_rating, var_99, cvar, max_position_pct}',
-      '  rating: LOW / MEDIUM / HIGH / VERY_HIGH',
-    ],
-    logic: [
-      'VaR99: 99%置信区间最大单日损失',
-      'CVaR: 超过VaR阈值的平均损失',
-      'HIGH/VERY_HIGH策略在组合构建时降权',
+  ins: [
+    { label: 'feedback_history', detail: 'List[StructuredFeedback] ← 上轮 Evaluator 输出', color: '#818cf8' },
+    { label: 'need_diversify',   detail: 'bool  同质化检测结果', color: '#64748b' },
+  ],
+  outs: [
+    { label: 'candidates[4]', detail: '{strategy_id, template_key: ma_cross|macd|momentum|adx_trend, params, tags}', color: '#6366f1' },
+  ],
+}
+
+const MR_GEN: NodeDef = {
+  id: 'mrGen', title: 'MRExpert\n.generate_candidates(3)', codeRef: 'MeanReversionExpert.generate_candidates()',
+  file: 'specialists/expert1b_mean_reversion.py', color: '#22d3ee',
+  instruction: {
+    title: '参数调参指令链',
+    lines: [
+      '输入: StructuredFeedback.adjustment (与 TrendExpert 相同结构)',
+      '  LOW_WIN_RATE  → decrease_lookback → period −5天',
+      '  HIGH_DRAWDOWN → tighten_stop_loss → atr_mult ×0.7',
+      '  FEW_TRADES   → add_filter (放宽 RSI/Band 阈值)',
+      '──────────────────────────────────',
+      '30% 随机  |  30% 反馈  |  40% Exploitation',
     ],
   },
+  ins: [
+    { label: 'feedback_history', detail: 'List[StructuredFeedback] ← 上轮 Evaluator 输出', color: '#818cf8' },
+    { label: 'need_diversify',   detail: 'bool', color: '#64748b' },
+  ],
+  outs: [
+    { label: 'candidates[3]', detail: '{strategy_id, template_key: rsi|bband, params, tags}', color: '#22d3ee' },
+  ],
+}
+
+const TREND_BT: NodeDef = {
+  id: 'trendBt', title: 'TrendExpert\n.backtest()', codeRef: 'TrendExpert.backtest()',
+  file: 'specialists/expert1a_trend.py', color: '#6366f1',
+  instruction: {
+    title: '信号逻辑 (template_key 分支)',
+    lines: [
+      'ma_cross:  signal = 1 当 MA20>MA60  (level-based)',
+      '           signal = −1 当 MA20<MA60',
+      'macd:      signal = 1 当 MACD>signal_line (level-based)',
+      'momentum:  signal = 1 当 (close/close[-lb]−1) > threshold',
+      'adx_trend: signal = 1 当 ADX>adx_thr AND close>close[-1]',
+      '↓ _debounce_signals(min_consecutive=2, cooldown_days=2)',
+      '   消除一次性假信号，需连续2天确认',
+      '↓ _simulate() 含交易成本:',
+      '   买入 = equity×95% / close × (1−0.08%)',
+      '   卖出收入 = pos×close × (1−0.18%)',
+    ],
+  },
+  ins: [
+    { label: 'data',          detail: 'closes[], highs[], lows[], volumes[]', color: '#22d3ee' },
+    { label: 'indicators',    detail: 'MA20/60, RSI14, ATR14',                color: '#22d3ee' },
+    { label: 'candidate',     detail: '{template_key, params}  ← TrendGen',   color: '#6366f1' },
+  ],
+  outs: [
+    { label: 'BacktestReport', detail: 'strategy_id · daily_returns[] · ann_return · sharpe · max_dd · win_rate · total_trades', color: '#4ade80' },
+  ],
+}
+
+const MR_BT: NodeDef = {
+  id: 'mrBt', title: 'MRExpert\n.backtest()', codeRef: 'MeanReversionExpert.backtest()',
+  file: 'specialists/expert1b_mean_reversion.py', color: '#22d3ee',
+  instruction: {
+    title: '信号逻辑 (template_key 分支)',
+    lines: [
+      'rsi:   signal = 1 当 RSI < lower(30)',
+      '       signal = −1 当 RSI > upper(70)',
+      'bband: signal = 1 当 close < lower_band',
+      '       signal = −1 当 close > upper_band',
+      '↓ _simulate() 含交易成本 (同 TrendExpert)',
+    ],
+  },
+  ins: [
+    { label: 'data',       detail: 'closes[], highs[], lows[]', color: '#22d3ee' },
+    { label: 'candidate',  detail: '{template_key: rsi|bband, params}  ← MRGen', color: '#22d3ee' },
+  ],
+  outs: [
+    { label: 'BacktestReport', detail: 'strategy_id · daily_returns[] · ann_return · sharpe · max_dd · win_rate · total_trades', color: '#4ade80' },
+  ],
+}
+
+const EVAL_NODE: NodeDef = {
+  id: 'eval', title: 'Evaluator\n.evaluate_batch()', codeRef: 'Evaluator.evaluate_batch()',
+  file: 'evaluator.py', color: '#f59e0b',
+  instruction: {
+    title: '评估规则 + 弱点诊断',
+    lines: [
+      '① 硬性过滤 → REJECT:',
+      '   ann_ret < 8%  |  sharpe < 0.5  |  trades < 5  |  dd > 40%',
+      '② 多维评分:',
+      '   sharpe×40% + drawdown×35% + return×25%',
+      '   PBO过拟合惩罚: sharpe_after_pbo = sharpe × (1 − pbo_ratio)',
+      '③ 决策: score≥60→ACCEPT  40–60→CONDITIONAL  <40→REJECT',
+      '④ 弱点诊断 → 结构化反馈 (StructuredFeedback):',
+      '   LOW_SHARPE    → tighten_stop_loss  atr_mult ×0.5',
+      '   HIGH_DRAWDOWN → decrease_position  position ×0.7',
+      '   LOW_RETURN    → increase_lookback  lookback +5天',
+      '   LOW_WIN_RATE  → decrease_lookback  period −5天',
+      '   FEW_TRADES    → add_filter         threshold −0.2%',
+    ],
+  },
+  ins: [
+    { label: 'BacktestReport ×7', detail: 'TrendExpert×4 + MRExpert×3  全部候选策略', color: '#4ade80' },
+  ],
+  outs: [
+    { label: 'EvalResult[]',       detail: '{decision: ACCEPT|REJECT|COND, composite, feedback_text}', color: '#f59e0b' },
+    { label: 'StructuredFeedback', detail: '→ fb_history  →  下轮 generate_candidates() 的调参指令', color: '#818cf8' },
+  ],
+  note: '仅 ACCEPT + CONDITIONAL 的策略进入后续辩论和组合',
+}
+
+const REGIME_NODE: NodeDef = {
+  id: 'regime', title: 'MarketRegimeExpert\n.detect()', codeRef: 'MarketRegimeExpert.detect()',
+  file: 'modules/regime.py', color: '#a78bfa',
+  instruction: {
+    title: '市场状态分类',
+    lines: [
+      'ADX_avg(20d) > 25 → 趋势市 (STRONG_TREND / WEAK_TREND)',
+      'ADX_avg < 20      → 震荡市 (SIDEWAYS)',
+      'vol_ratio = recent_vol / hist_vol > 1.5 → HIGH_VOL',
+      'trend_dir: MA20 > MA60 AND MA20上升 → UP',
+      'max_position_pct: STRONG_TREND=70% · SIDEWAYS=40% · CRISIS=20%',
+    ],
+  },
+  ins: [
+    { label: 'closes[] / returns[]', detail: 'data.closes, data.returns', color: '#22d3ee' },
+    { label: 'indicators',          detail: 'MA20/60 · ADX（如有）',      color: '#22d3ee' },
+  ],
+  outs: [
+    { label: 'MarketRegime', detail: '{name: STRONG_TREND|WEAK_TREND|SIDEWAYS|HIGH_VOL|CRISIS, confidence, trend_dir, max_position_pct}', color: '#a78bfa' },
+  ],
+}
+
+const NEWS_NODE: NodeDef = {
+  id: 'news', title: 'NewsSentiment\n.analyze()', codeRef: 'NewsSentimentAnalyzer.analyze()',
+  file: 'modules/news_sentiment.py', color: '#94a3b8',
+  instruction: {
+    title: '情绪分析',
+    lines: [
+      '基于规则的关键词匹配',
+      '输出 bullish_score / bearish_score / neutral_score',
+      '→ 目前为规则引擎，可替换为 LLM 调用',
+    ],
+  },
+  ins:  [{ label: 'symbols', detail: 'List[str]  e.g. ["SPY"]', color: '#64748b' }],
+  outs: [{ label: 'sentiment', detail: '{bullish_score, bearish_score, neutral_score}  写入 Blackboard', color: '#94a3b8' }],
+}
+
+const DEBATE_NODE: NodeDef = {
+  id: 'debate', title: 'DebateManager\n.conduct_debate()', codeRef: 'DebateManager.conduct_debate()',
+  file: 'debate_manager.py', color: '#f87171',
+  instruction: {
+    title: '5层对抗辩论 Pipeline',
+    lines: [
+      'L1  TrendExpert 开场: stance = "score=X ann=+Y% sharpe=Z"',
+      '    证据 = [regime_name, ADX, MaxPos, Trades, Sharpe]',
+      'L2  MRExpert 开场: stance = "score=X win_rate=Y% sharpe=Z"',
+      '    证据 = [regime_name, vol_ratio, WinRate, MaxPos]',
+      '    ↕  互相反驳 (_trend_counter / _mr_counter)',
+      'L3  BullResearcher.research(ann_ret, sharpe, win_rate, regime, confidence)',
+      '      → BullCase { market_tailwinds, upside_targets, entry_conditions, confidence }',
+      '    BearResearcher.research(ann_ret, sharpe, max_dd, regime, confidence)',
+      '      → BearCase { market_headwinds, downside_risks, failure_modes, confidence }',
+      'L4  _judge(): winner = TREND/MR/TIE',
+      '    base_weight = {STRONG_TREND:(0.60,0.30), SIDEWAYS:(0.25,0.55)}[regime]',
+      '    delta = (bull_conf − bear_conf) × 0.15  → 调整基准权重',
+      '    bear_conf>0.6 + HIGH_RISK → ×0.7 全面降仓',
+      'L5  _weights(): trend_weight + mr_weight  (归一化)',
+    ],
+  },
+  ins: [
+    { label: 'trend_evals',  detail: 'ACCEPT|COND 趋势策略 EvalResult[]  ← Evaluator', color: '#f59e0b' },
+    { label: 'mr_evals',     detail: 'ACCEPT|COND 均值回归策略 EvalResult[]  ← Evaluator', color: '#f59e0b' },
+    { label: 'MarketRegime', detail: '{name, confidence, trend_dir}  ← RegimeExpert', color: '#a78bfa' },
+    { label: 'risk_results', detail: 'RiskResult[]  ← RiskExpert (传入 _judge 作仓位折扣)', color: '#fb923c' },
+  ],
+  outs: [
+    { label: 'DebateResult', detail: '{winner, trend_weight, mr_weight, bull_case, bear_case, final_advice}', color: '#f87171' },
+  ],
+}
+
+const RISK_NODE: NodeDef = {
+  id: 'risk', title: 'RiskExpert\n.analyze_batch()', codeRef: 'RiskExpert.analyze_batch()',
+  file: 'modules/risk_expert.py', color: '#fb923c',
+  instruction: {
+    title: '风险计算',
+    lines: [
+      'VaR99 = 排序 daily_returns，取第 1% 分位数',
+      'CVaR  = 超过 VaR99 阈值部分的均值',
+      'rating:  VaR99<1% → LOW · 1-2% → MEDIUM',
+      '         2-4% → HIGH · >4% → VERY_HIGH',
+      '→ HIGH/VERY_HIGH 在 _build_portfolio 时 weight ×0.5',
+    ],
+  },
+  ins: [
+    { label: '(name, params, daily_returns[], trades)', detail: '× 每个 ACCEPT|COND 策略  ← Evaluator', color: '#f59e0b' },
+  ],
+  outs: [
+    { label: 'RiskResult[]', detail: '{strategy_name, risk_rating: LOW|MEDIUM|HIGH|VERY_HIGH, var_99, cvar, max_position_pct}', color: '#fb923c' },
+  ],
+}
+
+const PORTFOLIO_NODE: NodeDef = {
+  id: 'portfolio', title: 'Orchestrator\n._build_portfolio()', codeRef: 'Orchestrator._build_portfolio() + compute_correlation_matrix()',
+  file: 'orchestrator.py', color: '#34d399',
+  instruction: {
+    title: '权重分配 + 相关性过滤',
+    lines: [
+      'score = composite × (trend_weight if trend else mr_weight)',
+      'HIGH/VERY_HIGH risk → score ×0.5 折扣',
+      '相关性过滤:',
+      '  corr_map[(id_i, id_j)] = pearson(daily_returns_i, daily_returns_j)',
+      '  |corr| > 阈值 → 低分者 weight ×0.5 惩罚',
+      'Top-N 策略 (default top_n=4)',
+    ],
+  },
+  ins: [
+    { label: 'all_pass',     detail: 'EvalResult[] ACCEPT|COND  ← Evaluator', color: '#f59e0b' },
+    { label: 'DebateResult', detail: 'trend_weight / mr_weight  ← DebateManager', color: '#f87171' },
+    { label: 'RiskResult[]', detail: 'risk_rating per strategy  ← RiskExpert', color: '#fb923c' },
+  ],
+  outs: [
+    { label: 'final[N]', detail: 'EvalResult[]  每策略含 weight 字段 (入选 Top-N)', color: '#34d399' },
+  ],
+}
+
+const HOLDOUT_NODE: NodeDef = {
+  id: 'holdout', title: 'Orchestrator\n._holdout_validate()', codeRef: '_holdout_validate()  [rnd > 1]',
+  file: 'orchestrator.py', color: '#64748b',
+  instruction: {
+    title: 'OOS Paper Trade 验证',
+    lines: [
+      '最近 HOLDOUT_DAYS 天样本外回测',
+      'bias = OOS回报 − 样本内年化预期',
+      '|bias|<10% → ✅理想  |bias|<20% → ⚠️可接受  >20% → ❌',
+      '仅第 2 轮起运行（首轮无基准对比）',
+    ],
+  },
+  ins: [
+    { label: 'final[N]',     detail: '本轮入选策略  ← _build_portfolio', color: '#34d399' },
+    { label: 'symbols_data', detail: '完整历史数据 (含最近 HOLDOUT_DAYS 天)', color: '#22d3ee' },
+  ],
+  outs: [
+    { label: 'holdout_results', detail: '[{name, oospct, bias}]  展示在 RoundPanel', color: '#94a3b8' },
+  ],
+  note: '首轮跳过，直接进入反馈回路',
+}
+
+const FEEDBACK_NODE: NodeDef = {
+  id: 'feedback', title: 'FeedbackHistory\n(反馈回路)', codeRef: 'evaluator.fb_history + _generate_diverse_candidates()',
+  file: 'orchestrator.py  /  evaluator.py', color: '#818cf8',
+  instruction: {
+    title: '跨轮注入机制',
+    lines: [
+      'fb_history.entries 保存全部策略 StructuredFeedback',
+      '下轮 generate_candidates(fb_list):',
+      '  fb_list = [sf.to_simple_dict() for sf in fb_history.entries]',
+      '  按 strategy_type 过滤 → 同类策略的反馈送入对应 Expert',
+      'need_diversify = evaluator.need_diversify():',
+      '  检测历史中同质化策略 → 触发随机探索比例提升',
+      '收敛检测: top_ids == prev_top_ids  连续2轮相同 → break',
+    ],
+  },
+  ins: [
+    { label: 'StructuredFeedback ×N', detail: '本轮全部策略的结构化反馈  ← Evaluator.fb_history', color: '#f59e0b' },
+    { label: 'holdout_results',       detail: 'OOS 偏差结果  ← Holdout (参考用)', color: '#94a3b8' },
+  ],
+  outs: [
+    { label: 'fb_list → 下轮 generate_candidates()', detail: 'List[{adjustment, param, magnitude, unit}]  ← 注入 TrendExpert + MRExpert', color: '#818cf8' },
+  ],
+  note: '↑ 回到顶部：下轮 A 阶段',
+}
+
+// ── Row definitions ────────────────────────────────────────────────
+const ROWS: Row[] = [
+  { kind: 'single',   node: DATA_NODE },
+  { kind: 'parallel', left: TREND_GEN,  right: MR_GEN },
+  { kind: 'parallel', left: TREND_BT,   right: MR_BT },
+  { kind: 'single',   node: EVAL_NODE },
+  { kind: 'parallel', left: REGIME_NODE, right: NEWS_NODE },
+  { kind: 'single',   node: DEBATE_NODE },
+  { kind: 'single',   node: RISK_NODE },
+  { kind: 'single',   node: PORTFOLIO_NODE },
+  { kind: 'single',   node: HOLDOUT_NODE },
+  { kind: 'single',   node: FEEDBACK_NODE },
+]
+
+// ── Connector between rows ─────────────────────────────────────────
+// Shows what data flows on the vertical arrow between two rows
+const CONNECTORS: { after: string; ports: Port[] }[] = [
   {
-    id: 'portfolio',
-    phase: 'D 组合',
-    icon: Scale,
-    color: '#34d399',
-    codeRef: 'Orchestrator._build_portfolio() + compute_correlation_matrix()',
-    title: '组合构建 + 相关性过滤',
-    inputLabel: '输入',
-    inputItems: [
-      'debate.trend_weight / mr_weight',
-      'all_pass: List[EvalResult]',
-      'risk_results: List[RiskResult]',
-      'market_regime',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      'portfolio: Dict[strategy_id → EvalResult]（含 weight）',
-      '最终入选 Top-N 策略',
-    ],
-    logic: [
-      '混合得分 = composite × (trend_weight if trend else mr_weight)',
-      'HIGH/VERY_HIGH风险策略 × 0.5 折扣',
-      '相关系数 > 阈值的策略对：低分者降权',
-      '取 Top-N（default 4）',
+    after: 'data',
+    ports: [
+      { label: 'symbols_data[0].data',       detail: 'OHLCV dict', color: '#22d3ee' },
+      { label: 'symbols_data[0].indicators', detail: 'MA20/60, RSI14, ATR14', color: '#22d3ee' },
     ],
   },
   {
-    id: 'holdout',
-    phase: 'D 验证',
-    icon: Target,
-    color: '#94a3b8',
-    codeRef: 'Orchestrator._holdout_validate() (rnd > 1)',
-    title: 'Holdout OOS 验证',
-    inputLabel: '输入',
-    inputItems: [
-      'final: 本轮入选策略',
-      'symbols_data[0]: 完整历史数据',
-      'regime: 市场状态',
-    ],
-    outputLabel: '输出',
-    outputItems: [
-      '[{name, oospct, bias}] 每策略样本外偏差',
-      '|bias|<10%: 理想; |bias|<20%: 可接受',
-    ],
-    logic: [
-      '仅第2轮起运行（首轮无基准）',
-      '用最近 HOLDOUT_DAYS 天做 OOS paper trade',
-      '计算 bias = OOS回报 - 样本内年化预期',
+    after: 'trendGen/mrGen',
+    ports: [
+      { label: 'candidates[4] (trend)', detail: 'List[{template_key, params, strategy_id}]', color: '#6366f1' },
+      { label: 'candidates[3] (mr)',    detail: 'List[{template_key, params, strategy_id}]', color: '#22d3ee' },
     ],
   },
   {
-    id: 'feedback',
-    phase: 'E 反馈',
-    icon: RefreshCw,
-    color: '#818cf8',
-    codeRef: 'FeedbackHistory + Orchestrator._generate_diverse_candidates()',
-    title: '反馈回路（跨轮）',
-    inputLabel: '输入',
-    inputItems: [
-      'EvalResult.structured_feedback（本轮全部策略）',
-      'evaluator.fb_history: FeedbackHistory',
+    after: 'trendBt/mrBt',
+    ports: [
+      { label: 'BacktestReport ×7', detail: 'strategy_id · daily_returns[] · metrics', color: '#4ade80' },
     ],
-    outputLabel: '下轮输入',
-    outputItems: [
-      'fb_list: List[StructuredFeedback.to_simple_dict()]',
-      '→ generate_candidates(fb_list) 的调参指令',
-      'need_diversify: evaluator.need_diversify() 同质化检测',
+  },
+  {
+    after: 'eval',
+    ports: [
+      { label: 'EvalResult[] ACCEPT|COND',    detail: '→ DebateManager + RiskExpert + _build_portfolio', color: '#f59e0b' },
+      { label: 'StructuredFeedback → fb_history', detail: '→ 反馈回路（绕过辩论，直接注入下轮生成）', color: '#818cf8' },
     ],
-    logic: [
-      'fb_history.entries 保存最近 K 轮结构化反馈',
-      '同类型策略反馈按 strategy_type 筛选',
-      '调参链: weakness → adjustment → param + magnitude + unit',
-      '收敛检测: 连续2轮 Top-N 集合相同 → 提前终止',
+  },
+  {
+    after: 'regime/news',
+    ports: [
+      { label: 'MarketRegime', detail: 'name · confidence · trend_dir · max_position_pct', color: '#a78bfa' },
+      { label: 'sentiment',    detail: 'bullish/bearish/neutral score',                     color: '#94a3b8' },
     ],
-    prompt: '反馈链示例:\n  low_trades(5次) → increase_lookback → param=fast, magnitude=+7天\n  high_dd(35%) → tighten_stop_loss → param=atr_mult, magnitude=×0.7',
+  },
+  {
+    after: 'debate',
+    ports: [
+      { label: 'DebateResult', detail: 'winner · trend_weight · mr_weight · bull/bear_case · advice', color: '#f87171' },
+    ],
+  },
+  {
+    after: 'risk',
+    ports: [
+      { label: 'RiskResult[]', detail: 'strategy_name · risk_rating · var_99 · cvar', color: '#fb923c' },
+    ],
+  },
+  {
+    after: 'portfolio',
+    ports: [
+      { label: 'final[N]', detail: 'EvalResult[] with weight  Top-N 入选策略', color: '#34d399' },
+    ],
+  },
+  {
+    after: 'holdout',
+    ports: [
+      { label: 'holdout_results', detail: '[{name, oospct, bias}]', color: '#94a3b8' },
+    ],
   },
 ]
 
-// ── Step Card ──────────────────────────────────────────────────────
-function StepCard({ step, idx, isLast }: { step: PipelineStep; idx: number; isLast: boolean }) {
+// ── FlowNode component ─────────────────────────────────────────────
+function FlowNode({ node, half }: { node: NodeDef; half?: boolean }) {
   const [open, setOpen] = useState(false)
-  const Icon = step.icon
-  const phaseColors: Record<string, string> = {
-    '数据': '#22d3ee', 'A 生成': '#6366f1', 'A 回测': '#4ade80',
-    'B 评估': '#f59e0b', 'B 市场状态': '#a78bfa',
-    'C 辩论': '#f87171', 'C 风险': '#fb923c',
-    'D 组合': '#34d399', 'D 验证': '#94a3b8', 'E 反馈': '#818cf8',
-  }
+  const lines = node.title.split('\n')
 
   return (
-    <div className="flex gap-3">
-      {/* Left: step indicator + connector */}
-      <div className="flex flex-col items-center" style={{ minWidth: 36 }}>
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
-          style={{ backgroundColor: step.color + '22', borderColor: step.color + '55' }}>
-          <Icon size={16} style={{ color: step.color }} />
-        </div>
-        {!isLast && (
-          <div className="w-px flex-1 mt-1" style={{ backgroundColor: step.color + '33', minHeight: 20 }} />
-        )}
-      </div>
+    <div className={`rounded-xl border overflow-hidden ${half ? 'flex-1 min-w-0' : 'w-full'}`}
+      style={{ borderColor: node.color + '60', backgroundColor: '#0f172a' }}>
 
-      {/* Right: card content */}
-      <div className="flex-1 pb-4">
-        {/* Phase badge + title */}
-        <div className="flex items-center gap-2 mb-2 cursor-pointer select-none"
-          onClick={() => setOpen(o => !o)}>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-            style={{ backgroundColor: step.color + '22', color: step.color }}>
-            {step.phase}
-          </span>
-          <span className="text-white font-semibold text-sm">{step.title}</span>
-          <code className="text-xs text-slate-500 font-mono hidden md:inline">{step.codeRef}</code>
-          <span className="ml-auto text-slate-600">
-            {open ? <ChevronDown size={13}/> : <ChevronRight size={13}/>}
-          </span>
-        </div>
-
-        {/* I/O summary (always visible) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-          <div className="bg-slate-800/60 rounded-lg px-3 py-2 border border-slate-700/50">
-            <div className="text-slate-500 text-[10px] uppercase tracking-wide mb-1">{step.inputLabel}</div>
-            {step.inputItems.map((item, i) => (
-              <div key={i} className="text-slate-400 font-mono leading-relaxed">{item}</div>
-            ))}
-          </div>
-          <div className="bg-slate-800/60 rounded-lg px-3 py-2 border border-slate-700/50">
-            <div className="text-slate-500 text-[10px] uppercase tracking-wide mb-1">{step.outputLabel}</div>
-            {step.outputItems.map((item, i) => (
-              <div key={i} className="text-slate-300 font-mono leading-relaxed">{item}</div>
-            ))}
-          </div>
-        </div>
-
-        {/* Expanded: logic + prompt */}
-        {open && (
-          <div className="mt-2 space-y-2">
-            <div className="bg-slate-900 rounded-lg px-3 py-2 border border-slate-700">
-              <div className="text-slate-500 text-[10px] uppercase tracking-wide mb-1.5">核心逻辑</div>
-              <ul className="space-y-0.5">
-                {step.logic.map((line, i) => (
-                  <li key={i} className="text-xs text-slate-300 flex gap-1.5">
-                    <span style={{ color: step.color }} className="mt-0.5 shrink-0">›</span>
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between px-4 py-3 gap-2 cursor-pointer select-none"
+        style={{ backgroundColor: node.color + '18', borderBottom: `1px solid ${node.color}30` }}
+        onClick={() => setOpen(o => !o)}>
+        <div className="min-w-0">
+          {lines.map((l, i) => (
+            <div key={i} className={`font-bold leading-tight ${i === 0 ? 'text-white text-sm' : 'text-xs'}`}
+              style={{ color: i === 1 ? node.color : undefined }}>
+              {l}
             </div>
-            {step.prompt && (
-              <div className="bg-indigo-950/40 rounded-lg px-3 py-2 border border-indigo-800/40">
-                <div className="text-indigo-400 text-[10px] uppercase tracking-wide mb-1.5">
-                  Prompt / 调参指令链
-                </div>
-                <pre className="text-xs text-indigo-200 font-mono whitespace-pre-wrap leading-relaxed">
-                  {step.prompt}
-                </pre>
+          ))}
+          <code className="text-[10px] text-slate-500 font-mono mt-0.5 block">{node.file}</code>
+        </div>
+        <span className="text-slate-600 shrink-0 mt-0.5">
+          {open ? <ChevronDown size={13}/> : <ChevronRight size={13}/>}
+        </span>
+      </div>
+
+      {/* ── Input ports (always visible) ── */}
+      <div className="px-4 pt-3 pb-1">
+        <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1.5">输入</div>
+        <div className="space-y-1">
+          {node.ins.map((p, i) => (
+            <div key={i} className="flex gap-2 items-start">
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5"
+                style={{ backgroundColor: p.color || '#64748b' }} />
+              <div>
+                <span className="text-xs font-mono font-semibold" style={{ color: p.color || '#94a3b8' }}>{p.label}</span>
+                <span className="text-[10px] text-slate-500 ml-1.5">{p.detail}</span>
               </div>
-            )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Instruction / Prompt (expanded) ── */}
+      {open && node.instruction && (
+        <div className="mx-4 my-2 rounded-lg p-3"
+          style={{ backgroundColor: node.color + '10', border: `1px solid ${node.color}30` }}>
+          <div className="text-[10px] font-bold uppercase tracking-widest mb-2"
+            style={{ color: node.color }}>
+            ⚙ {node.instruction.title}
           </div>
+          <div className="space-y-0.5">
+            {node.instruction.lines.map((line, i) => (
+              <div key={i} className={`text-[11px] font-mono leading-relaxed ${
+                line.startsWith('──') ? 'text-slate-600 border-t border-slate-700/50 mt-1 pt-1' : 'text-slate-300'
+              }`}>
+                {line}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!open && node.instruction && (
+        <div className="mx-4 mb-2 mt-1">
+          <button className="text-[10px] px-2 py-0.5 rounded"
+            style={{ backgroundColor: node.color + '18', color: node.color }}
+            onClick={() => setOpen(true)}>
+            ⚙ {node.instruction.title} (点击展开)
+          </button>
+        </div>
+      )}
+
+      {/* ── Output ports ── */}
+      <div className="px-4 pb-3 pt-1">
+        <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1.5">输出</div>
+        <div className="space-y-1">
+          {node.outs.map((p, i) => (
+            <div key={i} className="flex gap-2 items-start">
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5"
+                style={{ backgroundColor: p.color || '#4ade80' }} />
+              <div>
+                <span className="text-xs font-mono font-semibold" style={{ color: p.color || '#4ade80' }}>{p.label}</span>
+                <span className="text-[10px] text-slate-500 ml-1.5">{p.detail}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        {node.note && (
+          <div className="mt-2 text-[10px] text-slate-500 italic">{node.note}</div>
         )}
       </div>
     </div>
   )
 }
 
-// ── Data Flow Phases Header ────────────────────────────────────────
-function PhaseBar() {
-  const phases = [
-    { label: 'A  生成+回测', color: '#6366f1' },
-    { label: 'B  评估+市场', color: '#f59e0b' },
-    { label: 'C  辩论+风险', color: '#f87171' },
-    { label: 'D  组合+验证', color: '#34d399' },
-    { label: 'E  反馈回路', color: '#818cf8' },
-  ]
+// ── Connector arrow between rows ───────────────────────────────────
+function FlowConnector({ ports }: { ports: Port[] }) {
   return (
-    <div className="flex gap-2 flex-wrap">
-      {phases.map(p => (
-        <div key={p.label} className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
-          style={{ backgroundColor: p.color + '15', border: `1px solid ${p.color}44`, color: p.color }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.color }} />
-          {p.label}
-        </div>
-      ))}
+    <div className="flex flex-col items-center gap-0.5 py-1">
+      <div className="w-px h-3 bg-slate-700" />
+      <div className="flex flex-wrap justify-center gap-1.5 px-2">
+        {ports.map((p, i) => (
+          <div key={i} className="flex items-center gap-1 rounded-full px-2 py-0.5"
+            style={{ backgroundColor: (p.color || '#64748b') + '18', border: `1px solid ${(p.color || '#64748b')}40` }}>
+            <span className="text-[10px] font-mono font-bold" style={{ color: p.color || '#94a3b8' }}>
+              {p.label}
+            </span>
+            <span className="text-[9px] text-slate-500 hidden sm:inline">→ {p.detail}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col items-center">
+        <div className="w-px h-3 bg-slate-700" />
+        <div className="w-0 h-0" style={{
+          borderLeft: '5px solid transparent',
+          borderRight: '5px solid transparent',
+          borderTop: '7px solid #475569'
+        }} />
+      </div>
     </div>
   )
 }
 
-// ── Expert Roster ──────────────────────────────────────────────────
-const EXPERTS = [
-  { name: 'TrendExpert',          role: '生成+回测趋势策略',             color: '#6366f1', icon: TrendingUp,   file: 'specialists/expert1a_trend.py' },
-  { name: 'MeanReversionExpert',  role: '生成+回测均值回归策略',          color: '#22d3ee', icon: TrendingDown, file: 'specialists/expert1b_mean_reversion.py' },
-  { name: 'Evaluator',            role: '评分 + 结构化反馈 + PBO惩罚',   color: '#f59e0b', icon: Filter,       file: 'evaluator.py' },
-  { name: 'MarketRegimeExpert',   role: '市场状态检测 (ADX/vol/MA)',     color: '#a78bfa', icon: Activity,     file: 'modules/regime.py' },
-  { name: 'NewsSentimentAnalyzer',role: '新闻情绪分析',                   color: '#94a3b8', icon: Search,       file: 'modules/news_sentiment.py' },
-  { name: 'DebateManager',        role: '5层对抗辩论 + 权重分配',         color: '#f87171', icon: Swords,       file: 'debate_manager.py' },
-  { name: 'BullResearcher',       role: '看多论点 + 置信度',              color: '#4ade80', icon: TrendingUp,   file: 'specialists/bull_researcher.py' },
-  { name: 'BearResearcher',       role: '看空论点 + 失效模式',            color: '#fb7185', icon: TrendingDown, file: 'specialists/bear_researcher.py' },
-  { name: 'RiskExpert',           role: 'VaR99 / CVaR / 风险等级',       color: '#fb923c', icon: ShieldAlert,  file: 'modules/risk_expert.py' },
-  { name: 'Orchestrator',         role: '主循环 + 组合构建 + 相关性过滤', color: '#34d399', icon: Brain,        file: 'orchestrator.py' },
-]
+// ── Helper: get connector by "after" key ───────────────────────────
+function getConnector(afterKey: string) {
+  return CONNECTORS.find(c => c.after === afterKey)
+}
 
 // ── Main View ──────────────────────────────────────────────────────
 export default function ExpertView() {
-  const [tab, setTab] = useState<'pipeline' | 'roster'>('pipeline')
-
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Brain size={24} className="text-purple-400" />
         <div>
-          <h2 className="text-xl font-bold text-white">专家系统架构</h2>
-          <p className="text-slate-400 text-sm">多专家协作量化系统 v4.0 · 代码对应流程图</p>
+          <h2 className="text-xl font-bold text-white">专家系统 — 完整流程图</h2>
+          <p className="text-slate-400 text-sm">
+            每个节点对应实际代码 · 输入/输出端口已标注数据类型 · 点击节点展开 Prompt/指令链
+          </p>
         </div>
       </div>
 
-      {/* Tab */}
-      <div className="flex gap-1 border-b border-slate-700 pb-1">
-        {(['pipeline', 'roster'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-1 rounded-t text-xs font-medium transition-colors ${
-              tab === t ? 'text-white bg-slate-700' : 'text-slate-500 hover:text-slate-300'
-            }`}>
-            {t === 'pipeline' ? '完整流程图' : '专家一览'}
-          </button>
-        ))}
+      {/* Round label */}
+      <div className="flex items-center gap-2 text-xs text-slate-500">
+        <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono">for rnd in 1..max_rounds:</span>
+        <span>以下流程在每轮迭代中执行一次，E 阶段的输出注入下轮 A 阶段</span>
       </div>
 
-      {tab === 'pipeline' && (
-        <div className="space-y-4">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <p className="text-slate-400 text-xs leading-relaxed max-w-2xl">
-              每一步对应 <code className="text-indigo-300">experts/</code> 下的具体类和方法。
-              点击每个节点展开核心逻辑和调参指令链（Prompt）。
-              流程分 A→E 五个阶段，每轮迭代都会执行 A-D，E 阶段结果注入下轮 A。
-            </p>
-            <PhaseBar />
-          </div>
+      {/* Pipeline */}
+      <div className="max-w-3xl mx-auto">
 
-          <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700">
-            {STEPS.map((step, idx) => (
-              <StepCard key={step.id} step={step} idx={idx} isLast={idx === STEPS.length - 1} />
-            ))}
+        {/* Row 0: Data */}
+        <FlowNode node={DATA_NODE} />
+        <FlowConnector ports={[
+          { label: 'data {closes, highs, lows, volumes}', detail: '', color: '#22d3ee' },
+          { label: 'indicators {MA20/60, RSI14, ATR14}',  detail: '', color: '#22d3ee' },
+        ]} />
+
+        {/* Row 1: Parallel generation */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── A 阶段: 候选生成 ───</div>
+        <div className="flex gap-3">
+          <FlowNode node={TREND_GEN} half />
+          <FlowNode node={MR_GEN} half />
+        </div>
+        <FlowConnector ports={[
+          { label: 'candidates[4] trend',  detail: '{template_key, params, strategy_id}', color: '#6366f1' },
+          { label: 'candidates[3] mr',     detail: '{template_key, params, strategy_id}', color: '#22d3ee' },
+        ]} />
+
+        {/* Row 2: Parallel backtest */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── A 阶段: 回测执行 ───</div>
+        <div className="flex gap-3">
+          <FlowNode node={TREND_BT} half />
+          <FlowNode node={MR_BT} half />
+        </div>
+        <FlowConnector ports={[
+          { label: 'BacktestReport ×7', detail: 'strategy_id · daily_returns[] · sharpe · ann_return · max_dd', color: '#4ade80' },
+        ]} />
+
+        {/* Row 3: Evaluator */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── B 阶段: 评估 + 反馈生成 ───</div>
+        <FlowNode node={EVAL_NODE} />
+        <FlowConnector ports={[
+          { label: 'EvalResult[] ACCEPT|COND', detail: '→ DebateManager · RiskExpert · _build_portfolio', color: '#f59e0b' },
+          { label: 'StructuredFeedback',       detail: '→ fb_history (绕过辩论，异步注入下轮生成)',        color: '#818cf8' },
+        ]} />
+
+        {/* Row 4: Parallel market context */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── B 阶段: 市场上下文 ───</div>
+        <div className="flex gap-3">
+          <FlowNode node={REGIME_NODE} half />
+          <FlowNode node={NEWS_NODE} half />
+        </div>
+        <FlowConnector ports={[
+          { label: 'MarketRegime {name, confidence, trend_dir}', detail: '', color: '#a78bfa' },
+          { label: 'sentiment {bull/bear score}',                detail: '', color: '#94a3b8' },
+        ]} />
+
+        {/* Row 5: Debate */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── C 阶段: 对抗辩论 ───</div>
+        <FlowNode node={DEBATE_NODE} />
+        <FlowConnector ports={[
+          { label: 'DebateResult', detail: 'winner · trend_weight · mr_weight · bull/bear_case', color: '#f87171' },
+        ]} />
+
+        {/* Row 6: Risk */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── C 阶段: 风险评估 ───</div>
+        <FlowNode node={RISK_NODE} />
+        <FlowConnector ports={[
+          { label: 'RiskResult[]', detail: 'risk_rating: LOW|MEDIUM|HIGH|VERY_HIGH · var_99 · cvar', color: '#fb923c' },
+        ]} />
+
+        {/* Row 7: Portfolio */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── D 阶段: 组合构建 ───</div>
+        <FlowNode node={PORTFOLIO_NODE} />
+        <FlowConnector ports={[
+          { label: 'final[N]', detail: 'EvalResult[] Top-N 策略 + weight 字段', color: '#34d399' },
+        ]} />
+
+        {/* Row 8: Holdout */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── D 阶段: OOS 验证 ───</div>
+        <FlowNode node={HOLDOUT_NODE} />
+        <FlowConnector ports={[
+          { label: 'holdout_results', detail: '[{name, oospct, bias}]  展示于看板', color: '#94a3b8' },
+        ]} />
+
+        {/* Row 9: Feedback */}
+        <div className="mb-1 text-[10px] text-slate-500 text-center font-mono">─── E 阶段: 反馈回路 (→ 下轮 A) ───</div>
+        <FlowNode node={FEEDBACK_NODE} />
+
+        {/* Back arrow to top */}
+        <div className="flex flex-col items-center mt-2">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs text-slate-400 border border-dashed border-slate-600">
+            <span style={{ color: '#818cf8' }}>↑</span>
+            <span>下轮迭代: fb_list + need_diversify → TrendExpert / MRExpert .generate_candidates()</span>
           </div>
         </div>
-      )}
-
-      {tab === 'roster' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {EXPERTS.map(e => {
-            const Icon = e.icon
-            return (
-              <div key={e.name} className="bg-slate-800 rounded-xl p-4 border border-slate-700 flex gap-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: e.color + '22', border: `1px solid ${e.color}44` }}>
-                  <Icon size={16} style={{ color: e.color }} />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-white font-semibold text-sm">{e.name}</div>
-                  <div className="text-slate-400 text-xs mt-0.5">{e.role}</div>
-                  <code className="text-[10px] text-slate-600 font-mono">{e.file}</code>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      </div>
     </div>
   )
 }
