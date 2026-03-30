@@ -32,3 +32,7 @@ Thumbs.db
 # Misc
 *.tmp
 *.log
+
+# Data files (run scripts/init_data.py to regenerate)
+data/raw/*.json
+data/raw/_manifest.json

@@ -6,7 +6,7 @@ import json, math
 from pathlib import Path
 from typing import Optional, Dict, List
 
-def load_symbol(symbol: str, data_dir: str = "/workspace/quant/data/raw", n: int = 0) -> Optional[dict]:
+def load_symbol(symbol: str, data_dir: str = "data/raw", n: int = 0) -> Optional[dict]:
     """从本地缓存加载，去重后按日期升序返回"""
     files = sorted(Path(data_dir).glob(f"{symbol.upper()}_*.json"), reverse=True)
     if not files:
@@ -39,7 +39,7 @@ def load_symbol(symbol: str, data_dir: str = "/workspace/quant/data/raw", n: int
         "count":   len(rows),
     }
 
-def load_multiple(symbols: List[str], data_dir: str = "/workspace/quant/data/raw", n: int = 0) -> Dict[str,dict]:
+def load_multiple(symbols: List[str], data_dir: str = "data/raw", n: int = 0) -> Dict[str,dict]:
     out = {}
     for sym in symbols:
         d = load_symbol(sym, data_dir, n)

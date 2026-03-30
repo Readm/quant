@@ -31,67 +31,16 @@ CTX.verify_mode = ssl.CERT_NONE
 # 数据获取
 # ═══════════════════════════════════════════════════════════════
 
-def _simulate_price_data(symbol: str, start: str, end: str,
-                          interval: str = "1d",
-                          base_price: float = 50000) -> List[dict]:
-    """当 Binance 无法访问时，使用几何布朗运动生成模拟数据"""
-    import random, math
-    rows = []
-    try:
-        s = datetime.strptime(start, "%Y%m%d")
-        e = datetime.strptime(end, "%Y%m%d")
-    except:
-        s = datetime(2020, 1, 1)
-        e = datetime(2024, 12, 31)
-
-    price = base_price
-    vol_year = 0.80   # 年化波动率 80%（BTC 典型值）
-    dt_days = 1 if interval in ("1d", "1m") else (4/96 if interval == "4h" else 0.125)
-    dt_yr = dt_days / 365
-    drift = 0.20      # 年化漂移 20%（长期牛市假设）
-
-    current = s
-    while current <= e:
-        if current.weekday() < 5:  # 跳过周末（币圈不休，但降低数据量）
-            if interval == "1d":
-                z = random.gauss(0, 1)
-                ret = drift * dt_yr + vol_year * math.sqrt(dt_yr) * z
-                price *= math.exp(ret)
-                o = price * (1 + random.uniform(-0.005, 0.005))
-                h = price * (1 + random.uniform(0, 0.015))
-                l = price * (1 - random.uniform(0, 0.015))
-                v = random.uniform(1e9, 5e10)
-                rows.append({
-                    "date":   current.strftime("%Y-%m-%d"),
-                    "open":   round(o, 2), "high": round(h, 2),
-                    "low":    round(l, 2), "close": round(price, 2),
-                    "volume": round(v, 0),
-                    "symbol": symbol,
-                })
-        if interval == "1d":
-            current += timedelta(days=1)
-        elif interval == "4h":
-            current += timedelta(hours=4)
-        else:
-            current += timedelta(days=1)
-
-        if len(rows) >= 1500:
-            break
-
-    return rows
-
-
 def fetch_binance(symbol: str, interval: str = "1d",
                   start: str = "20200101", end: str = "20251231",
                   limit: int = 1000) -> List[dict]:
-    """Binance K线 → OHLCV list（网络不可用时自动回退到模拟数据）"""
+    """Binance K线 → OHLCV list。网络不可用时抛出异常，不使用模拟数据。"""
     start_ms = int(datetime.strptime(start, "%Y%m%d").timestamp() * 1000)
     end_ms   = int(datetime.strptime(end,   "%Y%m%d").timestamp() * 1000)
     url = (f"https://api.binance.com/api/v3/klines"
            f"?symbol={symbol}&interval={interval}"
            f"&startTime={start_ms}&endTime={end_ms}&limit={limit}")
 
-    _fetched = False
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, context=CTX, timeout=8) as r:
@@ -107,19 +56,12 @@ def fetch_binance(symbol: str, interval: str = "1d",
                     "symbol": symbol,
                 })
             if rows:
-                _fetched = True
-                print(f"  🌐 Binance 获取 {symbol} 成功: {len(rows)} 条")
+                print(f"  Binance {symbol}: {len(rows)} 条")
                 return rows
-    except Exception:
-        pass
+    except Exception as e:
+        raise RuntimeError(f"Binance 数据获取失败 ({symbol}): {e}") from e
 
-    # 回退：使用模拟数据
-    base_prices = {"BTCUSDT": 50000, "ETHUSDT": 3000, "SOLUSDT": 100,
-                   "BNBUSDT": 300, "XRPUSDT": 1.0, "ADAUSDT": 1.5}
-    base = base_prices.get(symbol, 1000)
-    rows = _simulate_price_data(symbol, start, end, interval, base)
-    print(f"  🎭 [模拟] {symbol}: {len(rows)} 条 {rows[0]['date']} → {rows[-1]['date']}")
-    return rows
+    raise RuntimeError(f"Binance 返回空数据: {symbol}")
 
 
 def fetch_binance_all_symbols() -> List[str]:

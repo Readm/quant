@@ -41,9 +41,11 @@ def compute_correlation_matrix(reports):
     if n < 2: return {}
     def get_rets(r):
         dr = getattr(r, "daily_returns", None)
-        return dr[-100:] if dr and len(dr) >= 10 else [random.gauss(0.001, 0.02) for _ in range(100)]
+        return dr[-100:] if dr and len(dr) >= 10 else []
     rets_list = [get_rets(r) for r in reports]
     min_len   = min(len(r) for r in rets_list)
+    if min_len < 10:
+        return {}
     rets_list = [r[:min_len] for r in rets_list]
     def pearson_r(x, y):
         n = len(x); mx=sum(x)/n; my=sum(y)/n
