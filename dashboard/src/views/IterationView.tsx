@@ -57,31 +57,47 @@ function EquityCurvesChart({ strategies }: { strategies: Strategy[] }) {
   if (visible.length === 0)
     return <div className="text-slate-500 text-sm p-4">无 equity 数据</div>
 
-  // 对齐到最短曲线长度，合并为一个时间序列
+  // Use strategy id as unique dataKey to avoid name collisions
   const minLen = Math.min(...visible.map(s => s.equity_curve.length))
   const data = Array.from({ length: minLen }, (_, i) => {
     const pt: Record<string, number> = { i }
-    visible.forEach(s => { pt[s.name] = s.equity_curve[i]?.v ?? 100 })
+    visible.forEach(s => { pt[s.id] = s.equity_curve[i]?.v ?? 100 })
     return pt
   })
 
+  // Tight Y domain with 1% padding each side
+  const allVals = data.flatMap(pt => visible.map(s => pt[s.id] ?? 100))
+  const yMin = Math.floor(Math.min(...allVals) * 0.99)
+  const yMax = Math.ceil(Math.max(...allVals) * 1.01)
+
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <LineChart data={data} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
+    <ResponsiveContainer width="100%" height={280}>
+      <LineChart data={data} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
         <XAxis dataKey="i" tick={{ fill: '#64748b', fontSize: 10 }}
           label={{ value: '交易日', position: 'insideBottomRight', fill: '#475569', fontSize: 10 }} />
-        <YAxis tick={{ fill: '#64748b', fontSize: 10 }}
-          tickFormatter={v => `${v}`}
+        <YAxis domain={[yMin, yMax]} tick={{ fill: '#64748b', fontSize: 10 }}
+          tickFormatter={v => `${v.toFixed(0)}`}
           label={{ value: '净值', angle: -90, position: 'insideLeft', fill: '#475569', fontSize: 10 }} />
         <ReferenceLine y={100} stroke="#475569" strokeDasharray="4 2" />
         <Tooltip
           contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 11 }}
-          formatter={(v: number, name) => [`${v.toFixed(1)}`, name]}
+          formatter={(v: number, _key, props) => {
+            const s = visible.find(x => x.id === props.dataKey)
+            const label = s ? `${s.name} (${s.type === 'trend' ? '趋势' : 'MR'})` : String(props.dataKey)
+            return [`${(v as number).toFixed(2)}`, label]
+          }}
         />
-        <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
+        <Legend
+          formatter={(_value, entry) => {
+            const s = visible.find(x => x.id === entry.dataKey)
+            return s ? `${s.name} ${s.params ? Object.values(s.params).join('/') : ''}` : String(entry.dataKey)
+          }}
+          wrapperStyle={{ fontSize: 10, paddingTop: 6 }}
+        />
         {visible.map((s, i) => (
-          <Line key={s.id} type="monotone" dataKey={s.name}
+          <Line key={s.id} type="monotone" dataKey={s.id}
+            name={s.name}
             stroke={COLORS[i % COLORS.length]}
             strokeWidth={s.selected ? 2.5 : 1}
             strokeDasharray={s.selected ? undefined : '4 3'}
