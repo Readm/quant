@@ -204,10 +204,12 @@ class Orchestrator:
             self.prev_top_ids = top_ids
 
             rp = RoundReportFake(rnd)
-            rp.trend_evals = t_evals
-            rp.mr_evals    = mr_evals
+            rp.trend_evals   = t_evals
+            rp.mr_evals      = mr_evals
+            rp.trend_reports = t_reports
+            rp.mr_reports    = mr_reports
             rp.final_selected = final
-            rp.converged   = converged
+            rp.converged     = converged
             rp.debate_result = debate
             rp.holdout_results = holdout_ok
             self.round_reports.append(rp)

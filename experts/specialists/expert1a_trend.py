@@ -137,18 +137,19 @@ class TrendExpert:
         adx_v = ind.get("adx", [0]*n)
         if key == "ma_cross":
             ma20=ind["ma20"]; ma60=ind["ma60"]
-            raw = [0 if i<60 else
-                    1 if ma20[i]>ma60[i] and ma20[i-1]<=ma60[i-1] else
-                   -1 if ma20[i]<ma60[i] and ma20[i-1]>=ma60[i-1] else 0
+            # Level-based: hold 1 while MA20>MA60, -1 while MA20<MA60
+            # Debounce then filters brief whipsaws (needs 2 consecutive days)
+            raw = [0 if i<60 or ma20[i] is None or ma60[i] is None else
+                    1 if ma20[i]>ma60[i] else -1
                     for i in range(n)]
             return self._debounce_signals(raw, min_consecutive=2, cooldown_days=2)
         elif key == "macd":
             fp_i=int(params.get("fp",12)); sp_i=int(params.get("sp",26)); sig_i=int(params.get("sig",9))
-            macd_line=[EMA._ema(closes,fp_i)[j]-EMA._ema(closes,sp_i)[j] for j in range(n)]
-            sig_line=EMA._ema(macd_line,sig_i)
+            macd_line=[TrendExpert._ema(closes,fp_i)[j]-TrendExpert._ema(closes,sp_i)[j] for j in range(n)]
+            sig_line=TrendExpert._ema(macd_line,sig_i)
+            # Level-based: hold 1 while MACD>signal, -1 while MACD<signal
             raw = [0 if i<sp_i+sig_i else
-                    1 if macd_line[i]>sig_line[i] and macd_line[i-1]<=sig_line[i-1] else
-                   -1 if macd_line[i]<sig_line[i] and macd_line[i-1]>=sig_line[i-1] else 0
+                    1 if macd_line[i]>sig_line[i] else -1
                     for i in range(n)]
             return self._debounce_signals(raw, min_consecutive=2, cooldown_days=2)
         elif key == "momentum":
