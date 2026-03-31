@@ -105,15 +105,20 @@ def apply_correlation_penalty(portfolio, reports, corr_map):
 
 
 def eval_to_strat_dict(e) -> dict:
-    """EvalResult → 元专家所需的精简 dict"""
+    """EvalResult → 元专家所需的精简 dict（含被拒原因和关键指标）"""
     return {
         "name":         getattr(e, "strategy_name", ""),
         "type":         getattr(e, "strategy_type", ""),
         "decision":     getattr(e, "decision", ""),
-        "score":        float(getattr(e, "composite", 0)),
+        "score":        round(float(getattr(e, "composite", 0)), 1),
         "total_trades": int(getattr(e, "total_trades", 0)),
-        "ann_return":   float(getattr(e, "annualized_return", 0)),
-        "sharpe":       float(getattr(e, "sharpe_ratio", 0)),
+        "ann_return":   round(float(getattr(e, "annualized_return", 0)), 1),
+        "sharpe":       round(float(getattr(e, "sharpe_ratio", 0)), 2),
+        "max_dd":       round(float(getattr(e, "max_drawdown_pct", 0)), 1),
+        "sortino":      round(float(getattr(e, "sortino_score", 0)), 1),
+        "calmar":       round(float(getattr(e, "calmar_score", 0)), 1),
+        "alpha":        round(float(getattr(e, "alpha", 0)), 1),
+        "elim_note":    (getattr(e, "elimination_note", "") or "")[:60],
     }
 
 
@@ -171,7 +176,7 @@ class Orchestrator:
                 self._generate_diverse_candidates(self.trend_expert, 30, fb_list, need_div, "trend", rnd),
                 _dedup_rng)
             mr_cands = self._dedup_candidates(
-                self._generate_diverse_candidates(self.mr_expert, 20, fb_list, need_div, "mean_reversion", rnd),
+                self._generate_diverse_candidates(self.mr_expert, 25, fb_list, need_div, "mean_reversion", rnd),
                 _dedup_rng)
             all_cands = t_cands + mr_cands
 
@@ -615,7 +620,7 @@ class Orchestrator:
 
     # ── 组合参数搜索空间 ─────────────────────────────────────────────
     _PORTFOLIO_PARAM_RANGES = {
-        "n_stocks":         [1, 2, 3, 5],           # 同时持仓数量
+        "n_stocks":         [2, 3, 5],              # 同时持仓数量（最低2只）
         "rebalance_freq":   [5, 10, 20, 60],         # 调仓间隔（交易日）
         "weight_method":    ["equal", "score_weighted", "vol_inverse"],
         "max_position_pct": (0.30, 1.00),            # 单股最大仓位

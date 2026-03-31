@@ -173,11 +173,11 @@ class Evaluator:
         if is_rejected:
             decision = "REJECT"
             reason   = elim_note
-        elif composite >= 58:
+        elif composite >= 45:
             decision = "ACCEPT"
             reason   = (f"✅ 纳入（综合分={composite}，Sortino={sortino:.2f} "
                         f"Calmar={calmar:.2f}，Alpha={alpha:+.1f}%，IR={ir_s:.0f}分）")
-        elif composite >= 35:
+        elif composite >= 25:
             decision = "CONDITIONAL"
             reason   = f"⚠️ 待观察（综合分={composite}，建议优化参数）"
         else:
@@ -474,6 +474,8 @@ class Evaluator:
             for r in accepted:
                 sf = r.structured_feedback
                 print(f"   · {r.strategy_name}（{r.strategy_type}）| "
+                      f"trades={r.total_trades} ann={r.annualized_return:+.1f}% "
+                      f"sharpe={r.sharpe_ratio:.2f} dd={r.max_drawdown_pct:.1f}% | "
                       f"Sortino={r.sortino_score:.0f}分 Calmar={r.calmar_score:.0f}分 | "
                       f"Alpha={r.alpha:+.1f}% | IR={r.ir_score:.0f}分 | 综合分={r.composite}")
                 if sf:
@@ -489,13 +491,17 @@ class Evaluator:
 
         if rejected:
             print(f"\n❌ 淘汰（{len(rejected)}个）：")
-            for r in rejected[:5]:
-                print(f"   · {r.strategy_name} | {r.elimination_note}")
+            for r in rejected[:10]:
+                print(f"   · {r.strategy_name}({r.strategy_type}) | "
+                      f"trades={r.total_trades} ann={r.annualized_return:+.1f}% "
+                      f"sharpe={r.sharpe_ratio:.2f} dd={r.max_drawdown_pct:.1f}% | {r.elimination_note}")
                 sf = r.structured_feedback
                 if sf:
                     print(f"     → 需调整: {sf.adjustment.value} "
                           f"参数={sf.adjustment_param} "
                           f"幅度={sf.adjustment_magnitude:+.1f}{sf.adjustment_unit}")
+            if len(rejected) > 10:
+                print(f"   … 还有 {len(rejected) - 10} 个被拒策略")
 
         print(f"\n{'='*68}")
 

@@ -22,7 +22,7 @@ SELL_COST = 0.0003 + 0.0005 + 0.0010  # 佣金+滑点+印花税 = 0.18%
 
 # ── 默认组合参数 ────────────────────────────────────────────────────
 DEFAULT_PORTFOLIO_PARAMS = {
-    "n_stocks":         1,
+    "n_stocks":         2,
     "rebalance_freq":   20,
     "weight_method":    "equal",
     "max_position_pct": 0.95,
