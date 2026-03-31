@@ -182,25 +182,55 @@ function StrategyRow({ s, idx }: { s: Strategy; idx: number }) {
   )
 }
 
+type SortKey = 'score' | 'ann_return' | 'sharpe' | 'max_drawdown' | 'total_trades' | 'name' | 'type' | 'decision'
+type SortDir = 'asc' | 'desc'
+
 function StrategyTable({ strategies }: { strategies: Strategy[] }) {
+  const [sortKey, setSortKey] = useState<SortKey>('score')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
+
+  function handleSort(key: SortKey) {
+    if (key === sortKey) setSortDir(d => d === 'desc' ? 'asc' : 'desc')
+    else { setSortKey(key); setSortDir('desc') }
+  }
+
+  const sorted = [...strategies].sort((a, b) => {
+    const av = a[sortKey] as any
+    const bv = b[sortKey] as any
+    const cmp = typeof av === 'string' ? av.localeCompare(bv) : (av ?? 0) - (bv ?? 0)
+    return sortDir === 'desc' ? -cmp : cmp
+  })
+
+  function Th({ label, k, align = 'right' }: { label: string; k: SortKey; align?: string }) {
+    const active = sortKey === k
+    const arrow = active ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''
+    return (
+      <th onClick={() => handleSort(k)}
+        className={`py-2 px-3 text-${align} cursor-pointer select-none whitespace-nowrap
+          ${active ? 'text-purple-300' : 'text-slate-400 hover:text-slate-200'}`}>
+        {label}{arrow}
+      </th>
+    )
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="border-b border-slate-600 text-slate-400">
-            <th className="py-2 px-3 text-left">策略名</th>
-            <th className="py-2 px-3 text-center">类型</th>
-            <th className="py-2 px-3 text-center">决策</th>
-            <th className="py-2 px-3 text-right">综合分</th>
-            <th className="py-2 px-3 text-right">年化</th>
-            <th className="py-2 px-3 text-right">夏普</th>
-            <th className="py-2 px-3 text-right">回撤</th>
-            <th className="py-2 px-3 text-right">交易次</th>
+          <tr className="border-b border-slate-600">
+            <Th label="策略名" k="name" align="left" />
+            <Th label="类型"   k="type" align="center" />
+            <Th label="决策"   k="decision" align="center" />
+            <Th label="综合分" k="score" />
+            <Th label="年化"   k="ann_return" />
+            <Th label="夏普"   k="sharpe" />
+            <Th label="回撤"   k="max_drawdown" />
+            <Th label="交易次" k="total_trades" />
             <th className="py-2 px-3"/>
           </tr>
         </thead>
         <tbody>
-          {strategies.map((s, i) => <StrategyRow key={s.id || s.name} s={s} idx={i} />)}
+          {sorted.map((s, i) => <StrategyRow key={s.id || s.name} s={s} idx={i} />)}
         </tbody>
       </table>
     </div>
@@ -260,7 +290,14 @@ function DebatePanel({ debate }: { debate: Debate }) {
 
 // ── Meta Expert Panel ─────────────────────────────────────────────
 function MetaPanel({ meta }: { meta: MetaEvaluation }) {
-  if (!meta || !meta._llm_available) return null
+  if (!meta) return null
+  // LLM 不可用时显示简化版提示而非隐藏
+  if (!meta._llm_available) return (
+    <div className="border border-slate-700/50 rounded-xl px-4 py-3 bg-slate-900/30 text-xs text-slate-500 flex items-center gap-2">
+      <span className="text-slate-600">元专家</span>
+      <span>{meta.invalidity_reasons?.[0] || 'LLM 评估未完成（超时或不可用）'}</span>
+    </div>
+  )
 
   const validityColor = meta.data_validity === 'HIGH'
     ? 'text-green-400 bg-green-900/20 border-green-700/40'

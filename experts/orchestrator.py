@@ -580,39 +580,41 @@ class Orchestrator:
             'atr14':   atr(highs, lows, closes, 14),
         }
 
+    # Tencent realtime API symbol mapping (only well-known non-A-share symbols)
+    _TENCENT_MAP = {'SPY': 'sh000300', 'BTCUSDT': 'btcusdt', 'ETHUSDT': 'ethusdt'}
+
     def _load_data(self):
-        # Try Tencent real data first for sh000300 (沪深300 proxy for SPY)
         result = {}
-        for sym, api_sym in [('SPY', 'sh000300'), ('BTCUSDT', 'btcusdt')]:
-            if sym not in self.symbols:
-                continue
-            d = self._fetch_tencent(api_sym, self.n_days)
-            if d and len(d.get('closes',[])) > 50:
-                result[sym] = {
-                    'data': d,
-                    'indicators': self._compute_indicators(d)
+        for sym in self.symbols:
+            # 1. Try Tencent API for mapped symbols
+            api_sym = self._TENCENT_MAP.get(sym)
+            if api_sym:
+                d = self._fetch_tencent(api_sym, self.n_days)
+                if d and len(d.get('closes', [])) > 50:
+                    result[sym] = {'data': d, 'indicators': self._compute_indicators(d)}
+                    print(f"[数据] {sym}: {len(d['closes'])} bars (腾讯API, {d['dates'][0]}→{d['dates'][-1]})")
+                    continue
+
+            # 2. Load from local cache (A-share SH*/SZ* and fallback for others)
+            local = load_multiple([sym], n=self.n_days)
+            if sym in local and local[sym].get('closes'):
+                ld = local[sym]
+                d = {
+                    'closes':  ld['closes'],
+                    'dates':   ld.get('dates', []),
+                    'opens':   ld.get('opens', []),
+                    'highs':   ld.get('highs', []),
+                    'lows':    ld.get('lows', []),
+                    'volumes': ld.get('volumes', []),
                 }
-                print(f"[数据] {sym}: {len(d['closes'])} bars (腾讯API, {d['dates'][0]}→{d['dates'][-1]})")
+                inds = ld.get('indicators') or self._compute_indicators(d)
+                result[sym] = {'data': d, 'indicators': inds}
+                dates = ld.get('dates', [])
+                span = f"{dates[0]}→{dates[-1]}" if dates else "?"
+                print(f"[数据] {sym}: {len(ld['closes'])} bars (本地缓存, {span})")
             else:
-                # fallback to local cache
-                local = load_multiple([sym], n=self.n_days)
-                if sym in local and local[sym].get('closes'):
-                    # Normalize to our internal format
-                    ld = local[sym]
-                    result[sym] = {
-                        'data': {
-                            'closes': ld['closes'],
-                            'dates':  ld.get('dates', []),
-                            'opens':  ld.get('opens', []),
-                            'highs':  ld.get('highs', []),
-                            'lows':   ld.get('lows', []),
-                            'volumes':ld.get('volumes', []),
-                        },
-                        'indicators': ld.get('indicators', self._compute_indicators({'closes': ld['closes'], 'highs': ld.get('highs',ld['closes']), 'lows': ld.get('lows',ld['closes']), 'volumes': ld.get('volumes', [])})),
-                    }
-                    print(f"[数据] {sym}: {len(ld['closes'])} bars (本地缓存)")
-                else:
-                    print(f"[数据] {sym}: ❌ 数据加载失败")
+                print(f"[数据] {sym}: ❌ 数据加载失败")
+
         if not result:
             raise RuntimeError(f"无法加载数据: {self.symbols}")
         # Build output in same format as before
