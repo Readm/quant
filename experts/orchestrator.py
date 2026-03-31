@@ -38,29 +38,25 @@ def _init_backtest_worker(symbols_data, sym_list):
     _worker_sym_list     = sym_list
 
 def _backtest_one_cand(args):
-    """在所有标的上跑一个候选策略，返回最佳标的的 BacktestReport。"""
-    import copy
+    """
+    组合回测：对所有标的做因子打分 → 选 Top-N → 持仓回测。
+    返回 PortfolioBacktester 生成的 BacktestReport。
+    """
+    from experts.modules.portfolio_backtest import PortfolioBacktester
     expert, cand = args
-    best_report    = None
-    best_composite = -1e9
-    for idx, sd in enumerate(_worker_symbols_data):
-        d    = sd["data"]
-        inds = sd["indicators"]
-        try:
-            r = expert.backtest(d, inds, cand["params"], cand["template_key"],
-                                strategy_id=cand["strategy_id"])
-        except Exception:
-            continue
-        ann  = getattr(r, "annualized_return", 0.0)
-        shr  = getattr(r, "sharpe_ratio",      0.0)
-        dd   = getattr(r, "max_drawdown_pct",  100.0)
-        n_tr = getattr(r, "total_trades",      0)
-        score = (ann * 0.5 + shr * 20 - dd * 0.2) if n_tr > 0 else -999.0
-        if score > best_composite:
-            best_composite = score
-            best_report = copy.copy(r)
-            best_report._best_symbol = _worker_sym_list[idx]
-    return best_report
+    pp = cand.get("portfolio_params", {})
+    try:
+        bt = PortfolioBacktester(
+            symbols_data=_worker_symbols_data,
+            expert=expert,
+            candidate=cand,
+            portfolio_params=pp,
+        )
+        return bt.run()
+    except Exception:
+        from experts.specialists.expert1a_trend import BacktestReport
+        return BacktestReport(strategy_id=cand["strategy_id"],
+                              strategy_name=cand["strategy_name"])
 
 _N_BT_WORKERS = max(1, (os.cpu_count() or 4))
 
@@ -177,7 +173,10 @@ class Orchestrator:
 
             # Register completed-backtest hashes (post-evaluation, authoritative)
             for c in t_cands + mr_cands:
-                self._seen_cand_hashes.add(self._cand_hash(c["template_key"], c["params"]))
+                self._seen_cand_hashes.add(
+                    self._cand_hash(c["template_key"], c["params"],
+                                    c.get("portfolio_params", {}))
+                )
 
             for r, c in zip(t_reports, t_cands):
                 r.strategy_id   = c["strategy_id"]
@@ -282,7 +281,10 @@ class Orchestrator:
             meta_eval = self.monitor.llm_evaluate_round(round_strats, self.best_score, self.no_improve)
             _dt_meta = time.perf_counter() - _t_meta
             _meta_ok = meta_eval.get("_llm_available", False)
-            if _meta_ok:
+            if meta_eval.get("_llm_failed"):
+                print(f"\n[元专家] ❌ LLM失败（3次重试均失败）：{meta_eval.get('key_insight','')}")
+                print(f"[元专家] 本轮收敛判断将完全依赖规则，无LLM干预")
+            elif _meta_ok:
                 print(f"\n[元专家] {meta_eval.get('round_summary','')}")
                 if meta_eval.get("key_insight"):
                     print(f"[元专家] 关键发现：{meta_eval['key_insight']}")
@@ -397,14 +399,24 @@ class Orchestrator:
     }
 
     @staticmethod
-    def _cand_hash(template_key: str, params: dict) -> str:
-        """Similarity hash: bucket continuous params to nearest 5% step."""
+    def _cand_hash(template_key: str, params: dict,
+                   portfolio_params: dict = None) -> str:
+        """Similarity hash: bucket continuous params to nearest 5% step.
+        Includes portfolio_params so same strategy with different portfolio
+        config is treated as a distinct candidate.
+        """
         def _bucket(v):
             if isinstance(v, float): return round(v * 20) / 20  # 0.05 buckets
             if isinstance(v, int):   return round(v / 3) * 3     # nearest-3 buckets
             return v
-        bucketed = {k: _bucket(v) for k, v in sorted(params.items())}
-        return f"{template_key}|{bucketed}"
+        bucketed = {k: _bucket(v) for k, v in sorted(params.items())
+                    if not str(k).startswith("pf_")}
+        pp_key = ""
+        if portfolio_params:
+            pp_key = f"|N{portfolio_params.get('n_stocks',1)}" \
+                     f"R{portfolio_params.get('rebalance_freq',20)}" \
+                     f"{portfolio_params.get('weight_method','equal')[0]}"
+        return f"{template_key}|{bucketed}{pp_key}"
 
     def _dedup_candidates(self, cands: list, rng: random.Random) -> list:
         """Remove candidates whose similarity hash already exists in _seen_cand_hashes.
@@ -415,16 +427,16 @@ class Orchestrator:
                          getattr(self.mr_expert,    "TEMPLATES", [])}
         result = []
         for c in cands:
-            h = self._cand_hash(c["template_key"], c["params"])
+            pp = c.get("portfolio_params", {})
+            h = self._cand_hash(c["template_key"], c["params"], pp)
             if h in self._seen_cand_hashes:
-                # replace with fresh params, up to 5 tries
                 tpl = templates_map.get(c["template_key"])
                 replaced = False
                 for _ in range(5):
                     fp = self._fresh_random_params(c["template_key"], rng) if tpl else {}
                     if not fp:
                         fp = self._randomize(dict(tpl["params"] if tpl else {}), 0.5, rng)
-                    nh = self._cand_hash(c["template_key"], fp)
+                    nh = self._cand_hash(c["template_key"], fp, pp)
                     if nh not in self._seen_cand_hashes:
                         nc = dict(c); nc["params"] = fp
                         nc["diversity_note"] = (c.get("diversity_note", "") or "") + "+去重"
@@ -433,7 +445,7 @@ class Orchestrator:
                         replaced = True
                         break
                 if not replaced:
-                    result.append(c)  # keep original if can't find unique replacement
+                    result.append(c)
                     self._seen_cand_hashes.add(h)
             else:
                 result.append(c)
@@ -584,7 +596,59 @@ class Orchestrator:
             out.append(c)
             _tpl_count[tpl["key"]] = _tpl_count.get(tpl["key"], 0) + 1
 
+        # ── 为每个候选注入 portfolio_params（可变异的组合参数）──────
+        for c in out:
+            c["portfolio_params"] = self._sample_portfolio_params(
+                c, rng, fb_list,
+            )
+
         return out[:count]
+
+    # ── 组合参数搜索空间 ─────────────────────────────────────────────
+    _PORTFOLIO_PARAM_RANGES = {
+        "n_stocks":         [1, 2, 3, 5],           # 同时持仓数量
+        "rebalance_freq":   [5, 10, 20, 60],         # 调仓间隔（交易日）
+        "weight_method":    ["equal", "score_weighted", "vol_inverse"],
+        "max_position_pct": (0.30, 1.00),            # 单股最大仓位
+    }
+
+    def _sample_portfolio_params(self, cand: dict, rng: random.Random,
+                                  fb_list: list) -> dict:
+        """
+        为候选策略随机采样组合参数。
+        如果历史反馈中有关于该策略的 portfolio 建议，则按反馈调整。
+        """
+        ranges = self._PORTFOLIO_PARAM_RANGES
+
+        # 先随机基础值
+        pp = {
+            "n_stocks":         rng.choice(ranges["n_stocks"]),
+            "rebalance_freq":   rng.choice(ranges["rebalance_freq"]),
+            "weight_method":    rng.choice(ranges["weight_method"]),
+            "max_position_pct": round(rng.uniform(*ranges["max_position_pct"]), 2),
+        }
+
+        # 按历史反馈微调组合参数
+        tk = cand.get("template_key", "")
+        related_fbs = [f for f in (fb_list or []) if f.get("template_key") == tk]
+        if related_fbs:
+            best_fb = max(related_fbs, key=lambda f: f.get("composite", 0))
+            weakness = best_fb.get("weakness", "")
+            # 集中度风险 → 增加持仓数，降低单股仓位
+            if "high_drawdown" in weakness or "concentration" in weakness:
+                pp["n_stocks"] = min(5, pp["n_stocks"] + 1)
+                pp["max_position_pct"] = max(0.3, pp["max_position_pct"] - 0.2)
+            # 换手率太高 → 放宽调仓频率
+            if "high_turnover" in weakness:
+                pp["rebalance_freq"] = min(60, pp["rebalance_freq"] * 2)
+            # 波动率高 → 尝试波动率倒数加权
+            if "high_volatility" in weakness or "low_sharpe" in weakness:
+                pp["weight_method"] = "vol_inverse"
+            # 单一策略效果好 → 聚焦单股
+            if "low_win_rate" not in weakness and best_fb.get("composite", 0) > 70:
+                pp["n_stocks"] = max(1, pp["n_stocks"] - 1)
+
+        return pp
 
     @staticmethod
     def _sf_to_text(sf):
@@ -853,6 +917,7 @@ class Orchestrator:
             sentiment_label=(sent.get("sentiment_label","NEUTRAL") if sent else "NEUTRAL"),
             sentiment_score=sent.get("sentiment_score",0.0) if sent else 0.0,
             sentiment_conf=sent.get("confidence",0.0) if sent else 0.0,
+            sentiment_enabled=False,  # TODO: news_sentiment 未启用，接入API后改为 True
             market_regime=(regime.name if regime else "UNKNOWN"),
             avg_var99=round(avg_var,3), elimination_causes=elim_causes)
 

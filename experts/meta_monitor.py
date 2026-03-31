@@ -58,6 +58,8 @@ class RoundSnapshot:
     # 淘汰原因分布
     elimination_causes: dict  # {"低夏普": 2, "年化不足": 1, ...}
 
+    sentiment_enabled: bool = False  # True when news_sentiment module is active
+
     timestamp        : str = field(
         default_factory=lambda: datetime.now().strftime("%H:%M:%S")
     )
@@ -240,14 +242,16 @@ class MetaMonitor:
                     f"②检查市场数据质量；③增加策略模板多样性。"
                 )
 
-        # 条件4：新闻置信度连续3轮为0
-        recent_3 = self.snapshots[-3:] if len(self.snapshots) >= 3 else self.snapshots
-        if all(s.sentiment_conf == 0.0 for s in recent_3) and len(recent_3) >= 3:
-            alerts.append(
-                "⚠️ 【预警】新闻情绪置信度连续3轮为0，传感器失灵。"
-                "可能原因：①网络不可用；②关键词未命中。影响：情绪模块决策权重应降为0，"
-                "改由市场状态专家主导适配。"
-            )
+        # 条件4：新闻置信度连续3轮为0（仅在模块启用时检查）
+        enabled_snaps = [s for s in self.snapshots if getattr(s, "sentiment_enabled", False)]
+        if len(enabled_snaps) >= 3:
+            recent_3 = enabled_snaps[-3:]
+            if all(s.sentiment_conf == 0.0 for s in recent_3):
+                alerts.append(
+                    "⚠️ 【预警】新闻情绪置信度连续3轮为0，传感器失灵。"
+                    "可能原因：①网络不可用；②关键词未命中。影响：情绪模块决策权重应降为0，"
+                    "改由市场状态专家主导适配。"
+                )
 
         return alerts
 
@@ -395,24 +399,33 @@ class MetaMonitor:
         import json as _json
         prompt = self.LLM_META_PROMPT.replace("{data_json}", _json.dumps(data, ensure_ascii=False, indent=2))
 
-        result = llm_analyze(prompt, task="meta_evaluate", temperature=0.3, timeout_ms=60000, max_tokens=10240)
+        MAX_RETRIES = 3
+        last_error  = ""
+        for attempt in range(1, MAX_RETRIES + 1):
+            result = llm_analyze(
+                prompt, task="meta_evaluate",
+                temperature=0.3, timeout_ms=60000, max_tokens=10240,
+            )
+            if "error" not in result:
+                result["_llm_available"] = True
+                return result
+            last_error = result["error"]
+            print(f"  [元专家] 第{attempt}次调用失败: {last_error[:120]}"
+                  + ("，重试…" if attempt < MAX_RETRIES else "，已达最大重试次数"))
 
-        if "error" in result:
-            # LLM 失败时返回保守默认值（不干预收敛）
-            return {
-                "data_validity": "UNKNOWN",
-                "invalidity_reasons": [f"LLM 不可用: {result['error']}"],
-                "convergence_is_real": True,
-                "should_continue": False,
-                "continue_reason": "LLM 不可用，依赖规则判断",
-                "round_summary": f"第{n}轮完成，LLM 元评估不可用",
-                "key_insight": "",
-                "suggestions": [],
-                "_llm_available": False,
-            }
-
-        result["_llm_available"] = True
-        return result
+        # 所有重试耗尽 —— 显式标注失败，不静默降级
+        return {
+            "data_validity":      "UNKNOWN",
+            "invalidity_reasons": [f"[LLM_FAILED×{MAX_RETRIES}] {last_error[:200]}"],
+            "convergence_is_real": True,
+            "should_continue":    False,
+            "continue_reason":    f"元专家 LLM 连续 {MAX_RETRIES} 次失败，本轮收敛判断由规则主导",
+            "round_summary":      f"⚠️ 第{n}轮 · 元专家LLM失败({MAX_RETRIES}次重试)",
+            "key_insight":        f"元专家不可用，错误: {last_error[:100]}",
+            "suggestions":        ["检查 MiniMax API Key 和网络连通性"],
+            "_llm_available":     False,
+            "_llm_failed":        True,   # 区分"未调用"和"调用失败"
+        }
 
     # ── 质量趋势分析 ────────────────────────
 
@@ -608,12 +621,14 @@ class MetaMonitor:
                              "②扩大标的池（加入期货、外汇）；"
                              "③引入外部数据（宏观因子、另类数据）。")
 
-        # 问题5：新闻传感器失灵
-        no_signal = sum(1 for s in self.snapshots if s.sentiment_conf == 0.0)
-        if no_signal >= len(self.snapshots) * 0.6:
-            issues.append(f"{no_signal}轮新闻置信度为0，情绪模块形同虚设。")
-            suggestions.append("建议：在情绪模块恢复前，默认使用NEUTRAL状态，"
-                             "同时加大MarketRegimeExpert在决策中的权重。")
+        # 问题5：新闻传感器失灵（仅在模块启用时检查）
+        enabled_snaps = [s for s in self.snapshots if getattr(s, "sentiment_enabled", False)]
+        if enabled_snaps:
+            no_signal = sum(1 for s in enabled_snaps if s.sentiment_conf == 0.0)
+            if no_signal >= len(enabled_snaps) * 0.6:
+                issues.append(f"{no_signal}轮新闻置信度为0，情绪模块形同虚设。")
+                suggestions.append("建议：在情绪模块恢复前，默认使用NEUTRAL状态，"
+                                 "同时加大MarketRegimeExpert在决策中的权重。")
 
         return issues, suggestions
 
