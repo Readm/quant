@@ -3,7 +3,7 @@ import { GitBranch, CheckCircle, XCircle,
          AlertCircle, MessageSquare, ChevronDown, ChevronRight,
          Award, RefreshCw, Layers } from 'lucide-react'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
 
@@ -47,11 +47,15 @@ interface Round {
   selected: string[]; converged: boolean
   meta_evaluation: MetaEvaluation
 }
+interface ConvergenceInfo {
+  round1_score: number; final_score: number
+  delta: number; direction: string; converged: boolean
+}
 interface IterationLog {
   thread_id: string; name: string
   run_at: string; symbols: string[]; days: number
   total_rounds: number; rounds: Round[]
-  global_top: any[]; convergence: any
+  global_top: any[]; convergence: ConvergenceInfo
 }
 interface ThreadMeta {
   id: string; name: string; symbols: string[]
@@ -440,6 +444,46 @@ function RoundPanel({ round }: { round: Round }) {
   )
 }
 
+// ── Score Trend Chart ─────────────────────────────────────────────
+function ScoreTrend({ rounds }: { rounds: Round[] }) {
+  const data = rounds.map(r => ({
+    round: r.round,
+    best: Math.max(...r.strategies.map(s => s.score), 0),
+    avg: r.strategies.length > 0
+      ? Math.round(r.strategies.reduce((a, s) => a + s.score, 0) / r.strategies.length * 10) / 10
+      : 0,
+    accepted: r.strategies.filter(s => s.decision === 'ACCEPT').length,
+  }))
+  const yMin = Math.max(0, Math.floor(Math.min(...data.map(d => d.avg)) - 5))
+  return (
+    <ResponsiveContainer width="100%" height={140}>
+      <AreaChart data={data} margin={{ top: 6, right: 12, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="bestGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%"  stopColor="#a78bfa" stopOpacity={0.3}/>
+            <stop offset="95%" stopColor="#a78bfa" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+        <XAxis dataKey="round" tick={{ fill: '#64748b', fontSize: 10 }}
+          label={{ value: '轮次', position: 'insideBottomRight', fill: '#475569', fontSize: 10 }} />
+        <YAxis domain={[yMin, 105]} tick={{ fill: '#64748b', fontSize: 10 }}
+          tickFormatter={v => `${v}`} width={28} />
+        <Tooltip
+          contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 11 }}
+          formatter={(v: number, key: string) => [
+            `${v.toFixed(1)}`,
+            key === 'best' ? '最高分' : '均分'
+          ]} />
+        <Area type="monotone" dataKey="best" stroke="#a78bfa" strokeWidth={2}
+          fill="url(#bestGrad)" dot={{ fill: '#a78bfa', r: 3 }} />
+        <Line type="monotone" dataKey="avg" stroke="#22d3ee" strokeWidth={1.5}
+          strokeDasharray="4 3" dot={false} />
+      </AreaChart>
+    </ResponsiveContainer>
+  )
+}
+
 // ── Thread Selector ───────────────────────────────────────────────
 function ThreadSelector({
   threads, activeId, onSelect,
@@ -560,16 +604,29 @@ export default function IterationView() {
       </div>
 
       {/* Active thread summary */}
-      <div className="flex items-center gap-3 text-xs text-slate-400 bg-slate-800/50 rounded-xl px-4 py-2.5 border border-slate-700/50">
-        <span className="text-white font-semibold">{log.name}</span>
-        <span className="text-slate-600">·</span>
-        <span>{log.symbols.join(' · ')}</span>
-        <span className="text-slate-600">·</span>
-        <span>{log.days} 天数据</span>
-        <span className="text-slate-600">·</span>
-        <span>{log.total_rounds} 轮</span>
-        <span className="text-slate-600">·</span>
-        <span>{new Date(log.run_at).toLocaleString('zh-CN')}</span>
+      <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
+        <div className="flex items-center gap-3 text-xs text-slate-400 px-4 py-2.5 border-b border-slate-700/30">
+          <span className="text-white font-semibold">{log.name}</span>
+          <span className="text-slate-600">·</span>
+          <span>{log.symbols.join(' · ')}</span>
+          <span className="text-slate-600">·</span>
+          <span>{log.days} 天数据</span>
+          <span className="text-slate-600">·</span>
+          <span>{log.total_rounds} 轮</span>
+          {log.convergence && (
+            <>
+              <span className="text-slate-600">·</span>
+              <span className={log.convergence.direction?.includes('↑') ? 'text-green-400' : 'text-red-400'}>
+                {log.convergence.direction} {Math.abs(log.convergence.delta ?? 0).toFixed(1)}分
+              </span>
+            </>
+          )}
+          <span className="ml-auto text-slate-500">{new Date(log.run_at).toLocaleString('zh-CN')}</span>
+        </div>
+        <div className="px-4 pt-3 pb-2">
+          <div className="text-xs text-slate-500 mb-1">各轮最高分（紫）/ 均分（青）</div>
+          <ScoreTrend rounds={log.rounds} />
+        </div>
       </div>
 
       {/* Global top */}

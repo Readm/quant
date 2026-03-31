@@ -157,8 +157,33 @@ class MeanReversionExpert:
             lows_d  = data.get("lows",    closes) if isinstance(data, dict) else closes
             vols_d  = data.get("volumes", [1e9]*n) if isinstance(data, dict) else [1e9]*n
             try:
-                from factors.signals import generate_signal
-                sig_raw = list(generate_signal(key, closes, highs_d, lows_d, vols_d))
+                from factors.mean_reversion import mfi_signal as _mfi, rvi_signal as _rvi, kdwave as _kdw, obos_composite as _obos
+                from factors.momentum import elder_ray_signal as _eld, multi_roc_signal as _roc
+                if key == "mfi_signal":
+                    sig_raw = _mfi(closes, highs_d, lows_d, vols_d,
+                                   period=int(params.get("period", 14)))
+                elif key == "rvi_signal":
+                    sig_raw = _rvi(closes, highs_d, lows_d,
+                                   period=int(params.get("period", 10)))
+                elif key == "kdwave":
+                    _, _, sig_raw = _kdw(highs_d, lows_d, closes,
+                                         k_period=int(params.get("fastk", 9)),
+                                         d_period=int(params.get("slowk", 3)))
+                elif key == "multi_roc_signal":
+                    sig_raw = _roc(closes, periods=[
+                        int(params.get("p1", 5)),
+                        int(params.get("p2", 15)),
+                        int(params.get("p3", 30)),
+                    ])
+                elif key == "obos_composite":
+                    _, sig_raw = _obos(closes, vols_d,
+                                       rsi_period=int(params.get("period", 20)))
+                elif key == "elder_ray_signal":
+                    sig_raw = _eld(closes, highs_d, lows_d,
+                                   period=int(params.get("ema_period", 13)))
+                else:
+                    sig_raw = [0] * n
+                sig_raw = list(sig_raw)
                 if len(sig_raw) < n: sig_raw += [0] * (n - len(sig_raw))
                 return sig_raw[:n]
             except Exception:

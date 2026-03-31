@@ -1,6 +1,8 @@
 
 
 
+from typing import Tuple, List
+
 # ═══════════════════════════════════════════════════════════════════════
 #  扩充因子库 · F17–F59（2026-03-28）
 #  涵盖：Ichimoku · KST · TRIX · Donchian · Aroon · MFI · ADL

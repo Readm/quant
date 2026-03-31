@@ -175,10 +175,39 @@ class TrendExpert:
         elif key in ("ichimoku_signal", "kst", "trix", "donchian_breakout", "aroon_signal"):
             highs_d = data.get("highs", closes) if data else closes
             lows_d  = data.get("lows",  closes) if data else closes
-            vols_d  = data.get("volumes", [1.0]*n) if data else [1.0]*n
             try:
-                from factors.signals import generate_signal
-                raw = list(generate_signal(key, closes, highs_d, lows_d, vols_d))
+                from factors.trend import (
+                    ichimoku_signal as _ichi, kst_signal as _kst,
+                    trix_signal as _trix, donchian_breakout as _don,
+                    aroon_signal as _aroon
+                )
+                if key == "ichimoku_signal":
+                    raw = _ichi(closes, highs_d, lows_d,
+                                tenkan=int(params.get("tenkan", 9)),
+                                kijun=int(params.get("kijun", 26)))
+                elif key == "kst":
+                    from factors.trend import kst as _kst_fn
+                    import math as _math
+                    kst_line, kst_sig = _kst_fn(closes,
+                                                roc1=int(params.get("r1", 10)),
+                                                roc2=int(params.get("r2", 15)))
+                    raw = [1 if kst_line[i] > kst_sig[i] and not _math.isnan(kst_line[i])
+                           else -1 if kst_line[i] < kst_sig[i] and not _math.isnan(kst_line[i])
+                           else 0 for i in range(len(closes))]
+                elif key == "trix":
+                    from factors.trend import trix as _trix_fn
+                    import math as _math
+                    trix_vals, trix_sig = _trix_fn(closes, period=int(params.get("period", 15)))
+                    raw = [1 if not _math.isnan(trix_vals[i]) and trix_vals[i] > trix_sig[i]
+                           else -1 if not _math.isnan(trix_vals[i]) and trix_vals[i] < trix_sig[i]
+                           else 0 for i in range(len(closes))]
+                elif key == "donchian_breakout":
+                    raw = _don(closes, highs_d, lows_d, period=int(params.get("period", 20)))
+                elif key == "aroon_signal":
+                    raw = _aroon(closes, highs_d, lows_d, period=int(params.get("period", 25)))
+                else:
+                    raw = [0] * n
+                raw = list(raw)
                 if len(raw) < n: raw += [0] * (n - len(raw))
                 return self._debounce_signals(raw[:n], min_consecutive=2, cooldown_days=2)
             except Exception:

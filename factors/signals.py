@@ -59,9 +59,9 @@ def generate_signal(factor_id: str, closes: List[float],
         donchian_breakout, aroon_signal
     )
     from factors.mean_reversion import (
-        mfi_signal, rvi_signal, kdwave, obos_composite, multi_roc_signal
+        mfi_signal, rvi_signal, kdwave, obos_composite
     )
-    from factors.momentum import force_index, elder_ray_signal, ppo_signal, momentum_matrix
+    from factors.momentum import force_index, elder_ray_signal, ppo_signal, momentum_matrix, multi_roc_signal
     from factors.volume import (
         accdist, accumulation_distribution_signal,
         volume_price_trend, mass_index, ergodic_oscillator, signal_horizon

@@ -17,11 +17,10 @@ from experts.structured_feedback import (
 )
 
 # ── 硬过滤门槛 ─────────────────────────────
-MIN_ANNUAL_RETURN = 3.0   # 年化低于此 → REJECT
-MIN_SHARPE        = 0.3    # 夏普低于此 → REJECT
-MIN_TRADES        = 0        # 0 = 不淘汰（低频策略也有价值）
-                     # 若需过滤极端情况，改用 SOFT_MIN_TRADES
-SOFT_MIN_TRADES   = 3       # 仅作标记，不淘汰（低频=潜在高置信度）
+MIN_ANNUAL_RETURN = -2.0  # 年化低于此 → REJECT（允许轻微亏损，避免熊市误杀好策略）
+MIN_SHARPE        = 0.05   # 夏普低于此 → REJECT（宽松入场，由综合分排序区分优劣）
+MIN_TRADES        = 3        # 少于此交易次数的策略统计不可靠，直接淘汰
+SOFT_MIN_TRADES   = 8       # 建议最低交易次数（供 meta-expert 参考）
 MAX_DRAWDOWN      = 35.0   # 回撤高于此 → REJECT
 
 # ── 打分权重 ────────────────────────────────

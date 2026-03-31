@@ -105,6 +105,7 @@ class Orchestrator:
         self.best_score     = 0.0
         self.no_improve     = 0
         self.monitor        = MetaMonitor(report_every=5)
+        self._seen_cand_hashes: set = set()  # similarity dedup across all rounds
 
     def run(self):
         print("="*68)
@@ -120,15 +121,21 @@ class Orchestrator:
             need_div = self.evaluator.need_diversify()
             fb_list  = [fb.to_simple_dict() for fb in self.evaluator.fb_history.entries]
 
-            t_cands  = self._generate_diverse_candidates(self.trend_expert, 30, fb_list, need_div, "trend")
-            mr_cands = self._generate_diverse_candidates(self.mr_expert, 20, fb_list, need_div, "mean_reversion")
+            _dedup_rng = random.Random(self.seed + rnd * 7919)
+            t_cands  = self._dedup_candidates(
+                self._generate_diverse_candidates(self.trend_expert, 30, fb_list, need_div, "trend", rnd),
+                _dedup_rng)
+            mr_cands = self._dedup_candidates(
+                self._generate_diverse_candidates(self.mr_expert, 20, fb_list, need_div, "mean_reversion", rnd),
+                _dedup_rng)
             all_cands = t_cands + mr_cands
 
-            main_data = symbols_data[0]["data"]
-            main_inds = symbols_data[0]["indicators"]
+            t_reports  = self._backtest_multi_symbol(self.trend_expert,  t_cands,  symbols_data)
+            mr_reports = self._backtest_multi_symbol(self.mr_expert,     mr_cands, symbols_data)
 
-            t_reports = [self.trend_expert.backtest(main_data, main_inds, c["params"], c["template_key"], strategy_id=c["strategy_id"]) for c in t_cands]
-            mr_reports = [self.mr_expert.backtest(main_data, main_inds, c["params"], c["template_key"], strategy_id=c["strategy_id"]) for c in mr_cands]
+            # Register completed-backtest hashes (post-evaluation, authoritative)
+            for c in t_cands + mr_cands:
+                self._seen_cand_hashes.add(self._cand_hash(c["template_key"], c["params"]))
 
             for r, c in zip(t_reports, t_cands):
                 r.strategy_id   = c["strategy_id"]
@@ -212,16 +219,18 @@ class Orchestrator:
             snap = self._make_snapshot(rnd, t_evals, mr_evals, debate, risk_results, sent, regime)
             self.monitor.record_round(snap)
 
-            # 3轮无提升收敛判断
-            top_score = max((float(getattr(e, "composite", 0)) for e in final), default=0.0)
+            # 收敛判断：基于 all_pass（不只是 final 前4名），5轮无提升才收敛
+            NO_IMPROVE_THRESHOLD = 5
+            top_score = max((float(getattr(e, "composite", 0)) for e in all_pass), default=0.0)
             if top_score > self.best_score + 0.1:
                 self.best_score = top_score
                 self.no_improve = 0
                 print(f"\n[收敛] 冠军分提升至 {top_score:.1f}")
             else:
                 self.no_improve += 1
-                print(f"\n[收敛] 冠军分未提升（{self.no_improve}/3），当前={top_score:.1f} 最高={self.best_score:.1f}")
-            converged = (self.no_improve >= 3)
+                print(f"\n[收敛] 冠军分未提升（{self.no_improve}/{NO_IMPROVE_THRESHOLD}），"
+                      f"当前最高={top_score:.1f} 历史={self.best_score:.1f}")
+            converged = (self.no_improve >= NO_IMPROVE_THRESHOLD)
 
             # ── LLM 元专家评估（每轮，可覆盖收敛判断）─────────────
             round_strats = [eval_to_strat_dict(e) for e in t_evals + mr_evals]
@@ -262,6 +271,60 @@ class Orchestrator:
 
     # ── 多样性约束生成 ─────────────────────
 
+    # ── 多标的回测（选股核心）─────────────────────────────────────
+    def _backtest_multi_symbol(self, expert, cands, symbols_data):
+        """
+        每个候选策略在所有标的上独立回测，保留表现最佳的标的结果。
+        这实现了基础的「选股」语义：同一参数在不同股票上表现不同，
+        系统自动找到最匹配该策略信号的标的。
+        最终报告中 strategy_name 附加最佳标的代码，可追溯来源。
+        """
+        import copy
+        results = []
+        sym_list = [sd["symbol"] for sd in symbols_data] if isinstance(symbols_data[0], dict) and "symbol" in symbols_data[0] else \
+                   [f"sym{i}" for i in range(len(symbols_data))]
+
+        for c in cands:
+            best_report = None
+            best_composite = -1e9
+
+            for idx, sd in enumerate(symbols_data):
+                d    = sd["data"]
+                inds = sd["indicators"]
+                try:
+                    r = expert.backtest(d, inds, c["params"], c["template_key"], strategy_id=c["strategy_id"])
+                except Exception as ex:
+                    continue
+
+                # 轻量评分（不写入 fb_history，避免污染反馈历史）
+                ann  = getattr(r, "annualized_return", 0.0)
+                shr  = getattr(r, "sharpe_ratio", 0.0)
+                dd   = getattr(r, "max_drawdown_pct", 100.0)
+                n_tr = getattr(r, "total_trades", 0)
+                # 惩罚零交易策略；年化+夏普综合评分
+                score = (ann * 0.5 + shr * 20 - dd * 0.2) if n_tr > 0 else -999.0
+
+                if score > best_composite:
+                    best_composite = score
+                    best_report = copy.copy(r)
+                    best_report._best_symbol = sym_list[idx]
+
+            if best_report is None:
+                # 所有标的均失败，用第一个标的的空报告
+                cls = type(expert).__mro__[0]
+                from experts.specialists.expert1a_trend import BacktestReport
+                best_report = BacktestReport(strategy_id=c["strategy_id"], strategy_name=c["strategy_name"])
+
+            best_report.strategy_id   = c["strategy_id"]
+            best_report.strategy_type = c["strategy_type"]
+            # 在名称中标注最佳标的，便于溯源
+            sym_tag = getattr(best_report, "_best_symbol", "")
+            if sym_tag and sym_tag not in best_report.strategy_name:
+                best_report.strategy_name = f"{best_report.strategy_name}({sym_tag})"
+            results.append(best_report)
+
+        return results
+
     # 全量参数搜索空间（宽范围随机探索）
     _PARAM_RANGES = {
         # ── 原有趋势策略 ─────────────────────────────────────────────
@@ -289,6 +352,50 @@ class Orchestrator:
         "elder_ray_signal":  {"ema_period": (8, 26)},
     }
 
+    @staticmethod
+    def _cand_hash(template_key: str, params: dict) -> str:
+        """Similarity hash: bucket continuous params to nearest 5% step."""
+        def _bucket(v):
+            if isinstance(v, float): return round(v * 20) / 20  # 0.05 buckets
+            if isinstance(v, int):   return round(v / 3) * 3     # nearest-3 buckets
+            return v
+        bucketed = {k: _bucket(v) for k, v in sorted(params.items())}
+        return f"{template_key}|{bucketed}"
+
+    def _dedup_candidates(self, cands: list, rng: random.Random) -> list:
+        """Remove candidates whose similarity hash already exists in _seen_cand_hashes.
+        Replace duplicates with a fresh random candidate of the same template type.
+        """
+        templates_map = {t["key"]: t for t in
+                         getattr(self.trend_expert, "TEMPLATES", []) +
+                         getattr(self.mr_expert,    "TEMPLATES", [])}
+        result = []
+        for c in cands:
+            h = self._cand_hash(c["template_key"], c["params"])
+            if h in self._seen_cand_hashes:
+                # replace with fresh params, up to 5 tries
+                tpl = templates_map.get(c["template_key"])
+                replaced = False
+                for _ in range(5):
+                    fp = self._fresh_random_params(c["template_key"], rng) if tpl else {}
+                    if not fp:
+                        fp = self._randomize(dict(tpl["params"] if tpl else {}), 0.5, rng)
+                    nh = self._cand_hash(c["template_key"], fp)
+                    if nh not in self._seen_cand_hashes:
+                        nc = dict(c); nc["params"] = fp
+                        nc["diversity_note"] = (c.get("diversity_note", "") or "") + "+去重"
+                        result.append(nc)
+                        self._seen_cand_hashes.add(nh)
+                        replaced = True
+                        break
+                if not replaced:
+                    result.append(c)  # keep original if can't find unique replacement
+                    self._seen_cand_hashes.add(h)
+            else:
+                result.append(c)
+                self._seen_cand_hashes.add(h)
+        return result
+
     def _fresh_random_params(self, template_key: str, rng: random.Random) -> dict:
         """从宽范围均匀采样参数，远比 ±30% 扰动更多样"""
         ranges = self._PARAM_RANGES.get(template_key, {})
@@ -306,8 +413,8 @@ class Orchestrator:
                 out["slow"] = out["fast"] + rng.randint(10, 80)
         return out
 
-    def _generate_diverse_candidates(self, expert, count, fb_list, need_div, stype):
-        rng      = random.Random(self.seed + hash(stype) + len(fb_list))
+    def _generate_diverse_candidates(self, expert, count, fb_list, need_div, stype, rnd=1):
+        rng      = random.Random(self.seed + hash(stype) + len(fb_list) + rnd * 1013)
         out      = []
         type_fbs = [f for f in fb_list if f.get("strategy_type") == stype]
 
@@ -322,6 +429,23 @@ class Orchestrator:
         # 获取专家的所有模板
         templates = getattr(expert, "TEMPLATES", [])
         tpl_keys  = [t["key"] for t in templates]
+
+        # Per-template cap: no single template can take more than 40% of slots
+        _tpl_cap = max(2, round(count * 0.40 / max(len(tpl_keys), 1)))
+        _tpl_count: dict = {}  # template_key → count in `out`
+
+        def _tpl_ok(key):
+            return _tpl_count.get(key, 0) < _tpl_cap
+
+        def _pick_tpl_with_cap(preferred_key):
+            """Return preferred if under cap, else next uncapped template by weight."""
+            if _tpl_ok(preferred_key):
+                return preferred_key
+            # Fallback: pick first uncapped template (by failed_templates weight descending)
+            for k in sorted(tpl_keys, key=lambda k: failed_templates.get(k, 0)):
+                if _tpl_ok(k):
+                    return k
+            return preferred_key  # all capped, allow overflow
 
         # ── 1/3 宽范围随机探索（不依赖默认参数，全空间采样）──────────
         n_rand = max(1, round(count * 0.35))
@@ -340,6 +464,7 @@ class Orchestrator:
                 if pick_r <= acc:
                     chosen_key = k
                     break
+            chosen_key = _pick_tpl_with_cap(chosen_key)
             tpl  = next((t for t in templates if t["key"] == chosen_key), templates[i % len(templates)])
             fresh_params = self._fresh_random_params(tpl["key"], rng)
             if not fresh_params:
@@ -355,13 +480,14 @@ class Orchestrator:
                 "diversity_note": f"宽范围随机({tpl['key']})",
             }
             out.append(c)
+            _tpl_count[tpl["key"]] = _tpl_count.get(tpl["key"], 0) + 1
 
         # ── 1/3 结构化反馈调参（每个反馈给不同处方）─────────────────
         n_fb = max(1, round(count * 0.35))
         if type_fbs:
             # 取最近 n_fb 条反馈，每条产生一个候选
             for fb in type_fbs[-n_fb:]:
-                tk   = fb.get("template_key", tpl_keys[0])
+                tk   = _pick_tpl_with_cap(fb.get("template_key", tpl_keys[0]))
                 tpl  = next((t for t in templates if t["key"] == tk), templates[0])
                 params = self._apply_sf_adjustment(dict(tpl["params"]), fb)
                 # 再叠加小扰动，避免和默认值完全相同
@@ -377,6 +503,7 @@ class Orchestrator:
                     "diversity_note": f"反馈({fb.get('adjustment','?')}/{fb.get('param','?')})",
                 }
                 out.append(c)
+                _tpl_count[tk] = _tpl_count.get(tk, 0) + 1
         else:
             # 无反馈时额外随机
             for _ in range(n_fb):
@@ -389,13 +516,16 @@ class Orchestrator:
         # ── 剩余：Exploitation（对历史最高分参数做邻域搜索）──────────
         while len(out) < count:
             if type_fbs:
-                best = max(type_fbs, key=lambda f: f.get("composite", 0))
-                tk   = best.get("template_key", tpl_keys[0])
+                # Pick highest-scoring feedback whose template is still under cap
+                sorted_fbs = sorted(type_fbs, key=lambda f: f.get("composite", 0), reverse=True)
+                best = next((f for f in sorted_fbs if _tpl_ok(f.get("template_key",""))), sorted_fbs[0])
+                tk   = _pick_tpl_with_cap(best.get("template_key", tpl_keys[0]))
                 tpl  = next((t for t in templates if t["key"] == tk), templates[0])
                 params = self._apply_sf_adjustment(dict(tpl["params"]), best)
                 params = self._randomize(params, 0.20, rng)
             else:
-                tpl    = rng.choice(templates)
+                chosen = _pick_tpl_with_cap(rng.choice(tpl_keys))
+                tpl    = next((t for t in templates if t["key"] == chosen), templates[0])
                 params = self._fresh_random_params(tpl["key"], rng) or dict(tpl["params"])
             import uuid
             c = {
@@ -408,6 +538,7 @@ class Orchestrator:
                 "diversity_note": "Exploitation邻域",
             }
             out.append(c)
+            _tpl_count[tpl["key"]] = _tpl_count.get(tpl["key"], 0) + 1
 
         return out[:count]
 
@@ -571,13 +702,26 @@ class Orchestrator:
             for i in range(period, len(trs)):
                 out.append((out[-1]*(period-1)+trs[i])/period)
             return out
+        # Wilder ADX
+        try:
+            from experts.modules.data_fetcher import compute_realistic_indicators as _cri
+            _ext = _cri({'closes': closes, 'highs': highs or closes, 'lows': lows or closes})
+            adx_v  = _ext.get('adx',  [0.0]*n)
+            ma5_v  = _ext.get('ma5',  [0.0]*n)
+            ma10_v = _ext.get('ma10', [0.0]*n)
+        except Exception:
+            adx_v = ma5_v = ma10_v = [0.0]*n
+
         return {
             'returns': rets,
+            'ma5':     ma5_v,
+            'ma10':    ma10_v,
             'ma20':    sma(closes, 20),
             'ma60':    sma(closes, 60),
             'ma200':   sma(closes, 200) if n >= 200 else [None]*n,
             'rsi14':   rsi(closes, 14),
             'atr14':   atr(highs, lows, closes, 14),
+            'adx':     adx_v,
         }
 
     # Tencent realtime API symbol mapping (only well-known non-A-share symbols)
@@ -622,16 +766,21 @@ class Orchestrator:
         for sym in self.symbols:
             if sym not in result:
                 raise RuntimeError(f"数据加载失败：{sym}")
-            inds = result[sym]["indicators"]
-            rets = inds.get('returns', result[sym]['data'].get('closes', []))
-            if not rets:
-                closes = result[sym]["data"]["closes"]
-                rets = [0.0] + [(closes[i]/closes[i-1]-1) for i in range(1, len(closes))]
+            inds  = result[sym]["indicators"]
+            raw_d = result[sym]["data"]
+            closes = raw_d["closes"]
+            rets = [0.0] + [(closes[i]/closes[i-1]-1) for i in range(1, len(closes))]
             out.append({
                 "symbol":     sym,
                 "data":       {
-                    "closes": result[sym]["data"]["closes"],
+                    "closes":  closes,
                     "returns": rets,
+                    # Pass OHLCV for experts that need highs/lows/volumes
+                    "opens":   raw_d.get("opens",  closes),
+                    "highs":   raw_d.get("highs",  closes),
+                    "lows":    raw_d.get("lows",   closes),
+                    "volumes": raw_d.get("volumes", [1e9]*len(closes)),
+                    "dates":   raw_d.get("dates",  []),
                 },
                 "indicators": inds,
             })

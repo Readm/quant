@@ -20,20 +20,20 @@ def ichimoku_cloud(highs: list, lows: list, closes: list,
             return float("nan")
         return (max(h_arr[idx - period + 1:idx + 1]) + min(l_arr[idx - period + 1:idx + 1])) / 2.0
 
-    tenkan_s = [float("nan")] * n
-    kijun_s  = [float("nan")] * n
-    senkou_a = [float("nan")] * n
-    senkou_b = [float("nan")] * n
-    chikou   = [float("nan")] * n
+    tenkan_s  = [float("nan")] * n
+    kijun_s   = [float("nan")] * n
+    senkou_a  = [float("nan")] * n
+    senkou_b_ = [float("nan")] * n
+    chikou    = [float("nan")] * n
 
     for i in range(n):
-        tenkan_s[i] = _mid(highs, lows, tenkan, i)
-        kijun_s[i]  = _mid(highs, lows, kijun, i)
-        senkou_a[i] = (tenkan_s[i] + kijun_s[i]) / 2.0 \
+        tenkan_s[i]  = _mid(highs, lows, tenkan, i)
+        kijun_s[i]   = _mid(highs, lows, kijun, i)
+        senkou_a[i]  = (tenkan_s[i] + kijun_s[i]) / 2.0 \
             if not (math.isnan(tenkan_s[i]) or math.isnan(kijun_s[i])) else float("nan")
-        senkou_b[i] = _mid(highs, lows, senkou_b, i)
-        chikou[i]   = closes[i - displacement] if i >= displacement else float("nan")
-    return tenkan_s, kijun_s, senkou_a, senkou_b, chikou
+        senkou_b_[i] = _mid(highs, lows, senkou_b, i)
+        chikou[i]    = closes[i - displacement] if i >= displacement else float("nan")
+    return tenkan_s, kijun_s, senkou_a, senkou_b_, chikou
 
 
 def ichimoku_signal(closes: list, highs: list, lows: list,
@@ -193,11 +193,12 @@ def donchian_breakout(closes: list, highs: list, lows: list,
     n = len(closes)
     signal = [0] * n
     for i in range(period, n):
-        if math.isnan(upper[i]) or math.isnan(lower[i]):
+        # Use previous bar's channel: close > prev upper = breakout
+        if math.isnan(upper[i-1]) or math.isnan(lower[i-1]):
             continue
-        if closes[i] > upper[i]:
+        if closes[i] > upper[i-1]:
             signal[i] = 1
-        elif closes[i] < lower[i]:
+        elif closes[i] < lower[i-1]:
             signal[i] = -1
     return signal
 
