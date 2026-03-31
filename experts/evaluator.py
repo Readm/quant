@@ -87,6 +87,9 @@ class EvalResult:
     benchmark_ann_return: float = 0.0   # 基准年化收益
     alpha: float = 0.0                     # 超额收益
 
+    # ── 模板标识 ─────────────────────
+    template_key: str = ""
+
     # ── 结构化反馈 ───────────────────
     structured_feedback: Optional[StructuredFeedback] = None
 
@@ -234,12 +237,13 @@ class Evaluator:
             elimination_note=elim_note,
             pbo_score=0.0, pbo_label=pbo_label, pbo_multiplier=pbo_multiplier,
             benchmark_ann_return=round(benchmark_ann, 2), alpha=round(alpha, 2),
+            template_key=template_key,
             structured_feedback=sfb,
         )
 
     def evaluate_batch(self, reports: list) -> List[EvalResult]:
         """批量评估并按综合分降序排列"""
-        results = [self.evaluate(r) for r in reports]
+        results = [self.evaluate(r, template_key=getattr(r, "template_key", "")) for r in reports]
         results.sort(key=lambda x: x.composite, reverse=True)
         return results
 
@@ -329,16 +333,23 @@ class Evaluator:
         返回 (ir_score, benchmark_ann_return, alpha)。
 
         IR = E[策略日收益 - 基准日收益] / std(策略日收益 - 基准日收益)
+        无基准时退化为夏普率（基准视为0收益）。
         """
-        if not daily_rets or not self.benchmark_returns:
+        if not daily_rets:
             return 0.0, 0.0, 0.0
 
-        n = min(len(daily_rets), len(self.benchmark_returns))
+        n_avail = len(daily_rets)
+        if self.benchmark_returns:
+            n = min(n_avail, len(self.benchmark_returns))
+        else:
+            n = n_avail
+
         if n < 30:
             return 0.0, 0.0, 0.0
 
         strats = daily_rets[:n]
-        benchs = self.benchmark_returns[:n]
+        # 无基准时以0为基准（退化为夏普），保证IR评分不为0
+        benchs = self.benchmark_returns[:n] if self.benchmark_returns else [0.0] * n
 
         # 超额日收益
         excess = [s - b for s, b in zip(strats, benchs)]
@@ -354,7 +365,7 @@ class Evaluator:
 
         # 年化
         ann_excess = mean_excess * 252
-        ann_bench  = sum(benchs) / n * 252
+        ann_bench  = (sum(benchs) / n * 252) if self.benchmark_returns else 0.0
 
         return self._s_ir(ir), round(ann_bench * 100, 2), round(ann_excess * 100, 2)
 

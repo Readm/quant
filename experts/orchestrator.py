@@ -144,6 +144,7 @@ class Orchestrator:
         self.no_improve     = 0
         self.monitor        = MetaMonitor(report_every=5)
         self._seen_cand_hashes: set = set()  # similarity dedup across all rounds
+        self._best_ever: dict = {}           # template_key → {params, portfolio_params, score}
 
         # ── 元专家动态参数 ──────────────────────────────────
         self._meta_params = {
@@ -232,6 +233,20 @@ class Orchestrator:
             mr_pass = [e for e in mr_evals if e.decision != "REJECT"]
             all_pass = t_pass + mr_pass
             print(f"\n[评估] 通过 {len(all_pass)} 个（趋势{len(t_pass)}+均值回归{len(mr_pass)}）")
+
+            # 更新 best-ever 注册表（跨轮次保留最优参数）
+            id_to_cand = {c['strategy_id']: c for c in t_cands + mr_cands}
+            for e in t_evals + mr_evals:
+                if e.decision == 'REJECT':
+                    continue
+                cand = id_to_cand.get(e.strategy_id, {})
+                tk = cand.get('template_key', '') or e.template_key
+                if tk and e.composite > self._best_ever.get(tk, {}).get('score', -999):
+                    self._best_ever[tk] = {
+                        'params': dict(e.params),
+                        'portfolio_params': dict(cand.get('portfolio_params', {})),
+                        'score': e.composite,
+                    }
 
             if not all_pass:
                 print("  ⚠️ 无候选通过，跳过本轮"); continue
@@ -511,6 +526,7 @@ class Orchestrator:
                     strategy_id=c["strategy_id"], strategy_name=c["strategy_name"])
             best_report.strategy_id   = c["strategy_id"]
             best_report.strategy_type = c["strategy_type"]
+            best_report.template_key  = c.get("template_key", "")
             sym_tag = getattr(best_report, "_best_symbol", "")
             if sym_tag and sym_tag not in best_report.strategy_name:
                 best_report.strategy_name = f"{best_report.strategy_name}({sym_tag})"
@@ -616,7 +632,7 @@ class Orchestrator:
         return out
 
     def _generate_diverse_candidates(self, expert, count, fb_list, need_div, stype, rnd=1):
-        rng      = random.Random(self.seed + hash(stype) + len(fb_list) + rnd * 1013)
+        rng      = random.Random(self.seed + hash(stype) + rnd * 1013)
         out      = []
         type_fbs = [f for f in fb_list if f.get("strategy_type") == stype]
 
@@ -687,11 +703,14 @@ class Orchestrator:
         # ── 1/3 结构化反馈调参（每个反馈给不同处方）─────────────────
         n_fb = max(1, round(count * 0.35))
         if type_fbs:
-            # 取最近 n_fb 条反馈，每条产生一个候选
-            for fb in type_fbs[-n_fb:]:
+            # 取分数最高的 n_fb 条反馈（而非最近的），每条产生一个候选
+            top_fbs = sorted(type_fbs, key=lambda f: f.get("composite", 0), reverse=True)[:n_fb]
+            for fb in top_fbs:
                 tk   = _pick_tpl_with_cap(fb.get("template_key", tpl_keys[0]))
                 tpl  = next((t for t in templates if t["key"] == tk), templates[0])
-                params = self._apply_sf_adjustment(dict(tpl["params"]), fb)
+                # 以历史最优参数为基础（非模板默认值），保持参数进化方向
+                base_params = dict(self._best_ever.get(tk, {}).get('params', tpl["params"]))
+                params = self._apply_sf_adjustment(base_params, fb)
                 # 再叠加小扰动，避免和默认值完全相同
                 params = self._randomize(params, 0.15, rng)
                 import uuid
@@ -715,7 +734,7 @@ class Orchestrator:
                 c["diversity_note"] = "无反馈随机"
                 out.append(c)
 
-        # ── 剩余：Exploitation（对历史最高分参数做邻域搜索）──────────
+        # ── 剩余：Exploitation（对历史最优参数做邻域搜索）──────────
         while len(out) < count:
             if type_fbs:
                 # Pick highest-scoring feedback whose template is still under cap
@@ -723,7 +742,9 @@ class Orchestrator:
                 best = next((f for f in sorted_fbs if _tpl_ok(f.get("template_key",""))), sorted_fbs[0])
                 tk   = _pick_tpl_with_cap(best.get("template_key", tpl_keys[0]))
                 tpl  = next((t for t in templates if t["key"] == tk), templates[0])
-                params = self._apply_sf_adjustment(dict(tpl["params"]), best)
+                # 以历史最优参数为基础（非模板默认值）
+                base_params = dict(self._best_ever.get(tk, {}).get('params', tpl["params"]))
+                params = self._apply_sf_adjustment(base_params, best)
                 params = self._randomize(params, 0.20, rng)
             else:
                 chosen = _pick_tpl_with_cap(rng.choice(tpl_keys))
@@ -762,17 +783,35 @@ class Orchestrator:
                                   fb_list: list) -> dict:
         """
         为候选策略随机采样组合参数。
-        如果历史反馈中有关于该策略的 portfolio 建议，则按反馈调整。
+        有 50% 概率以历史最优组合参数为基础做小扰动（保持参数记忆）。
         """
         ranges = self._PORTFOLIO_PARAM_RANGES
+        tk = cand.get("template_key", "")
+        best_pp = self._best_ever.get(tk, {}).get('portfolio_params', {})
 
-        # 先随机基础值
-        pp = {
-            "n_stocks":         rng.choice(ranges["n_stocks"]),
-            "rebalance_freq":   rng.choice(ranges["rebalance_freq"]),
-            "weight_method":    rng.choice(ranges["weight_method"]),
-            "max_position_pct": round(rng.uniform(*ranges["max_position_pct"]), 2),
-        }
+        if best_pp and rng.random() < 0.5:
+            # 以历史最优组合参数为基础，做小幅扰动
+            n_opts = ranges["n_stocks"]
+            r_opts = ranges["rebalance_freq"]
+            curr_n = best_pp.get('n_stocks', n_opts[0])
+            curr_r = best_pp.get('rebalance_freq', r_opts[0])
+            n_idx = n_opts.index(curr_n) if curr_n in n_opts else 0
+            r_idx = r_opts.index(curr_r) if curr_r in r_opts else 0
+            pp = {
+                "n_stocks":         n_opts[max(0, min(len(n_opts)-1, n_idx + rng.randint(-1, 1)))],
+                "rebalance_freq":   r_opts[max(0, min(len(r_opts)-1, r_idx + rng.randint(-1, 1)))],
+                "weight_method":    best_pp.get('weight_method', rng.choice(ranges["weight_method"])),
+                "max_position_pct": round(min(1.0, max(0.3,
+                    best_pp.get('max_position_pct', 0.6) + rng.uniform(-0.1, 0.1))), 2),
+            }
+        else:
+            # 全随机基础值
+            pp = {
+                "n_stocks":         rng.choice(ranges["n_stocks"]),
+                "rebalance_freq":   rng.choice(ranges["rebalance_freq"]),
+                "weight_method":    rng.choice(ranges["weight_method"]),
+                "max_position_pct": round(rng.uniform(*ranges["max_position_pct"]), 2),
+            }
 
         # 按历史反馈微调组合参数
         tk = cand.get("template_key", "")

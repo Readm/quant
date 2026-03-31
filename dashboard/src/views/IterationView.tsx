@@ -14,7 +14,7 @@ interface Strategy {
   params: Record<string, number>
   decision: string; score: number
   ann_return: number; sharpe: number; max_drawdown: number
-  win_rate: number; total_trades: number
+  win_rate: number; total_trades: number; alpha: number
   feedback: string; weakness: string; adjustment: string
   adj_param: string; reason: string
   equity_curve: EquityPoint[]
@@ -46,6 +46,7 @@ interface Round {
   debate: Debate; holdout: any[]
   selected: string[]; converged: boolean
   meta_evaluation: MetaEvaluation
+  benchmark_equity?: EquityPoint[]
 }
 interface ConvergenceInfo {
   round1_score: number; final_score: number
@@ -88,57 +89,71 @@ function DecisionBadge({ d }: { d: string }) {
 }
 
 // ── Equity Curves Chart ───────────────────────────────────────────
-function EquityCurvesChart({ strategies }: { strategies: Strategy[] }) {
-  const visible = strategies.filter(s => s.equity_curve.length > 0)
+function EquityCurvesChart({ strategies, benchmarkEquity }: {
+  strategies: Strategy[]
+  benchmarkEquity?: EquityPoint[]
+}) {
+  // Only show ACCEPT strategies with equity data
+  const visible = strategies.filter(s => s.decision === 'ACCEPT' && s.equity_curve.length > 0)
   if (visible.length === 0)
-    return <div className="text-slate-500 text-sm p-4">无 equity 数据</div>
+    return <div className="text-slate-500 text-sm p-4">本轮无 ACCEPT 策略</div>
 
-  // Use strategy id as unique dataKey to avoid name collisions
-  const minLen = Math.min(...visible.map(s => s.equity_curve.length))
+  const hasBench = benchmarkEquity && benchmarkEquity.length > 0
+  const minLen = Math.min(
+    ...visible.map(s => s.equity_curve.length),
+    ...(hasBench ? [benchmarkEquity!.length] : [])
+  )
   const data = Array.from({ length: minLen }, (_, i) => {
     const pt: Record<string, number> = { i }
     visible.forEach(s => { pt[s.id] = s.equity_curve[i]?.v ?? 100 })
+    if (hasBench) pt['__bench__'] = benchmarkEquity![i]?.v ?? 100
     return pt
   })
 
-  // Tight Y domain with 1% padding each side
-  const allVals = data.flatMap(pt => visible.map(s => pt[s.id] ?? 100))
-  const yMin = Math.floor(Math.min(...allVals) * 0.99)
-  const yMax = Math.ceil(Math.max(...allVals) * 1.01)
+  const stratVals = data.flatMap(pt => visible.map(s => pt[s.id] ?? 100))
+  const benchVals = hasBench ? data.map(pt => pt['__bench__'] ?? 100) : []
+  const allVals   = [...stratVals, ...benchVals]
+  const yMin = Math.floor(Math.min(...allVals) * 0.98)
+  const yMax = Math.ceil(Math.max(...allVals)  * 1.02)
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <LineChart data={data} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
+    <ResponsiveContainer width="100%" aspect={2.4}>
+      <LineChart data={data} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
         <XAxis dataKey="i" tick={{ fill: '#64748b', fontSize: 10 }}
           label={{ value: '交易日', position: 'insideBottomRight', fill: '#475569', fontSize: 10 }} />
         <YAxis domain={[yMin, yMax]} tick={{ fill: '#64748b', fontSize: 10 }}
-          tickFormatter={v => `${v.toFixed(0)}`}
+          tickFormatter={v => `${v.toFixed(0)}`} width={36}
           label={{ value: '净值', angle: -90, position: 'insideLeft', fill: '#475569', fontSize: 10 }} />
         <ReferenceLine y={100} stroke="#475569" strokeDasharray="4 2" />
         <Tooltip
           contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 11 }}
-          formatter={(v: number, _key, props) => {
-            const s = visible.find(x => x.id === props.dataKey)
-            const label = s ? `${s.name} (${s.type === 'trend' ? '趋势' : 'MR'})` : String(props.dataKey)
+          formatter={(v: number, key: string) => {
+            if (key === '__bench__') return [`${(v as number).toFixed(2)}`, '沪深300基准']
+            const s = visible.find(x => x.id === key)
+            const label = s ? `${s.name} (alpha ${s.alpha >= 0 ? '+' : ''}${s.alpha?.toFixed(1) ?? '0.0'}%)` : key
             return [`${(v as number).toFixed(2)}`, label]
           }}
         />
         <Legend
-          formatter={(_value, entry) => {
+          formatter={(_v, entry) => {
+            if (entry.dataKey === '__bench__') return '沪深300基准'
             const s = visible.find(x => x.id === entry.dataKey)
-            return s ? `${s.name} ${s.params ? Object.values(s.params).join('/') : ''}` : String(entry.dataKey)
+            return s ? `${s.name} [α${s.alpha >= 0 ? '+' : ''}${s.alpha?.toFixed(1) ?? '0'}%]` : String(entry.dataKey)
           }}
           wrapperStyle={{ fontSize: 10, paddingTop: 6 }}
         />
         {visible.map((s, i) => (
           <Line key={s.id} type="monotone" dataKey={s.id}
-            name={s.name}
             stroke={COLORS[i % COLORS.length]}
-            strokeWidth={s.selected ? 2.5 : 1}
-            strokeDasharray={s.selected ? undefined : '4 3'}
+            strokeWidth={s.selected ? 2.5 : 1.5}
             dot={false} />
         ))}
+        {hasBench && (
+          <Line key="__bench__" type="monotone" dataKey="__bench__"
+            stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="6 3"
+            dot={false} />
+        )}
       </LineChart>
     </ResponsiveContainer>
   )
@@ -423,9 +438,12 @@ function RoundPanel({ round }: { round: Round }) {
       {tab === 'curves' && (
         <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
           <div className="text-xs text-slate-400 mb-3">
-            所有候选策略净值曲线对比（初始=100，实线=入选，虚线=淘汰）
+            本轮 ACCEPT 策略净值曲线（初始=100），灰色虚线=沪深300基准
           </div>
-          <EquityCurvesChart strategies={round.strategies} />
+          <EquityCurvesChart
+            strategies={round.strategies}
+            benchmarkEquity={round.benchmark_equity}
+          />
         </div>
       )}
 
@@ -446,41 +464,66 @@ function RoundPanel({ round }: { round: Round }) {
 
 // ── Score Trend Chart ─────────────────────────────────────────────
 function ScoreTrend({ rounds }: { rounds: Round[] }) {
-  const data = rounds.map(r => ({
-    round: r.round,
-    best: Math.max(...r.strategies.map(s => s.score), 0),
-    avg: r.strategies.length > 0
-      ? Math.round(r.strategies.reduce((a, s) => a + s.score, 0) / r.strategies.length * 10) / 10
-      : 0,
-    accepted: r.strategies.filter(s => s.decision === 'ACCEPT').length,
-  }))
-  const yMin = Math.max(0, Math.floor(Math.min(...data.map(d => d.avg)) - 5))
+  const data = rounds.map(r => {
+    const accepted = r.strategies.filter(s => s.decision === 'ACCEPT')
+    // Champion alpha = alpha of top-scoring accepted strategy this round
+    const champion = accepted.length > 0
+      ? accepted.reduce((a, b) => a.score > b.score ? a : b)
+      : null
+    return {
+      round: r.round,
+      best: Math.max(...r.strategies.map(s => s.score), 0),
+      avg: r.strategies.length > 0
+        ? Math.round(r.strategies.reduce((a, s) => a + s.score, 0) / r.strategies.length * 10) / 10
+        : 0,
+      alpha: champion ? Math.round((champion.alpha ?? 0) * 10) / 10 : null,
+    }
+  })
+  const scoreVals = data.flatMap(d => [d.best, d.avg])
+  const yMinScore = Math.max(0, Math.floor(Math.min(...scoreVals) - 5))
+  const alphaVals = data.map(d => d.alpha).filter((v): v is number => v !== null)
+  const yMinAlpha = alphaVals.length > 0 ? Math.floor(Math.min(...alphaVals) - 3) : -10
+  const yMaxAlpha = alphaVals.length > 0 ? Math.ceil(Math.max(...alphaVals) + 3) : 30
+  const hasAlpha = alphaVals.length > 0
+
   return (
-    <ResponsiveContainer width="100%" height={140}>
-      <AreaChart data={data} margin={{ top: 6, right: 12, left: 0, bottom: 0 }}>
-        <defs>
-          <linearGradient id="bestGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#a78bfa" stopOpacity={0.3}/>
-            <stop offset="95%" stopColor="#a78bfa" stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-        <XAxis dataKey="round" tick={{ fill: '#64748b', fontSize: 10 }}
-          label={{ value: '轮次', position: 'insideBottomRight', fill: '#475569', fontSize: 10 }} />
-        <YAxis domain={[yMin, 105]} tick={{ fill: '#64748b', fontSize: 10 }}
-          tickFormatter={v => `${v}`} width={28} />
-        <Tooltip
-          contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 11 }}
-          formatter={(v: number, key: string) => [
-            `${v.toFixed(1)}`,
-            key === 'best' ? '最高分' : '均分'
-          ]} />
-        <Area type="monotone" dataKey="best" stroke="#a78bfa" strokeWidth={2}
-          fill="url(#bestGrad)" dot={{ fill: '#a78bfa', r: 3 }} />
-        <Line type="monotone" dataKey="avg" stroke="#22d3ee" strokeWidth={1.5}
-          strokeDasharray="4 3" dot={false} />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className="space-y-1">
+      <ResponsiveContainer width="100%" height={140}>
+        <AreaChart data={data} margin={{ top: 6, right: 48, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="bestGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%"  stopColor="#a78bfa" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#a78bfa" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <XAxis dataKey="round" tick={{ fill: '#64748b', fontSize: 10 }}
+            label={{ value: '轮次', position: 'insideBottomRight', fill: '#475569', fontSize: 10 }} />
+          <YAxis yAxisId="score" domain={[yMinScore, 105]} tick={{ fill: '#64748b', fontSize: 10 }}
+            tickFormatter={v => `${v}`} width={28} />
+          {hasAlpha && (
+            <YAxis yAxisId="alpha" orientation="right"
+              domain={[yMinAlpha, yMaxAlpha]}
+              tick={{ fill: '#fbbf24', fontSize: 9 }}
+              tickFormatter={v => `${v}%`} width={34} />
+          )}
+          <Tooltip
+            contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 11 }}
+            formatter={(v: number, key: string) => [
+              key === 'alpha' ? `${v.toFixed(1)}%` : `${v.toFixed(1)}`,
+              key === 'best' ? '最高分' : key === 'avg' ? '均分' : '冠军Alpha'
+            ]} />
+          <Area yAxisId="score" type="monotone" dataKey="best" stroke="#a78bfa" strokeWidth={2}
+            fill="url(#bestGrad)" dot={{ fill: '#a78bfa', r: 3 }} />
+          <Line yAxisId="score" type="monotone" dataKey="avg" stroke="#22d3ee" strokeWidth={1.5}
+            strokeDasharray="4 3" dot={false} />
+          {hasAlpha && (
+            <Line yAxisId="alpha" type="monotone" dataKey="alpha" stroke="#fbbf24" strokeWidth={1.5}
+              strokeDasharray="3 2" dot={{ fill: '#fbbf24', r: 2 }} connectNulls />
+          )}
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
@@ -624,7 +667,7 @@ export default function IterationView() {
           <span className="ml-auto text-slate-500">{new Date(log.run_at).toLocaleString('zh-CN')}</span>
         </div>
         <div className="px-4 pt-3 pb-2">
-          <div className="text-xs text-slate-500 mb-1">各轮最高分（紫）/ 均分（青）</div>
+          <div className="text-xs text-slate-500 mb-1">最高分（紫）/ 均分（青）/ 冠军Alpha（黄，右轴）</div>
           <ScoreTrend rounds={log.rounds} />
         </div>
       </div>

@@ -87,6 +87,7 @@ def eval_to_dict(e) -> dict:
         "max_drawdown":  safe_float(getattr(e, "max_drawdown_pct",  0)),
         "win_rate":      safe_float(getattr(e, "win_rate",          0)),
         "total_trades":  int(getattr(e, "total_trades", 0)),
+        "alpha":         safe_float(getattr(e, "alpha",             0)),
         "feedback":      getattr(e, "feedback_text",  "") or getattr(e, "feedback", ""),
         "weakness":      str(getattr(e, "weakness",   "") or ""),
         "adjustment":    str(getattr(e, "adjustment", "") or ""),
@@ -139,6 +140,10 @@ class InstrumentedOrchestrator:
     def run(self):
         result = self.orc.run()
 
+        # 提取基准收益曲线（供看板绘制基准线）
+        bench_rets = getattr(self.orc.evaluator, 'benchmark_returns', []) or []
+        bench_equity = daily_returns_to_equity(bench_rets)
+
         # 从 round_reports 提取每轮详细数据
         for rp in self.orc.round_reports:
             rnd = getattr(rp, "round_num", len(self.round_logs) + 1)
@@ -171,13 +176,14 @@ class InstrumentedOrchestrator:
             strategies.sort(key=lambda x: x["score"], reverse=True)
 
             self.round_logs.append({
-                "round":           rnd,
-                "strategies":      strategies,
-                "debate":          debate_to_dict(debate),
-                "holdout":         holdout,
-                "selected":        list(selected_names),
-                "converged":       getattr(rp, "converged", False),
-                "meta_evaluation": getattr(rp, "meta_evaluation", {}),
+                "round":            rnd,
+                "strategies":       strategies,
+                "debate":           debate_to_dict(debate),
+                "holdout":          holdout,
+                "selected":         list(selected_names),
+                "converged":        getattr(rp, "converged", False),
+                "meta_evaluation":  getattr(rp, "meta_evaluation", {}),
+                "benchmark_equity": bench_equity,
             })
 
         return result, self.round_logs
