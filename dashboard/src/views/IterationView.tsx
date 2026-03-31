@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { GitBranch, TrendingUp, TrendingDown, CheckCircle, XCircle,
+import { useState, useMemo } from 'react'
+import { GitBranch, CheckCircle, XCircle,
          AlertCircle, MessageSquare, ChevronDown, ChevronRight,
-         Award, RefreshCw } from 'lucide-react'
+         Award, RefreshCw, Layers } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, ReferenceLine,
@@ -48,10 +48,27 @@ interface Round {
   meta_evaluation: MetaEvaluation
 }
 interface IterationLog {
+  thread_id: string; name: string
   run_at: string; symbols: string[]; days: number
   total_rounds: number; rounds: Round[]
   global_top: any[]; convergence: any
 }
+interface ThreadMeta {
+  id: string; name: string; symbols: string[]
+  run_at: string; total_rounds: number; days: number
+  best_score: number; converged: boolean
+}
+
+// ── Glob all iteration files (Vite bundles at build time) ─────────
+const ALL_ITERATIONS = import.meta.glob('../data/iterations/*.json', { eager: true }) as
+  Record<string, { default: IterationLog }>
+const INDEX_DATA = (() => {
+  try {
+    const m = import.meta.glob('../data/iterations/index.json', { eager: true }) as any
+    const key = Object.keys(m)[0]
+    return (key ? m[key].default : []) as ThreadMeta[]
+  } catch { return [] as ThreadMeta[] }
+})()
 
 // ── Palette ──────────────────────────────────────────────────────
 const COLORS = ['#6366f1','#22d3ee','#4ade80','#fbbf24','#f87171','#a78bfa','#fb923c','#34d399']
@@ -423,24 +440,99 @@ function RoundPanel({ round }: { round: Round }) {
   )
 }
 
+// ── Thread Selector ───────────────────────────────────────────────
+function ThreadSelector({
+  threads, activeId, onSelect,
+}: { threads: ThreadMeta[]; activeId: string; onSelect: (id: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const active = threads.find(t => t.id === activeId) ?? threads[0]
+  if (!active) return null
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm hover:border-purple-500/60 transition-colors min-w-[280px]">
+        <Layers size={15} className="text-purple-400 shrink-0" />
+        <div className="flex-1 text-left">
+          <div className="text-white font-semibold leading-tight">{active.name}</div>
+          <div className="text-xs text-slate-400 leading-tight mt-0.5">
+            {active.symbols.join(' · ')} · {active.total_rounds}轮 · {new Date(active.run_at).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })}
+          </div>
+        </div>
+        <ChevronDown size={14} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full mt-1 left-0 z-50 w-full min-w-[340px] bg-slate-800 border border-slate-600 rounded-xl shadow-2xl overflow-hidden">
+          {threads.map(t => (
+            <button key={t.id} onClick={() => { onSelect(t.id); setOpen(false) }}
+              className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-700/60 transition-colors border-b border-slate-700/50 last:border-0 ${t.id === activeId ? 'bg-slate-700/40' : ''}`}>
+              <Layers size={14} className={`mt-0.5 shrink-0 ${t.id === activeId ? 'text-purple-400' : 'text-slate-500'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className={`font-semibold text-sm truncate ${t.id === activeId ? 'text-purple-300' : 'text-white'}`}>{t.name}</span>
+                  {t.converged && <CheckCircle size={11} className="text-green-400 shrink-0" />}
+                </div>
+                <div className="text-xs text-slate-400 mt-0.5">{t.symbols.join(' · ')} · {t.days}天</div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-xs text-white font-bold">{t.best_score.toFixed(1)}分</div>
+                <div className="text-xs text-slate-500">{t.total_rounds}轮</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main View ─────────────────────────────────────────────────────
 export default function IterationView() {
-  const [log, setLog] = useState<IterationLog | null>(null)
-  const [err, setErr] = useState<string | null>(null)
-  const [activeRound, setActiveRound] = useState(1)
-
-  useEffect(() => {
-    import('../data/iteration_log.json')
-      .then(m => { setLog(m.default as IterationLog); setActiveRound(1) })
-      .catch(e => setErr(String(e)))
+  // Build thread list from glob + index metadata
+  const threads: ThreadMeta[] = useMemo(() => {
+    if (INDEX_DATA.length > 0) return INDEX_DATA
+    // Fallback: derive from glob keys if index.json is missing
+    return Object.keys(ALL_ITERATIONS)
+      .filter(k => !k.endsWith('index.json'))
+      .map(k => {
+        const log = ALL_ITERATIONS[k].default
+        const best = Math.max(...(log.rounds ?? []).flatMap(r => r.strategies.map(s => s.score)), 0)
+        return {
+          id:           log.thread_id ?? k.split('/').pop()!.replace('.json',''),
+          name:         log.name ?? log.symbols.join(' · '),
+          symbols:      log.symbols,
+          run_at:       log.run_at,
+          total_rounds: log.total_rounds,
+          days:         log.days,
+          best_score:   Math.round(best * 10) / 10,
+          converged:    (log.rounds ?? []).at(-1)?.converged ?? false,
+        }
+      })
+      .sort((a, b) => b.run_at.localeCompare(a.run_at))
   }, [])
 
-  if (err) return (
+  const [activeThreadId, setActiveThreadId] = useState<string>(threads[0]?.id ?? '')
+  const [activeRound,    setActiveRound]    = useState(1)
+
+  // When thread changes, reset to round 1
+  function selectThread(id: string) { setActiveThreadId(id); setActiveRound(1) }
+
+  const log: IterationLog | null = useMemo(() => {
+    if (!activeThreadId) return null
+    const entry = Object.entries(ALL_ITERATIONS).find(([k]) =>
+      k.includes(activeThreadId) || k.endsWith(`${activeThreadId}.json`)
+    )
+    return entry ? entry[1].default : null
+  }, [activeThreadId])
+
+  if (threads.length === 0) return (
     <div className="p-8 text-red-400 space-y-2">
-      <div className="font-bold flex items-center gap-2"><XCircle size={18}/>迭代日志未找到</div>
+      <div className="font-bold flex items-center gap-2"><XCircle size={18}/>无迭代数据</div>
       <div className="text-sm text-slate-400">运行以下命令生成数据，再重新构建看板：</div>
       <pre className="bg-slate-800 rounded px-4 py-3 text-xs text-yellow-300">
-        python3 scripts/run_iteration.py --symbols SPY BTCUSDT --rounds 3
+        python3 scripts/run_iteration.py --symbols SH000300 SH600519 --name "A股核心" --rounds 20{'\n'}
+        python3 scripts/run_iteration.py --symbols BTCUSDT ETHUSDT --name "加密货币" --rounds 20
       </pre>
     </div>
   )
@@ -451,30 +543,37 @@ export default function IterationView() {
     </div>
   )
 
-  const runAt = new Date(log.run_at).toLocaleString('zh-CN')
-  const round = log.rounds.find(r => r.round === activeRound) || log.rounds[0]
+  const round = log.rounds.find(r => r.round === activeRound) ?? log.rounds[0]
 
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <GitBranch size={24} className="text-purple-400" />
           <div>
             <h2 className="text-xl font-bold text-white">迭代过程</h2>
-            <p className="text-slate-400 text-sm">
-              {log.symbols.join(' · ')} · {log.days}天 · {log.total_rounds}轮迭代
-            </p>
+            <p className="text-slate-400 text-sm">{threads.length} 个 Thread · 点击下拉切换</p>
           </div>
         </div>
-        <div className="text-right text-xs text-slate-500">
-          <div>运行时间</div>
-          <div className="text-slate-400">{runAt}</div>
-        </div>
+        <ThreadSelector threads={threads} activeId={activeThreadId} onSelect={selectThread} />
+      </div>
+
+      {/* Active thread summary */}
+      <div className="flex items-center gap-3 text-xs text-slate-400 bg-slate-800/50 rounded-xl px-4 py-2.5 border border-slate-700/50">
+        <span className="text-white font-semibold">{log.name}</span>
+        <span className="text-slate-600">·</span>
+        <span>{log.symbols.join(' · ')}</span>
+        <span className="text-slate-600">·</span>
+        <span>{log.days} 天数据</span>
+        <span className="text-slate-600">·</span>
+        <span>{log.total_rounds} 轮</span>
+        <span className="text-slate-600">·</span>
+        <span>{new Date(log.run_at).toLocaleString('zh-CN')}</span>
       </div>
 
       {/* Global top */}
-      {log.global_top.length > 0 && (
+      {(log.global_top ?? []).length > 0 && (
         <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-700/40 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <Award size={16} className="text-yellow-400" />
@@ -493,7 +592,7 @@ export default function IterationView() {
       )}
 
       {/* Round tabs */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {log.rounds.map(r => (
           <button key={r.round} onClick={() => setActiveRound(r.round)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${

@@ -8,13 +8,35 @@ run_iteration.py — 多专家迭代回测，输出详细日志供看板展示
 输出：
   dashboard/src/data/iteration_log.json
 """
-import sys, json, math, argparse
+import sys, json, math, argparse, re
 from pathlib import Path
 from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-OUT_PATH = Path("dashboard/src/data/iteration_log.json")
+ITERATIONS_DIR = Path("dashboard/src/data/iterations")
+OUT_PATH = Path("dashboard/src/data/iteration_log.json")  # kept for compat
+
+
+def _make_thread_id(name: str, symbols: list, ts: str) -> str:
+    """Generate a filesystem-safe thread ID."""
+    if name:
+        slug = re.sub(r'[^\w\u4e00-\u9fff]+', '_', name).strip('_')[:24]
+    else:
+        slug = '_'.join(s.lower().replace('sh', '').replace('sz', '') for s in symbols)[:24]
+    return f"{slug}_{ts}"
+
+
+def _update_index(entry: dict):
+    """Upsert thread entry in iterations/index.json (replace by id if exists)."""
+    ITERATIONS_DIR.mkdir(parents=True, exist_ok=True)
+    idx_path = ITERATIONS_DIR / "index.json"
+    existing = json.loads(idx_path.read_text(encoding="utf-8")) if idx_path.exists() else []
+    existing = [e for e in existing if e.get("id") != entry["id"]]
+    existing.append(entry)
+    # Sort by run_at descending (newest first)
+    existing.sort(key=lambda e: e.get("run_at", ""), reverse=True)
+    idx_path.write_text(json.dumps(existing, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 # ── 工具函数 ──────────────────────────────────────────────────────
@@ -169,11 +191,26 @@ def main():
     parser.add_argument("--days",    type=int,  default=300)
     parser.add_argument("--rounds",  type=int,  default=20)
     parser.add_argument("--seed",    type=int,  default=2026)
-    parser.add_argument("--out",     default=str(OUT_PATH))
+    parser.add_argument("--name",    default="",
+                        help="Thread display name, e.g. 'A股核心' or '加密货币'. "
+                             "Auto-generated from symbols if omitted.")
+    parser.add_argument("--out",     default="",
+                        help="Override output path (optional, normally auto-determined)")
     args = parser.parse_args()
 
+    ts         = datetime.now().strftime("%Y%m%d_%H%M")
+    thread_id  = _make_thread_id(args.name, args.symbols, ts)
+    name       = args.name or " · ".join(args.symbols)
+    run_at     = datetime.now().isoformat()
+
+    ITERATIONS_DIR.mkdir(parents=True, exist_ok=True)
+    thread_path = ITERATIONS_DIR / f"{thread_id}.json"
+    out_path    = Path(args.out) if args.out else thread_path
+
     print("=" * 60)
-    print(f"  迭代回测 · {args.symbols} · {args.rounds} 轮 · {args.days} 天")
+    print(f"  迭代回测 [{name}]")
+    print(f"  标的: {args.symbols}  轮次上限: {args.rounds}  数据: {args.days}天")
+    print(f"  Thread: {thread_id}")
     print("=" * 60)
 
     orc = InstrumentedOrchestrator(
@@ -183,7 +220,9 @@ def main():
     final_report, round_logs = orc.run()
 
     out = {
-        "run_at":      datetime.now().isoformat(),
+        "thread_id":   thread_id,
+        "name":        name,
+        "run_at":      run_at,
         "symbols":     args.symbols,
         "days":        args.days,
         "total_rounds": len(round_logs),
@@ -192,14 +231,31 @@ def main():
         "convergence": final_report.get("convergence", {}),
     }
 
-    out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅ 详细日志已写入 {out_path}")
+    # Also overwrite the legacy path for backward compat
+    with open(OUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=2)
+
+    # Update index
+    best_score = max((s["score"] for r in round_logs for s in r["strategies"]), default=0.0)
+    last_round = round_logs[-1] if round_logs else {}
+    _update_index({
+        "id":           thread_id,
+        "name":         name,
+        "symbols":      args.symbols,
+        "run_at":       run_at,
+        "total_rounds": len(round_logs),
+        "days":         args.days,
+        "best_score":   round(best_score, 1),
+        "converged":    last_round.get("converged", False),
+    })
+
+    print(f"\n✅ Thread [{name}] 已写入 {out_path}")
     print(f"   {len(round_logs)} 轮 · {sum(len(r['strategies']) for r in round_logs)} 个候选策略")
-    print("   运行 npm run build 重新构建看板")
+    print(f"   索引已更新: {ITERATIONS_DIR / 'index.json'}")
 
 
 if __name__ == "__main__":
