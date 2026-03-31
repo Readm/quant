@@ -108,6 +108,9 @@ class Evaluator:
         self.history: List[dict] = []
         self.fb_history: FeedbackHistory = FeedbackHistory()
         self.benchmark_returns = benchmark_daily_returns or []
+        # 动态门槛（元专家可调整）
+        self.ACCEPT_THRESHOLD = 45
+        self.CONDITIONAL_THRESHOLD = 25
 
     # ── 核心评估 ─────────────────────────
 
@@ -173,11 +176,11 @@ class Evaluator:
         if is_rejected:
             decision = "REJECT"
             reason   = elim_note
-        elif composite >= 45:
+        elif composite >= self.ACCEPT_THRESHOLD:
             decision = "ACCEPT"
             reason   = (f"✅ 纳入（综合分={composite}，Sortino={sortino:.2f} "
                         f"Calmar={calmar:.2f}，Alpha={alpha:+.1f}%，IR={ir_s:.0f}分）")
-        elif composite >= 25:
+        elif composite >= self.CONDITIONAL_THRESHOLD:
             decision = "CONDITIONAL"
             reason   = f"⚠️ 待观察（综合分={composite}，建议优化参数）"
         else:

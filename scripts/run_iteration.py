@@ -229,6 +229,7 @@ def main():
         "rounds":      round_logs,
         "global_top":  final_report.get("global_top", []),
         "convergence": final_report.get("convergence", {}),
+        "meta_architecture_review": final_report.get("meta_architecture_review", {}),
     }
 
     out_path.parent.mkdir(parents=True, exist_ok=True)

@@ -145,6 +145,22 @@ class Orchestrator:
         self.monitor        = MetaMonitor(report_every=5)
         self._seen_cand_hashes: set = set()  # similarity dedup across all rounds
 
+        # ── 元专家动态参数 ──────────────────────────────────
+        self._meta_params = {
+            "trend_candidates": 30,
+            "mr_candidates": 25,
+            "accept_threshold": 45,
+            "conditional_threshold": 25,
+            "n_stocks_min": 2,
+            "n_stocks_max": 5,
+            "rebalance_options": [5, 10, 20, 60],
+        }
+        self._meta_history = {
+            "total_candidates": 0,
+            "total_accepted": 0,
+            "total_rejected": 0,
+        }
+
     def run(self):
         print("="*68)
         print("  多专家协作量化系统 v4.0（纯实盘 + 结构化反馈）")
@@ -172,11 +188,14 @@ class Orchestrator:
             fb_list  = [fb.to_simple_dict() for fb in self.evaluator.fb_history.entries]
 
             _dedup_rng = random.Random(self.seed + rnd * 7919)
+            mp = self._meta_params
+            t_n = mp["trend_candidates"]
+            mr_n = mp["mr_candidates"]
             t_cands  = self._dedup_candidates(
-                self._generate_diverse_candidates(self.trend_expert, 30, fb_list, need_div, "trend", rnd),
+                self._generate_diverse_candidates(self.trend_expert, t_n, fb_list, need_div, "trend", rnd),
                 _dedup_rng)
             mr_cands = self._dedup_candidates(
-                self._generate_diverse_candidates(self.mr_expert, 25, fb_list, need_div, "mean_reversion", rnd),
+                self._generate_diverse_candidates(self.mr_expert, mr_n, fb_list, need_div, "mean_reversion", rnd),
                 _dedup_rng)
             all_cands = t_cands + mr_cands
 
@@ -307,10 +326,76 @@ class Orchestrator:
                     converged = False
                     self.no_improve = 0
 
+            # ── 元专家动态参数规划（为下一轮准备）─────────────
+            self._meta_history["total_candidates"] += len(t_evals) + len(mr_evals)
+            self._meta_history["total_accepted"] += len(t_pass) + len(mr_pass)
+            self._meta_history["total_rejected"] += (len(t_evals) + len(mr_evals)) - (len(t_pass) + len(mr_pass))
+
+            if rnd < self.max_rounds and not converged:
+                _t_plan = time.perf_counter()
+                round_data = {
+                    "round": rnd,
+                    "top_score": round(top_score, 1),
+                    "accepted": len(t_pass) + len(mr_pass),
+                    "rejected": (len(t_evals) + len(mr_evals)) - (len(t_pass) + len(mr_pass)),
+                    "total": len(t_evals) + len(mr_evals),
+                    "trend_accepted": len(t_pass),
+                    "mr_accepted": len(mr_pass),
+                    "zero_trade_count": sum(1 for e in t_evals + mr_evals if getattr(e, "total_trades", 0) == 0),
+                    "avg_trades": sum(getattr(e, "total_trades", 0) for e in t_evals + mr_evals) / max(len(t_evals) + len(mr_evals), 1),
+                    "avg_score": round(sum(e.composite for e in t_evals + mr_evals) / max(len(t_evals) + len(mr_evals), 1), 1),
+                }
+                plan = self.monitor.llm_plan_next_round(round_data, {
+                    "best_score": self.best_score,
+                    "no_improve": self.no_improve,
+                    "completed_rounds": rnd,
+                    **self._meta_history,
+                })
+                _dt_plan = time.perf_counter() - _t_plan
+
+                if plan.get("_llm_available"):
+                    new_params = plan.get("next_round_params", {})
+                    old_t = self._meta_params["trend_candidates"]
+                    old_mr = self._meta_params["mr_candidates"]
+                    old_acc = self._meta_params["accept_threshold"]
+                    self._meta_params.update(new_params)
+
+                    # 同步更新 evaluator 的门槛
+                    self.evaluator.ACCEPT_THRESHOLD = self._meta_params["accept_threshold"]
+                    self.evaluator.CONDITIONAL_THRESHOLD = self._meta_params["conditional_threshold"]
+
+                    # 同步更新 portfolio 搜索空间
+                    self._PORTFOLIO_PARAM_RANGES["n_stocks"] = list(range(
+                        self._meta_params["n_stocks_min"],
+                        self._meta_params["n_stocks_max"] + 1
+                    ))
+                    if "rebalance_options" in new_params:
+                        self._PORTFOLIO_PARAM_RANGES["rebalance_freq"] = new_params["rebalance_options"]
+
+                    changes = []
+                    if old_t != self._meta_params["trend_candidates"]:
+                        changes.append(f"趋势候选 {old_t}→{self._meta_params['trend_candidates']}")
+                    if old_mr != self._meta_params["mr_candidates"]:
+                        changes.append(f"MR候选 {old_mr}→{self._meta_params['mr_candidates']}")
+                    if abs(old_acc - self._meta_params["accept_threshold"]) > 0.1:
+                        changes.append(f"ACCEPT门槛 {old_acc}→{self._meta_params['accept_threshold']}")
+                    if changes:
+                        print(f"\n[元专家-规划] 下轮参数调整: {'；'.join(changes)}")
+                    print(f"[元专家-规划] 理由: {plan.get('reasoning', '')}")
+                    if plan.get("traps_detected"):
+                        print(f"[元专家-规划] 检测陷阱: {', '.join(plan['traps_detected'])}")
+                else:
+                    print(f"\n[元专家-规划] ⚠️ LLM不可用，保持当前参数")
+
+                rp_meta_plan = plan
+            else:
+                _dt_plan = 0
+                rp_meta_plan = {}
+
             _dt_rnd = time.perf_counter() - _t_rnd
             _rnd_times.append(_dt_rnd)
             print(f"\n[Profiling] 第{rnd}轮总耗时 {_dt_rnd:.1f}s  "
-                  f"回测={_dt_bt:.1f}s  辩论={_dt_debate:.1f}s  元专家={_dt_meta:.1f}s")
+                  f"回测={_dt_bt:.1f}s  辩论={_dt_debate:.1f}s  元专家={_dt_meta:.1f}s  规划={_dt_plan:.1f}s")
 
             rp = RoundReportFake(rnd)
             rp.meta_evaluation = meta_eval
@@ -337,7 +422,54 @@ class Orchestrator:
             meta = self.monitor.generate_report(self.round_reports)
             MetaMonitor.print_report(meta)
 
+        # ── 元专家架构评审（终止后）─────────────────────────────
+        print("\n" + "="*68)
+        print("  🏗️ 元专家架构评审中...")
+        print("="*68)
+
+        arch_desc = """六层量化系统架构:
+1. 数据层: Stooq.com(主) + akshare(A股备选)，支持本地缓存，300天历史K线
+2. 因子库(factor_library.py): 32个技术因子，含缠论、Ichimoku、AD线等，支持10种template_key打分
+3. 策略库: 趋势(10种template) + 均值回归(8种template)，每轮30+25候选，参数空间随机+反馈调参
+4. 专家系统: E1A趋势/E1B均值回归/E1C公开策略收集/E2评估(PBO门控+Sortino/Calmar/IR/DD四维评分)/E3A+B LLM辩论(MiniMax API)/E4组合权重(相关性惩罚)/META元监控
+5. 回测系统: PortfolioBacktester多股组合回测(因子打分→选股→权重分配→再平衡)，支持equal/score_weighted/vol_inverse三种权重方式
+6. 看板系统: React Dashboard + GitHub Pages 自动部署
+
+关键设计:
+- 结构化反馈(StructuredFeedback): Weakness枚举+AdjustmentDirection枚举，机器可解析
+- PBO过拟合检测: 概率>0.6拒绝，>0.3打折
+- Walk-Forward验证: expanding/rolling/purged三种模式
+- 元专家(MetaMonitor): LLM驱动的动态参数规划和收敛判断
+- 组合回测: 多股持仓+跨截面因子排名+交易成本建模(买0.08%卖0.18%)"""
+        arch_review = self.monitor.llm_architecture_review(arch_desc, {
+            "total_rounds": len(self.round_reports),
+            "best_score": round(self.best_score, 1),
+            "total_candidates": self._meta_history["total_candidates"],
+            "total_accepted": self._meta_history["total_accepted"],
+            "total_rejected": self._meta_history["total_rejected"],
+            "final_top": [
+                {"name": e.strategy_name, "score": round(e.composite, 1),
+                 "type": e.strategy_type, "trades": e.total_trades,
+                 "ann": round(e.annualized_return, 1), "dd": round(e.max_drawdown_pct, 1)}
+                for e in (self.round_reports[-1].final_selected if self.round_reports else [])
+            ],
+        })
+
+        if arch_review.get("_llm_available"):
+            rating = arch_review.get("overall_rating", "N/A")
+            print(f"\n[架构评审] 总体评级: {rating}")
+            print(f"[架构评审] 优势: {'；'.join(arch_review.get('strengths', [])[:3])}")
+            print(f"[架构评审] 关键问题: {'；'.join(arch_review.get('critical_issues', [])[:3])}")
+            print(f"[架构评审] 下次重点: {arch_review.get('next_iteration_focus', '')}")
+            for prio in arch_review.get("improvement_priorities", [])[:5]:
+                print(f"  [{prio.get('priority','?')}] {prio.get('area','')}: {prio.get('action','')} → {prio.get('impact','')}")
+        else:
+            print("\n[架构评审] ⚠️ LLM不可用，跳过架构评审")
+
+        self._architecture_review = arch_review
+
         final_report = self._generate_final_report()
+        final_report["meta_architecture_review"] = arch_review
         self._save_report(final_report)
         self._print_final_report(final_report)
         return final_report
@@ -1056,6 +1188,7 @@ class RoundReportFake:
         self.debate_result=None; self.risk_results=[]
         self.final_selected=[]; self.portfolio_weights={}
         self.converged=False; self.holdout_results=[]; self.meta_evaluation={}
+        self.meta_plan={}
 
 
 if __name__ == "__main__":

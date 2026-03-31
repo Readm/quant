@@ -427,6 +427,202 @@ class MetaMonitor:
             "_llm_failed":        True,   # 区分"未调用"和"调用失败"
         }
 
+    # ── 元专家：动态规划下一轮参数 ─────────────────────────
+    LLM_PLAN_PROMPT = """你是一个量化策略迭代系统的元专家。根据本轮迭代结果，你决定下一轮的搜索参数。
+
+=== 本轮状态 ===
+{round_summary}
+
+=== 历史 ===
+- 历史最高分: {best_score}
+- 连续无提升轮数: {no_improve}
+- 已完成轮数: {completed_rounds}
+- 总候选数: {total_candidates}
+- 总接受数: {total_accepted}
+- 总拒绝数: {total_rejected}
+- 接受率: {accept_rate:.1%}
+
+=== 系统陷阱检测 ===
+{traps}
+
+=== 输出要求 ===
+严格返回如下 JSON，不包含任何其他文字：
+{
+  "next_round_params": {
+    "trend_candidates": 30,
+    "mr_candidates": 25,
+    "accept_threshold": 45,
+    "conditional_threshold": 25,
+    "n_stocks_min": 2,
+    "n_stocks_max": 5,
+    "rebalance_options": [5, 10, 20, 60]
+  },
+  "reasoning": "一句话说明调整理由",
+  "traps_detected": ["陷阱1", "陷阱2"],
+  "suggestions": ["建议1", "建议2"]
+}
+
+规则：
+- trend_candidates: 10~60，趋势策略候选数量
+- mr_candidates: 10~40，均值回归策略候选数量
+- accept_threshold: 30~70，ACCEPT门槛分
+- conditional_threshold: 15~45，CONDITIONAL门槛分（必须 < accept_threshold）
+- n_stocks_min: 2~3，最低持仓数
+- n_stocks_max: 3~5，最高持仓数
+- rebalance_options: 调仓频率候选列表
+- 如果接受率 < 10%，大幅降低门槛并增加候选数
+- 如果接受率 > 60%，适当提高门槛
+- 如果大量策略零交易，增加 rebalance_options 中的高频选项
+- 如果全部拒绝，将 accept_threshold 降到 30 以下"""
+
+    def llm_plan_next_round(self, round_data: dict, history: dict) -> dict:
+        """调用 LLM 元专家规划下一轮参数。"""
+        from experts.modules.llm_proxy import llm_analyze
+        import json as _json
+
+        # 检测陷阱
+        traps = []
+        total_cands = history.get("total_candidates", 0)
+        total_accepted = history.get("total_accepted", 0)
+        total_rejected = history.get("total_rejected", 0)
+        accept_rate = total_accepted / max(total_cands, 1)
+
+        if accept_rate < 0.10:
+            traps.append(f"接受率极低 ({accept_rate:.1%})，大量策略被淘汰")
+        if round_data.get("zero_trade_count", 0) > total_cands * 0.3:
+            traps.append(f"超过30%策略零交易，可能是数据窗口或信号生成问题")
+        if round_data.get("avg_trades", 0) < 5:
+            traps.append(f"平均交易次数过低 ({round_data['avg_trades']:.1f})，统计不可靠")
+
+        # 构造 round_summary
+        round_summary = _json.dumps(round_data, ensure_ascii=False, indent=2)
+
+        import json as _json
+        prompt = self.LLM_PLAN_PROMPT
+        prompt = prompt.replace("{round_summary}", round_summary)
+        prompt = prompt.replace("{best_score}", str(round(history.get("best_score", 0), 1)))
+        prompt = prompt.replace("{no_improve}", str(history.get("no_improve", 0)))
+        prompt = prompt.replace("{completed_rounds}", str(history.get("completed_rounds", 0)))
+        prompt = prompt.replace("{total_candidates}", str(total_cands))
+        prompt = prompt.replace("{total_accepted}", str(total_accepted))
+        prompt = prompt.replace("{total_rejected}", str(total_rejected))
+        prompt = prompt.replace("{accept_rate}", f"{accept_rate:.1%}")
+        prompt = prompt.replace("{traps}", "\n".join(f"- {t}" for t in traps) if traps else "- 无明显陷阱")
+
+        # 默认参数（LLM 失败时使用）
+        defaults = {
+            "next_round_params": {
+                "trend_candidates": 30,
+                "mr_candidates": 25,
+                "accept_threshold": 45,
+                "conditional_threshold": 25,
+                "n_stocks_min": 2,
+                "n_stocks_max": 5,
+                "rebalance_options": [5, 10, 20, 60],
+            },
+            "reasoning": "LLM 不可用，使用默认参数",
+            "traps_detected": traps,
+            "suggestions": ["检查 MiniMax API 连接"],
+            "_llm_available": False,
+        }
+
+        try:
+            result = llm_analyze(prompt, task="plan_next_round",
+                                 temperature=0.3, timeout_ms=60000, max_tokens=2048)
+            if "error" in result:
+                print(f"  [元专家-规划] ❌ LLM失败: {result['error'][:100]}")
+                return defaults
+
+            result["_llm_available"] = True
+
+            # 解析并验证参数
+            params = result.get("next_round_params", {})
+            params["trend_candidates"] = max(10, min(60, int(params.get("trend_candidates", 30))))
+            params["mr_candidates"] = max(10, min(40, int(params.get("mr_candidates", 25))))
+            params["accept_threshold"] = max(30, min(70, float(params.get("accept_threshold", 45))))
+            params["conditional_threshold"] = max(15, min(45, float(params.get("conditional_threshold", 25))))
+            if params["conditional_threshold"] >= params["accept_threshold"]:
+                params["conditional_threshold"] = params["accept_threshold"] - 10
+            params["n_stocks_min"] = max(2, min(3, int(params.get("n_stocks_min", 2))))
+            params["n_stocks_max"] = max(params["n_stocks_min"], min(5, int(params.get("n_stocks_max", 5))))
+
+            result["next_round_params"] = params
+            return result
+
+        except Exception as e:
+            print(f"  [元专家-规划] ❌ 异常: {e}")
+            return defaults
+
+    # ── 元专家：架构全局评估 ─────────────────────────────────────
+    LLM_ARCH_PROMPT = """你是一个量化策略系统的架构评审专家。以下是该系统的完整架构描述，请你评估其设计并提出改进建议。
+
+=== 系统架构 ===
+{architecture}
+
+=== 本次迭代结果 ===
+{iteration_result}
+
+=== 评估维度 ===
+1. 数据层：数据源质量、延迟、覆盖面
+2. 因子层：因子多样性、计算效率、信号质量
+3. 策略层：策略空间覆盖、参数搜索效率
+4. 评估层：评分体系合理性、过拟合检测、统计显著性
+5. 组合层：仓位管理、风险控制、再平衡机制
+6. 反馈层：结构化反馈质量、参数调整有效性
+7. 监控层：元专家能力、收敛判断、陷阱检测
+
+=== 输出要求 ===
+严格返回如下 JSON，不包含任何其他文字：
+{
+  "overall_rating": "A/B/C/D",
+  "strengths": ["优势1", "优势2", "优势3"],
+  "weaknesses": ["弱点1", "弱点2", "弱点3"],
+  "critical_issues": ["关键问题1", "关键问题2"],
+  "improvement_priorities": [
+    {"priority": "P0", "area": "评估层", "action": "具体改进行动", "impact": "预期影响"},
+    {"priority": "P1", "area": "数据层", "action": "具体改进行动", "impact": "预期影响"}
+  ],
+  "architecture_suggestions": [
+    {"component": "组件名", "current": "当前设计", "proposed": "建议设计", "rationale": "理由"}
+  ],
+  "next_iteration_focus": "下一次迭代应该重点改进什么",
+  "estimated_improvement": "如果实施建议，预期评分提升幅度"
+}"""
+
+    def llm_architecture_review(self, architecture_desc: str, iteration_result: dict) -> dict:
+        """迭代终止后，让元专家对整个系统做架构评审。"""
+        from experts.modules.llm_proxy import llm_analyze
+        import json as _json
+
+        import json as _json2
+        prompt = self.LLM_ARCH_PROMPT
+        prompt = prompt.replace("{architecture}", architecture_desc)
+        prompt = prompt.replace("{iteration_result}", _json2.dumps(iteration_result, ensure_ascii=False, indent=2))
+
+        defaults = {
+            "overall_rating": "N/A",
+            "strengths": ["LLM 不可用，无法评估"],
+            "weaknesses": ["MiniMax API 连接失败"],
+            "critical_issues": ["元专家 LLM 不可用"],
+            "improvement_priorities": [],
+            "architecture_suggestions": [],
+            "next_iteration_focus": "修复 LLM 连接",
+            "estimated_improvement": "N/A",
+            "_llm_available": False,
+        }
+
+        try:
+            result = llm_analyze(prompt, task="architecture_review",
+                                 temperature=0.5, timeout_ms=120000, max_tokens=4096)
+            if "error" in result:
+                print(f"  [元专家-架构评审] ❌ LLM失败: {result['error'][:100]}")
+                return defaults
+            result["_llm_available"] = True
+            return result
+        except Exception as e:
+            print(f"  [元专家-架构评审] ❌ 异常: {e}")
+            return defaults
+
     # ── 质量趋势分析 ────────────────────────
 
     def _analyze_quality_trend(self) -> QualityTrend:
