@@ -43,6 +43,14 @@ def compute_factor_score(
         return 0.0
     c = closes
 
+    def _ind(key: str, default: float = 0.0) -> float:
+        """Safely read indicator value at t, returning default for None or missing."""
+        arr = indicators.get(key)
+        if arr is None or t >= len(arr):
+            return default
+        v = arr[t]
+        return float(v) if v is not None else default
+
     # ── 趋势策略 ───────────────────────────────────────────────────
     if template_key == "ma_cross":
         fast = int(params.get("fast", 20))
@@ -54,8 +62,22 @@ def compute_factor_score(
         return (ma_f / ma_s - 1) * 100 if ma_s > 0 else 0.0
 
     elif template_key == "macd":
-        hist = indicators.get("macd_hist", [0.0] * n)
-        return float(hist[t]) if t < len(hist) else 0.0
+        # Compute MACD histogram directly from closes if indicator not available
+        fp  = int(params.get("fp", 12))
+        sp  = int(params.get("sp", 26))
+        sig = int(params.get("sig", 9))
+        if t < sp + sig:
+            return 0.0
+        def _ema_val(arr, period, end):
+            k = 2.0 / (period + 1)
+            e = arr[end - period]
+            for i in range(end - period + 1, end + 1):
+                e = arr[i] * k + e * (1 - k)
+            return e
+        fast_ema = _ema_val(c, fp, t)
+        slow_ema = _ema_val(c, sp, t)
+        macd_line = fast_ema - slow_ema
+        return _ind("macd_hist", macd_line)
 
     elif template_key == "momentum":
         lb = int(params.get("lookback", 20))
@@ -64,10 +86,19 @@ def compute_factor_score(
         return (c[t] / c[t - lb] - 1) * 100 if c[t - lb] > 0 else 0.0
 
     elif template_key == "adx_trend":
-        adx   = indicators.get("adx",       [0.0] * n)
-        hist  = indicators.get("macd_hist",  [0.0] * n)
-        adx_v = float(adx[t]) if t < len(adx) else 0.0
-        direction = 1.0 if (t < len(hist) and hist[t] > 0) else -1.0
+        adx_v  = _ind("adx", 0.0)
+        # Direction: use MACD hist if available, else use short MA vs long MA
+        hist_v = _ind("macd_hist", None)
+        if hist_v is not None and hist_v != 0.0:
+            direction = 1.0 if hist_v > 0 else -1.0
+        else:
+            # Fallback: price above MA20 = uptrend
+            ma_len = 20
+            if t >= ma_len:
+                ma = sum(c[t - ma_len: t]) / ma_len
+                direction = 1.0 if c[t] > ma else -1.0
+            else:
+                direction = 0.0
         return adx_v * direction
 
     elif template_key == "kst":
@@ -137,21 +168,24 @@ def compute_factor_score(
 
     # ── 均值回归策略（低值 = 超卖 = 正分）────────────────────────
     elif template_key == "rsi":
-        rsi = indicators.get("rsi14", [50.0] * n)
-        v   = float(rsi[t]) if t < len(rsi) else 50.0
+        v     = _ind("rsi14", 50.0)
         lower = float(params.get("lower", 30))
         upper = float(params.get("upper", 70))
         mid   = (lower + upper) / 2
         return mid - v  # 超卖时为正，超买时为负
 
     elif template_key == "bollinger":
-        bb_u = indicators.get("bb_upper", [c[t]] * n)
-        bb_l = indicators.get("bb_lower", [c[t]] * n)
-        bb_m = indicators.get("bb_mid",   [c[t]] * n)
-        band = float(bb_u[t]) - float(bb_l[t])
-        if band <= 0:
+        # bollinger: 计算当时收盘价相对布林带的位置（均值回归）
+        period   = int(params.get("period", 20))
+        std_mult = float(params.get("std_mult", 2.0))
+        if t < period:
             return 0.0
-        return -(c[t] - float(bb_m[t])) / (band / 2) * 100  # 低于中轨 → 正
+        seg  = c[t - period: t]
+        mean = sum(seg) / period
+        std  = (sum((x - mean)**2 for x in seg) / period) ** 0.5
+        if std <= 0:
+            return 0.0
+        return -(c[t] - mean) / (std_mult * std) * 100  # 低于均值 → 正
 
     elif template_key == "vol_surge":
         vol_ma_p = int(params.get("vol_ma", 20))
