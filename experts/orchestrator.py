@@ -71,6 +71,19 @@ def apply_correlation_penalty(portfolio, reports, corr_map):
     return portfolio
 
 
+def eval_to_strat_dict(e) -> dict:
+    """EvalResult → 元专家所需的精简 dict"""
+    return {
+        "name":         getattr(e, "strategy_name", ""),
+        "type":         getattr(e, "strategy_type", ""),
+        "decision":     getattr(e, "decision", ""),
+        "score":        float(getattr(e, "composite", 0)),
+        "total_trades": int(getattr(e, "total_trades", 0)),
+        "ann_return":   float(getattr(e, "annualized_return", 0)),
+        "sharpe":       float(getattr(e, "sharpe_ratio", 0)),
+    }
+
+
 class Orchestrator:
     def __init__(self, symbols, n_days=500, seed=2026,
                  max_rounds=MAX_ROUNDS_DEFAULT, top_n=TOP_N_DEFAULT):
@@ -210,7 +223,21 @@ class Orchestrator:
                 print(f"\n[收敛] 冠军分未提升（{self.no_improve}/3），当前={top_score:.1f} 最高={self.best_score:.1f}")
             converged = (self.no_improve >= 3)
 
+            # ── LLM 元专家评估（每轮，可覆盖收敛判断）─────────────
+            round_strats = [eval_to_strat_dict(e) for e in t_evals + mr_evals]
+            meta_eval = self.monitor.llm_evaluate_round(round_strats, self.best_score, self.no_improve)
+            _meta_ok = meta_eval.get("_llm_available", False)
+            if _meta_ok:
+                print(f"\n[元专家] {meta_eval.get('round_summary','')}")
+                if meta_eval.get("key_insight"):
+                    print(f"[元专家] 关键发现：{meta_eval['key_insight']}")
+                if not meta_eval.get("convergence_is_real", True) and converged:
+                    print(f"[元专家] ⚠️ 判定当前收敛为假象（{meta_eval.get('continue_reason','')}），重置计数器")
+                    converged = False
+                    self.no_improve = 0
+
             rp = RoundReportFake(rnd)
+            rp.meta_evaluation = meta_eval
             rp.trend_evals   = t_evals
             rp.mr_evals      = mr_evals
             rp.trend_reports = t_reports
@@ -736,7 +763,7 @@ class RoundReportFake:
         self.all_reports=[]; self.trend_evals=[]; self.mr_evals=[]
         self.debate_result=None; self.risk_results=[]
         self.final_selected=[]; self.portfolio_weights={}
-        self.converged=False; self.holdout_results=[]
+        self.converged=False; self.holdout_results=[]; self.meta_evaluation={}
 
 
 if __name__ == "__main__":

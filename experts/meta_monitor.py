@@ -323,6 +323,97 @@ class MetaMonitor:
             best_strategies = best_strats,
         )
 
+    # ── LLM 元专家评估（每轮调用）────────────────────────────
+
+    LLM_META_PROMPT = """你是一个量化策略迭代系统的元专家（Meta-Expert）。你的职责是评估本轮迭代数据的真实性、判断收敛是否可靠，并给出是否继续迭代的建议。
+
+=== 已知系统陷阱（必须主动检测）===
+1. **小样本统计陷阱**：策略交易次数 < 10 时，所有指标（夏普、年化、胜率）均不可信。若某策略以极少交易（≤5次）获得极高分数（>70分），视为统计假象，不应触发收敛。
+2. **反馈参数名错配**：结构化反馈中的参数名（如 atr_mult、threshold）可能不存在于目标策略模板的实际参数中（如 RSI 只有 period/lower/upper），导致调参建议是空操作。若你看到连续多轮相同策略类型且参数几乎不变，这是错配症状。
+3. **趋势策略零产出**：复杂指标（Ichimoku、ADX确认、Aroon）在数据量不足时可能产出 0 笔交易，被硬过滤全部淘汰。这不是策略本身无效，而是数据窗口问题。若趋势类策略大量以 年化=0% 被淘汰，应说明原因。
+4. **伪收敛**：若最高分策略只有极少交易次数（< 10），该高分不应成为收敛基准。系统应继续迭代寻找有充足交易样本的策略。
+
+=== 数据 ===
+{data_json}
+
+=== 输出要求 ===
+严格返回如下 JSON，不包含任何其他文字：
+{
+  "data_validity": "HIGH" | "MEDIUM" | "LOW",
+  "invalidity_reasons": ["..."],
+  "convergence_is_real": true | false,
+  "should_continue": true | false,
+  "continue_reason": "一句话说明",
+  "round_summary": "本轮一句话总结",
+  "key_insight": "最重要的一个发现",
+  "suggestions": ["建议1", "建议2"]
+}"""
+
+    def llm_evaluate_round(self, round_strategies: list, best_score_ever: float, no_improve_count: int) -> dict:
+        """每轮结束后调用 LLM 元专家评估本轮数据质量和收敛真实性。
+
+        round_strategies: 本轮所有策略的 dict 列表（含 name, score, trades, ann_return, sharpe, decision）
+        best_score_ever: 历史最高冠军分
+        no_improve_count: 当前无提升轮数计数
+        """
+        from experts.modules.llm_proxy import llm_analyze
+
+        n = len(self.snapshots)
+        snap = self.snapshots[-1] if self.snapshots else None
+
+        # 构造送给 LLM 的数据概要
+        strat_summary = []
+        for s in round_strategies[:20]:  # 最多20条避免 token 超限
+            strat_summary.append({
+                "name":     s.get("name", ""),
+                "type":     s.get("type", ""),
+                "decision": s.get("decision", ""),
+                "score":    round(s.get("score", 0), 1),
+                "trades":   s.get("total_trades", 0),
+                "ann":      round(s.get("ann_return", 0), 1),
+                "sharpe":   round(s.get("sharpe", 0), 2),
+            })
+
+        score_history = [round(s.top_score, 1) for s in self.snapshots]
+
+        data = {
+            "round_num":        n,
+            "best_score_ever":  round(best_score_ever, 1),
+            "no_improve_count": no_improve_count,
+            "score_history":    score_history,
+            "this_round": {
+                "top_score":        round(snap.top_score, 1) if snap else 0,
+                "accepted":         snap.accepted_count if snap else 0,
+                "rejected":         snap.rejected_count if snap else 0,
+                "total_candidates": snap.total_candidates if snap else 0,
+                "trend_accepted":   snap.trend_count if snap else 0,
+                "mr_accepted":      snap.mr_count if snap else 0,
+            },
+            "strategies": strat_summary,
+        }
+
+        import json as _json
+        prompt = self.LLM_META_PROMPT.replace("{data_json}", _json.dumps(data, ensure_ascii=False, indent=2))
+
+        result = llm_analyze(prompt, task="meta_evaluate", temperature=0.3, timeout_ms=45000)
+
+        if "error" in result:
+            # LLM 失败时返回保守默认值（不干预收敛）
+            return {
+                "data_validity": "UNKNOWN",
+                "invalidity_reasons": [f"LLM 不可用: {result['error']}"],
+                "convergence_is_real": True,
+                "should_continue": False,
+                "continue_reason": "LLM 不可用，依赖规则判断",
+                "round_summary": f"第{n}轮完成，LLM 元评估不可用",
+                "key_insight": "",
+                "suggestions": [],
+                "_llm_available": False,
+            }
+
+        result["_llm_available"] = True
+        return result
+
     # ── 质量趋势分析 ────────────────────────
 
     def _analyze_quality_trend(self) -> QualityTrend:

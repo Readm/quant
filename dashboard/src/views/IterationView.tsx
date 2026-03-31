@@ -30,10 +30,22 @@ interface Debate {
   verdict_reason: string; final_advice: string
   strategy_verdicts: StrategyVerdict[]
 }
+interface MetaEvaluation {
+  data_validity: string
+  invalidity_reasons: string[]
+  convergence_is_real: boolean
+  should_continue: boolean
+  continue_reason: string
+  round_summary: string
+  key_insight: string
+  suggestions: string[]
+  _llm_available: boolean
+}
 interface Round {
   round: number; strategies: Strategy[]
   debate: Debate; holdout: any[]
   selected: string[]; converged: boolean
+  meta_evaluation: MetaEvaluation
 }
 interface IterationLog {
   run_at: string; symbols: string[]; days: number
@@ -195,83 +207,117 @@ function StrategyTable({ strategies }: { strategies: Strategy[] }) {
   )
 }
 
-// ── Debate Panel ──────────────────────────────────────────────────
+// ── Debate Panel (LLM 策略评审，已移除平局/胜出横幅) ─────────────
 function DebatePanel({ debate }: { debate: Debate }) {
-  if (!debate || !debate.winner) return null
-  const tw = Math.round((debate.trend_weight || 0) * 100)
-  const mw = Math.round((debate.mr_weight || 0) * 100)
+  if (!debate) return null
+  const verdicts = debate.strategy_verdicts || []
+  if (verdicts.length === 0 && !debate.final_advice) return (
+    <div className="text-slate-500 text-sm p-4">暂无 LLM 策略评审数据</div>
+  )
   return (
     <div className="space-y-3">
-      {/* Winner banner */}
-      <div className="flex items-center gap-3 bg-slate-900/60 rounded-xl px-4 py-3">
-        <Award size={18} className="text-yellow-400" />
-        <div>
-          <span className="text-white font-bold">辩论结果：</span>
-          <span className="ml-2 font-bold" style={{ color: debate.winner === 'TREND' ? '#6366f1' : '#22d3ee' }}>
-            {debate.winner === 'TREND' ? '趋势派胜出' : debate.winner === 'MR' ? '均值回归派胜出' : '平局'}
-          </span>
-        </div>
-        <div className="ml-auto flex gap-4 text-xs">
-          <span className="text-indigo-400">趋势权重 {tw}%</span>
-          <span className="text-cyan-400">均值回归权重 {mw}%</span>
-        </div>
-      </div>
-
-      {/* Weight bar */}
-      <div className="flex h-2 rounded-full overflow-hidden">
-        <div style={{ width: `${tw}%`, backgroundColor: '#6366f1' }} />
-        <div style={{ width: `${mw}%`, backgroundColor: '#22d3ee' }} />
-      </div>
-
-      {/* 裁决理由 */}
-      {debate.verdict_reason && (
-        <p className="text-slate-400 text-xs italic">{debate.verdict_reason}</p>
-      )}
-
-      {/* 策略级 LLM 评审 */}
-      {(debate.strategy_verdicts || []).length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">LLM 策略评审</p>
-          {debate.strategy_verdicts.map(sv => {
-            const verdictColor = {
-              STRONG_BUY: 'text-emerald-400 border-emerald-700/40 bg-emerald-900/20',
-              BUY:        'text-green-400  border-green-700/40  bg-green-900/20',
-              HOLD:       'text-yellow-400 border-yellow-700/40 bg-yellow-900/20',
-              SELL:       'text-red-400    border-red-700/40    bg-red-900/20',
-            }[sv.verdict] ?? 'text-slate-400 border-slate-700/40 bg-slate-800/40'
-            return (
-              <div key={sv.strategy_id} className={`border rounded-xl p-3 ${verdictColor}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-sm">{sv.strategy_name}</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-black/30">{sv.verdict}</span>
-                  <span className="ml-auto text-xs opacity-70">
-                    置信 {Math.round(sv.confidence * 100)}% · 仓位 {Math.round(sv.weight_advice * 100)}%
-                  </span>
-                </div>
-                {sv.analysis && <p className="text-xs opacity-80 mb-2">{sv.analysis}</p>}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {sv.pros.length > 0 && (
-                    <ul className="space-y-0.5">
-                      {sv.pros.map((p, i) => <li key={i} className="flex gap-1"><span className="opacity-60">+</span>{p}</li>)}
-                    </ul>
-                  )}
-                  {sv.cons.length > 0 && (
-                    <ul className="space-y-0.5 opacity-70">
-                      {sv.cons.map((c, i) => <li key={i} className="flex gap-1"><span>−</span>{c}</li>)}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* 建议 */}
+      {verdicts.map(sv => {
+        const verdictColor = {
+          STRONG_BUY: 'text-emerald-400 border-emerald-700/40 bg-emerald-900/20',
+          BUY:        'text-green-400  border-green-700/40  bg-green-900/20',
+          HOLD:       'text-yellow-400 border-yellow-700/40 bg-yellow-900/20',
+          SELL:       'text-red-400    border-red-700/40    bg-red-900/20',
+        }[sv.verdict] ?? 'text-slate-400 border-slate-700/40 bg-slate-800/40'
+        return (
+          <div key={sv.strategy_id} className={`border rounded-xl p-3 ${verdictColor}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold text-sm">{sv.strategy_name}</span>
+              <span className="text-xs px-1.5 py-0.5 rounded bg-black/30">{sv.verdict}</span>
+              <span className="ml-auto text-xs opacity-70">
+                置信 {Math.round(sv.confidence * 100)}% · 仓位 {Math.round(sv.weight_advice * 100)}%
+              </span>
+            </div>
+            {sv.analysis && <p className="text-xs opacity-80 mb-2">{sv.analysis}</p>}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {sv.pros.length > 0 && (
+                <ul className="space-y-0.5">
+                  {sv.pros.map((p, i) => <li key={i} className="flex gap-1"><span className="opacity-60">+</span>{p}</li>)}
+                </ul>
+              )}
+              {sv.cons.length > 0 && (
+                <ul className="space-y-0.5 opacity-70">
+                  {sv.cons.map((c, i) => <li key={i} className="flex gap-1"><span>−</span>{c}</li>)}
+                </ul>
+              )}
+            </div>
+          </div>
+        )
+      })}
       {debate.final_advice && (
         <div className="flex gap-2 bg-slate-800 rounded-xl px-4 py-3">
           <MessageSquare size={14} className="text-slate-400 mt-0.5 shrink-0" />
           <p className="text-slate-300 text-xs">{debate.final_advice}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Meta Expert Panel ─────────────────────────────────────────────
+function MetaPanel({ meta }: { meta: MetaEvaluation }) {
+  if (!meta || !meta._llm_available) return null
+
+  const validityColor = meta.data_validity === 'HIGH'
+    ? 'text-green-400 bg-green-900/20 border-green-700/40'
+    : meta.data_validity === 'MEDIUM'
+    ? 'text-yellow-400 bg-yellow-900/20 border-yellow-700/40'
+    : 'text-red-400 bg-red-900/20 border-red-700/40'
+
+  const continueColor = meta.should_continue
+    ? 'text-purple-300 bg-purple-900/20 border-purple-700/40'
+    : 'text-slate-400 bg-slate-800/60 border-slate-600/40'
+
+  return (
+    <div className="border border-slate-600/60 rounded-xl p-4 bg-slate-900/40 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">元专家评估</span>
+        <span className={`text-xs px-2 py-0.5 rounded border ${validityColor}`}>
+          数据可信度 {meta.data_validity}
+        </span>
+        <span className={`ml-auto text-xs px-2 py-0.5 rounded border ${continueColor}`}>
+          {meta.should_continue ? '建议继续迭代' : '可停止迭代'}
+        </span>
+      </div>
+
+      {meta.round_summary && (
+        <p className="text-slate-200 text-sm font-medium">{meta.round_summary}</p>
+      )}
+
+      {meta.key_insight && (
+        <div className="flex gap-2 text-xs text-amber-300 bg-amber-900/20 rounded-lg px-3 py-2 border border-amber-700/30">
+          <span className="shrink-0 font-semibold">关键发现</span>
+          <span>{meta.key_insight}</span>
+        </div>
+      )}
+
+      {(meta.invalidity_reasons || []).length > 0 && (
+        <div className="space-y-1">
+          <p className="text-xs text-slate-500 font-semibold">数据问题</p>
+          {meta.invalidity_reasons.map((r, i) => (
+            <div key={i} className="flex gap-2 text-xs text-red-300">
+              <span className="shrink-0 opacity-60">⚠</span><span>{r}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {meta.continue_reason && (
+        <p className="text-xs text-slate-400 italic">{meta.continue_reason}</p>
+      )}
+
+      {(meta.suggestions || []).length > 0 && (
+        <div className="space-y-1">
+          <p className="text-xs text-slate-500 font-semibold">建议</p>
+          {meta.suggestions.map((s, i) => (
+            <div key={i} className="flex gap-2 text-xs text-slate-300">
+              <span className="shrink-0 text-purple-400">→</span><span>{s}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -286,6 +332,9 @@ function RoundPanel({ round }: { round: Round }) {
 
   return (
     <div className="space-y-4">
+      {/* Meta expert evaluation */}
+      <MetaPanel meta={round.meta_evaluation} />
+
       {/* Stats bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[

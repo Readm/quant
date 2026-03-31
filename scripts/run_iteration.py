@@ -149,12 +149,13 @@ class InstrumentedOrchestrator:
             strategies.sort(key=lambda x: x["score"], reverse=True)
 
             self.round_logs.append({
-                "round":      rnd,
-                "strategies": strategies,
-                "debate":     debate_to_dict(debate),
-                "holdout":    holdout,
-                "selected":   list(selected_names),
-                "converged":  getattr(rp, "converged", False),
+                "round":           rnd,
+                "strategies":      strategies,
+                "debate":          debate_to_dict(debate),
+                "holdout":         holdout,
+                "selected":        list(selected_names),
+                "converged":       getattr(rp, "converged", False),
+                "meta_evaluation": getattr(rp, "meta_evaluation", {}),
             })
 
         return result, self.round_logs
