@@ -10,12 +10,8 @@ data_fetcher.py — Stooq 真实历史数据获取器
   数据格式：Date,Open,High,Low,Close,Volume
 """
 
-import urllib.request, ssl, math, random
+import urllib.request, math, random
 from typing import Literal
-
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode    = ssl.CERT_NONE
 
 # Stooq 代码映射
 SYMBOL_MAP = {
@@ -58,7 +54,7 @@ def fetch_real(symbol: str, end: str = "20241231",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     })
     try:
-        with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
+        with urllib.request.urlopen(req, timeout=15) as r:
             raw = r.read().decode("utf-8")
     except Exception:
         return None
@@ -197,11 +193,51 @@ def compute_realistic_indicators(data: dict) -> dict:
             out[i] = sum(trs[i-period+1:i+1])/period
         return out
 
-    # ADX 简化版
-    ma14 = ma(14)
-    slope = [0.0]*n
-    for i in range(20, n):
-        slope[i] = abs((ma14[i]-ma14[i-10])/(ma14[i-10]+1e-9))*100
+    def adx(period=14):
+        # Wilder ADX: TR → +DM/-DM → Wilder smoothing → +DI/-DI → DX → ADX
+        tr_list   = [0.0] * n
+        pdm_list  = [0.0] * n  # +DM
+        ndm_list  = [0.0] * n  # -DM
+        for i in range(1, n):
+            tr_list[i]  = max(highs[i] - lows[i],
+                              abs(highs[i] - closes[i-1]),
+                              abs(lows[i]  - closes[i-1]))
+            up_move   = highs[i]  - highs[i-1]
+            down_move = lows[i-1] - lows[i]
+            pdm_list[i] = up_move   if (up_move > down_move   and up_move > 0)   else 0.0
+            ndm_list[i] = down_move if (down_move > up_move   and down_move > 0) else 0.0
+
+        # Wilder initial smoothing = simple sum of first `period` values
+        def _wilder_smooth(raw: list) -> list:
+            out = [0.0] * n
+            if n <= period:
+                return out
+            out[period] = sum(raw[1:period+1])
+            for i in range(period+1, n):
+                out[i] = out[i-1] - out[i-1]/period + raw[i]
+            return out
+
+        atr14  = _wilder_smooth(tr_list)
+        pdm14  = _wilder_smooth(pdm_list)
+        ndm14  = _wilder_smooth(ndm_list)
+
+        dx_list  = [0.0] * n
+        adx_list = [0.0] * n
+        for i in range(period, n):
+            if atr14[i] == 0:
+                continue
+            pdi = 100.0 * pdm14[i] / atr14[i]
+            ndi = 100.0 * ndm14[i] / atr14[i]
+            denom = pdi + ndi
+            dx_list[i] = 100.0 * abs(pdi - ndi) / denom if denom != 0 else 0.0
+
+        # ADX = Wilder smoothing of DX
+        if n > period * 2:
+            adx_list[period*2] = sum(dx_list[period:period*2+1]) / (period + 1)
+            for i in range(period*2+1, n):
+                adx_list[i] = (adx_list[i-1] * (period-1) + dx_list[i]) / period
+
+        return adx_list
 
     return {
         "ma5"   : ma(5),
@@ -212,7 +248,7 @@ def compute_realistic_indicators(data: dict) -> dict:
         "ema26" : ema(26),
         "rsi"   : rsi(14),
         "atr"   : atr(14),
-        "adx"   : slope,
+        "adx"   : adx(14),
     }
 
 

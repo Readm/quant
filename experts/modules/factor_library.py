@@ -22,25 +22,34 @@ def ichimoku_cloud(highs: list, lows: list, closes: list,
     Ichimoku Cloud（一目均衡表）
     返回 (tenkan_sen, kijun_sen, senkou_a, senkou_b, chikou_span)
     """
+    # 保存参数期数（避免与同名局部列表冲突）
+    tenkan_period   = tenkan
+    kijun_period    = kijun
+    senkou_b_period = senkou_b
+
     n = len(closes)
     def _mid(h_arr, l_arr, period, idx):
         if idx < period - 1: return float("nan")
         return (max(h_arr[idx-period+1:idx+1]) + min(l_arr[idx-period+1:idx+1])) / 2.0
 
-    tenkan = [float("nan")] * n
-    kijun  = [float("nan")] * n
-    senkou_a = [float("nan")] * n
-    senkou_b = [float("nan")] * n
-    chikou   = [float("nan")] * n
+    tenkan_line   = [float("nan")] * n
+    kijun_line    = [float("nan")] * n
+    senkou_a_line = [float("nan")] * n
+    senkou_b_line = [float("nan")] * n
+    chikou        = [float("nan")] * n
 
     for i in range(n):
-        tenkan[i] = _mid(highs, lows, tenkan, i)
-        kijun[i]  = _mid(highs, lows, kijun, i)
-        senkou_a[i] = (tenkan[i] + kijun[i]) / 2.0 if not (math.isnan(tenkan[i]) or math.isnan(kijun[i])) else float("nan")
-        senkou_b[i] = _mid(highs, lows, senkou_b, i)
-        chikou[i]   = closes[i - displacement] if i >= displacement else float("nan")
+        tenkan_line[i]   = _mid(highs, lows, tenkan_period, i)
+        kijun_line[i]    = _mid(highs, lows, kijun_period, i)
+        senkou_a_line[i] = (
+            (tenkan_line[i] + kijun_line[i]) / 2.0
+            if not (math.isnan(tenkan_line[i]) or math.isnan(kijun_line[i]))
+            else float("nan")
+        )
+        senkou_b_line[i] = _mid(highs, lows, senkou_b_period, i)
+        chikou[i]        = closes[i - displacement] if i >= displacement else float("nan")
 
-    return tenkan, kijun, senkou_a, senkou_b, chikou
+    return tenkan_line, kijun_line, senkou_a_line, senkou_b_line, chikou
 
 
 def ichimoku_signal(closes: list, highs: list, lows: list,

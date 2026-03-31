@@ -17,8 +17,8 @@ from experts.structured_feedback import (
 )
 
 # ── 硬过滤门槛 ─────────────────────────────
-MIN_ANNUAL_RETURN = 0.0   # 年化低于此 → REJECT
-MIN_SHARPE        = 0.0    # 夏普低于此 → REJECT
+MIN_ANNUAL_RETURN = 3.0   # 年化低于此 → REJECT
+MIN_SHARPE        = 0.3    # 夏普低于此 → REJECT
 MIN_TRADES        = 0        # 0 = 不淘汰（低频策略也有价值）
                      # 若需过滤极端情况，改用 SOFT_MIN_TRADES
 SOFT_MIN_TRADES   = 3       # 仅作标记，不淘汰（低频=潜在高置信度）

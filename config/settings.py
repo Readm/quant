@@ -21,8 +21,8 @@ MARKETS = {
 }
 
 # ── 数据源 Token ──────────────────────────────────────
-# Tushare Pro（https://tushare.pro）
-TUSHARE_TOKEN = os.getenv("TUSHARE_TOKEN", "7a0b3f1c248e650a50db0d722af19cbe61cd67bb3df44939a9744b31")
+# Tushare Pro（https://tushare.pro）— Token 仅从 .env 读取，不写默认值
+TUSHARE_TOKEN = os.getenv("TUSHARE_TOKEN", "")
 
 # CCXT（加密货币，填写你的 Binance/OKX API Key）
 CRYPTO_EXCHANGE = os.getenv("CRYPTO_EXCHANGE", "binance")  # binance / okx

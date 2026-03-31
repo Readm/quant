@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from backtest.local_data import load_multiple
 
 from experts.modules.blackboard import Blackboard
-from experts.modules.news_sentiment import NewsSentimentAnalyzer
+# TODO: from experts.modules.news_sentiment import NewsSentimentAnalyzer  # 待接入真实搜索 API
 from experts.modules.risk_engine import RiskExpert
 from experts.specialists.expert1a_trend import TrendExpert
 from experts.specialists.expert1b_mean_reversion import MeanReversionExpert
@@ -80,7 +80,6 @@ class Orchestrator:
         self.max_rounds = max_rounds
         self.top_n      = top_n
         self.bb             = Blackboard()
-        self.news           = NewsSentimentAnalyzer()
         self.risk_expert    = RiskExpert()
         self.trend_expert   = TrendExpert(seed=seed)
         self.mr_expert      = MeanReversionExpert(seed=seed+1)
@@ -143,8 +142,11 @@ class Orchestrator:
             if not all_pass:
                 print("  ⚠️ 无候选通过，跳过本轮"); continue
 
-            # 新闻情绪（不再使用市场状态专家：回测策略应穿越牛熊）
-            sent   = self.news.analyze(self.symbols)
+            # TODO: news_sentiment 尚未接入真实搜索 API，暂时跳过
+            # 待实现：接入 SerpAPI / Bing Search API 获取真实新闻后再启用
+            sent   = {"sentiment_score": 0.0, "sentiment_label": "NEUTRAL",
+                      "confidence": 0.0, "top_stories": [], "market_tips": [],
+                      "explanation": "news_sentiment 未启用（TODO）"}
             regime = None   # 移除 MarketRegimeExpert：策略不依赖实时市场判断
             self.bb.write("News", rnd, "sentiment", sent)
 
