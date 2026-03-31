@@ -10,7 +10,7 @@ orchestrator.py — 多专家迭代系统 v4.0（全面改进版）
   ✅ 三专家辩论（Trend + MeanReversion + Regime）
 """
 
-import sys, json, math, random, re, urllib.request
+import sys, json, math, random, re, urllib.request, os, time
 from pathlib import Path
 from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -26,6 +26,43 @@ from experts.evaluator import Evaluator
 from experts.meta_monitor import MetaMonitor, RoundSnapshot
 from experts.debate_manager import DebateManager
 from experts.structured_feedback import FeedbackHistory
+
+# ── 并行回测 worker（模块级，可被 ProcessPoolExecutor pickle）─────
+_worker_symbols_data = None
+_worker_sym_list     = None
+
+def _init_backtest_worker(symbols_data, sym_list):
+    """每个 worker 进程初始化一次，共享 symbols_data 避免重复序列化。"""
+    global _worker_symbols_data, _worker_sym_list
+    _worker_symbols_data = symbols_data
+    _worker_sym_list     = sym_list
+
+def _backtest_one_cand(args):
+    """在所有标的上跑一个候选策略，返回最佳标的的 BacktestReport。"""
+    import copy
+    expert, cand = args
+    best_report    = None
+    best_composite = -1e9
+    for idx, sd in enumerate(_worker_symbols_data):
+        d    = sd["data"]
+        inds = sd["indicators"]
+        try:
+            r = expert.backtest(d, inds, cand["params"], cand["template_key"],
+                                strategy_id=cand["strategy_id"])
+        except Exception:
+            continue
+        ann  = getattr(r, "annualized_return", 0.0)
+        shr  = getattr(r, "sharpe_ratio",      0.0)
+        dd   = getattr(r, "max_drawdown_pct",  100.0)
+        n_tr = getattr(r, "total_trades",      0)
+        score = (ann * 0.5 + shr * 20 - dd * 0.2) if n_tr > 0 else -999.0
+        if score > best_composite:
+            best_composite = score
+            best_report = copy.copy(r)
+            best_report._best_symbol = _worker_sym_list[idx]
+    return best_report
+
+_N_BT_WORKERS = max(1, (os.cpu_count() or 4))
 
 MAX_ROUNDS_DEFAULT   = 20
 TOP_N_DEFAULT       = 4
@@ -115,7 +152,10 @@ class Orchestrator:
 
         symbols_data = self._load_data()
 
+        _rnd_times: list = []  # profiling accumulator
+
         for rnd in range(1, self.max_rounds + 1):
+            _t_rnd = time.perf_counter()
             print(f"\n{'='*68}\n  ▶ 第 {rnd} 轮迭代\n{'='*68}")
 
             need_div = self.evaluator.need_diversify()
@@ -130,8 +170,10 @@ class Orchestrator:
                 _dedup_rng)
             all_cands = t_cands + mr_cands
 
+            _t_bt = time.perf_counter()
             t_reports  = self._backtest_multi_symbol(self.trend_expert,  t_cands,  symbols_data)
             mr_reports = self._backtest_multi_symbol(self.mr_expert,     mr_cands, symbols_data)
+            _dt_bt = time.perf_counter() - _t_bt
 
             # Register completed-backtest hashes (post-evaluation, authoritative)
             for c in t_cands + mr_cands:
@@ -171,7 +213,9 @@ class Orchestrator:
             self.bb.write("News", rnd, "sentiment", sent)
 
             # 对抗辩论
+            _t_debate = time.perf_counter()
             debate = self.debate_manager.conduct_debate(t_pass, mr_pass, regime, [], rnd)
+            _dt_debate = time.perf_counter() - _t_debate
             DebateManager.print_debate(debate, rnd)
 
             # 风险评估
@@ -234,7 +278,9 @@ class Orchestrator:
 
             # ── LLM 元专家评估（每轮，可覆盖收敛判断）─────────────
             round_strats = [eval_to_strat_dict(e) for e in t_evals + mr_evals]
+            _t_meta = time.perf_counter()
             meta_eval = self.monitor.llm_evaluate_round(round_strats, self.best_score, self.no_improve)
+            _dt_meta = time.perf_counter() - _t_meta
             _meta_ok = meta_eval.get("_llm_available", False)
             if _meta_ok:
                 print(f"\n[元专家] {meta_eval.get('round_summary','')}")
@@ -244,6 +290,11 @@ class Orchestrator:
                     print(f"[元专家] ⚠️ 判定当前收敛为假象（{meta_eval.get('continue_reason','')}），重置计数器")
                     converged = False
                     self.no_improve = 0
+
+            _dt_rnd = time.perf_counter() - _t_rnd
+            _rnd_times.append(_dt_rnd)
+            print(f"\n[Profiling] 第{rnd}轮总耗时 {_dt_rnd:.1f}s  "
+                  f"回测={_dt_bt:.1f}s  辩论={_dt_debate:.1f}s  元专家={_dt_meta:.1f}s")
 
             rp = RoundReportFake(rnd)
             rp.meta_evaluation = meta_eval
@@ -260,6 +311,12 @@ class Orchestrator:
             if converged:
                 print("\n✅ 冠军策略连续3轮未提升，已收敛"); break
 
+        if _rnd_times:
+            print(f"\n[Profiling] 总计 {len(_rnd_times)} 轮  "
+                  f"总耗时={sum(_rnd_times):.1f}s  "
+                  f"均值={sum(_rnd_times)/len(_rnd_times):.1f}s/轮  "
+                  f"CPU核={_N_BT_WORKERS}")
+
         if self.monitor.should_report():
             meta = self.monitor.generate_report(self.round_reports)
             MetaMonitor.print_report(meta)
@@ -274,55 +331,42 @@ class Orchestrator:
     # ── 多标的回测（选股核心）─────────────────────────────────────
     def _backtest_multi_symbol(self, expert, cands, symbols_data):
         """
-        每个候选策略在所有标的上独立回测，保留表现最佳的标的结果。
-        这实现了基础的「选股」语义：同一参数在不同股票上表现不同，
-        系统自动找到最匹配该策略信号的标的。
-        最终报告中 strategy_name 附加最佳标的代码，可追溯来源。
+        每个候选策略在所有标的上独立回测，保留最佳标的结果。
+        使用 ProcessPoolExecutor 并行（workers = CPU 核数）。
+        symbols_data 通过 initializer 只序列化一次，避免重复 pickle 开销。
         """
-        import copy
+        from concurrent.futures import ProcessPoolExecutor
+        sym_list = (
+            [sd["symbol"] for sd in symbols_data]
+            if isinstance(symbols_data[0], dict) and "symbol" in symbols_data[0]
+            else [f"sym{i}" for i in range(len(symbols_data))]
+        )
+
+        n_workers = min(_N_BT_WORKERS, len(cands))
+        t0 = time.perf_counter()
+        with ProcessPoolExecutor(
+            max_workers=n_workers,
+            initializer=_init_backtest_worker,
+            initargs=(symbols_data, sym_list),
+        ) as pool:
+            raw = list(pool.map(_backtest_one_cand, [(expert, c) for c in cands]))
+        dt = time.perf_counter() - t0
+        print(f"  [Profiling] 回测 {len(cands)}个×{len(sym_list)}标的  "
+              f"并行={n_workers}核  耗时={dt:.2f}s  "
+              f"({dt/len(cands)*1000:.0f}ms/候选)")
+
         results = []
-        sym_list = [sd["symbol"] for sd in symbols_data] if isinstance(symbols_data[0], dict) and "symbol" in symbols_data[0] else \
-                   [f"sym{i}" for i in range(len(symbols_data))]
-
-        for c in cands:
-            best_report = None
-            best_composite = -1e9
-
-            for idx, sd in enumerate(symbols_data):
-                d    = sd["data"]
-                inds = sd["indicators"]
-                try:
-                    r = expert.backtest(d, inds, c["params"], c["template_key"], strategy_id=c["strategy_id"])
-                except Exception as ex:
-                    continue
-
-                # 轻量评分（不写入 fb_history，避免污染反馈历史）
-                ann  = getattr(r, "annualized_return", 0.0)
-                shr  = getattr(r, "sharpe_ratio", 0.0)
-                dd   = getattr(r, "max_drawdown_pct", 100.0)
-                n_tr = getattr(r, "total_trades", 0)
-                # 惩罚零交易策略；年化+夏普综合评分
-                score = (ann * 0.5 + shr * 20 - dd * 0.2) if n_tr > 0 else -999.0
-
-                if score > best_composite:
-                    best_composite = score
-                    best_report = copy.copy(r)
-                    best_report._best_symbol = sym_list[idx]
-
+        for best_report, c in zip(raw, cands):
             if best_report is None:
-                # 所有标的均失败，用第一个标的的空报告
-                cls = type(expert).__mro__[0]
                 from experts.specialists.expert1a_trend import BacktestReport
-                best_report = BacktestReport(strategy_id=c["strategy_id"], strategy_name=c["strategy_name"])
-
+                best_report = BacktestReport(
+                    strategy_id=c["strategy_id"], strategy_name=c["strategy_name"])
             best_report.strategy_id   = c["strategy_id"]
             best_report.strategy_type = c["strategy_type"]
-            # 在名称中标注最佳标的，便于溯源
             sym_tag = getattr(best_report, "_best_symbol", "")
             if sym_tag and sym_tag not in best_report.strategy_name:
                 best_report.strategy_name = f"{best_report.strategy_name}({sym_tag})"
             results.append(best_report)
-
         return results
 
     # 全量参数搜索空间（宽范围随机探索）

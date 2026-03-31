@@ -79,7 +79,8 @@ def llm_analyze(prompt: str,
                 schema: Optional[dict] = None,
                 model: str = "auto",
                 temperature: float = 0.7,
-                timeout_ms: int = 30000) -> dict:
+                timeout_ms: int = 30000,
+                max_tokens: int = 4096) -> dict:
     """
     调用 MiniMax Chat API，返回解析后的 dict。
     失败时返回 {"error": "..."}，调用方应降级到规则逻辑。
@@ -108,7 +109,7 @@ def llm_analyze(prompt: str,
             {"role": "user",   "content": prompt},
         ],
         "temperature": temperature,
-        "max_tokens": 1024,
+        "max_tokens": max_tokens,
     }, ensure_ascii=False).encode("utf-8")
 
     req = urllib.request.Request(

@@ -395,7 +395,7 @@ class MetaMonitor:
         import json as _json
         prompt = self.LLM_META_PROMPT.replace("{data_json}", _json.dumps(data, ensure_ascii=False, indent=2))
 
-        result = llm_analyze(prompt, task="meta_evaluate", temperature=0.3, timeout_ms=45000)
+        result = llm_analyze(prompt, task="meta_evaluate", temperature=0.3, timeout_ms=60000, max_tokens=10240)
 
         if "error" in result:
             # LLM 失败时返回保守默认值（不干预收敛）
