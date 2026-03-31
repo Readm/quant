@@ -1,0 +1,191 @@
+{
+  "generated_at": "2026-03-31 17:39:25",
+  "total_rounds": 1,
+  "symbols": [
+    "SH000300",
+    "SH600519"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "MACD趋势(SH600519)",
+      "type": "trend",
+      "score": 63.0,
+      "ann": 10.66,
+      "sharpe": 0.746,
+      "dd": 13.69,
+      "weight": {
+        "strategy_id": "tr_2ffb658a",
+        "strategy_name": "MACD趋势(SH600519)",
+        "strategy_type": "trend",
+        "params": {
+          "fp": 19,
+          "sp": 54,
+          "sig": 13
+        },
+        "tags": [
+          "趋势跟踪",
+          "MACD趋势"
+        ],
+        "total_return": 12.77,
+        "annualized_return": 10.66,
+        "sharpe_ratio": 0.746,
+        "max_drawdown_pct": 13.69,
+        "win_rate": 50.0,
+        "profit_factor": 3.29,
+        "total_trades": 2,
+        "sharpe_score": 64.8,
+        "drawdown_score": 75.0,
+        "return_score": 51.0,
+        "composite": 63.0,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=63.0，年化=10.7%，夏普=0.75）",
+        "feedback": "放宽入场条件增加交易频率",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 1,
+        "pbo_label": "",
+        "sharpe_after_pbo": 0.746,
+        "structured_feedback": {
+          "strategy_id": "tr_2ffb658a",
+          "strategy_name": "MACD趋势(SH600519)",
+          "strategy_type": "trend",
+          "template_key": "",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=63.0，年化=10.7%，夏普=0.75）",
+          "ann_return": 10.66,
+          "sharpe_ratio": 0.746,
+          "max_drawdown": 13.69,
+          "win_rate": 50.0,
+          "profit_factor": 3.29,
+          "total_trades": 2,
+          "composite": 63.0,
+          "adjustment": {},
+          "adjustment_param": "",
+          "adjustment_magnitude": 0,
+          "adjustment_unit": "",
+          "recommended_regime": "STRONG_TREND",
+          "position_advice": "标配",
+          "alternative_strategies": [
+            "RSI均值回归",
+            "布林带回归"
+          ],
+          "raw_reason": "✅ 纳入（综合分=63.0，年化=10.7%，夏普=0.75）",
+          "feedback_text": "放宽入场条件增加交易频率"
+        }
+      }
+    },
+    {
+      "rank": 2,
+      "name": "RSI均值回归(SH600519)",
+      "type": "mean_reversion",
+      "score": 59.6,
+      "ann": 16.01,
+      "sharpe": 0.934,
+      "dd": 21.21,
+      "weight": {
+        "strategy_id": "mr_0e67a25b",
+        "strategy_name": "RSI均值回归(SH600519)",
+        "strategy_type": "mean_reversion",
+        "params": {
+          "ema_period": 14
+        },
+        "tags": [
+          "均值回归",
+          "RSI均值回归"
+        ],
+        "total_return": 19.27,
+        "annualized_return": 16.01,
+        "sharpe_ratio": 0.934,
+        "max_drawdown_pct": 21.21,
+        "win_rate": 100.0,
+        "profit_factor": 0.0,
+        "total_trades": 2,
+        "sharpe_score": 76.0,
+        "drawdown_score": 40.0,
+        "return_score": 59.0,
+        "composite": 59.6,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=59.6，年化=16.0%，夏普=0.93）",
+        "feedback": "降低单笔仓位至≤10%；优化止盈止损比，减少赢转亏；放宽入场条件增加交易频率",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 1,
+        "pbo_label": "",
+        "sharpe_after_pbo": 0.934,
+        "structured_feedback": {
+          "strategy_id": "mr_0e67a25b",
+          "strategy_name": "RSI均值回归(SH600519)",
+          "strategy_type": "mean_reversion",
+          "template_key": "",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=59.6，年化=16.0%，夏普=0.93）",
+          "ann_return": 16.01,
+          "sharpe_ratio": 0.934,
+          "max_drawdown": 21.21,
+          "win_rate": 100.0,
+          "profit_factor": 0.0,
+          "total_trades": 2,
+          "composite": 59.6,
+          "adjustment": {},
+          "adjustment_param": "atr_mult",
+          "adjustment_magnitude": 1.4,
+          "adjustment_unit": "倍",
+          "recommended_regime": "SIDEWAYS",
+          "position_advice": "低配",
+          "alternative_strategies": [
+            "动量突破",
+            "ADX趋势确认"
+          ],
+          "raw_reason": "✅ 纳入（综合分=59.6，年化=16.0%，夏普=0.93）",
+          "feedback_text": "降低单笔仓位至≤10%；优化止盈止损比，减少赢转亏；放宽入场条件增加交易频率"
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "name": "ROC多周期(SH000300)",
+      "type": "mean_reversion",
+      "score": 48.3,
+      "ann": 3.95,
+      "sharpe": 0.473,
+      "dd": 7.62,
+      "weight": 0.0233
+    },
+    {
+      "rank": 4,
+      "name": "KDJ波形(SH000300)",
+      "type": "mean_reversion",
+      "score": 45.4,
+      "ann": 3.07,
+      "sharpe": 0.334,
+      "dd": 8.2,
+      "weight": 0.0219
+    }
+  ],
+  "convergence": {
+    "round1_score": 0,
+    "final_score": 0,
+    "delta": 0,
+    "direction": "→首轮",
+    "converged": false
+  },
+  "suggestions": [
+    {
+      "risk_level": "进取型",
+      "strategies": [
+        {
+          "name": "MACD趋势(SH600519)"
+        },
+        {
+          "name": "RSI均值回归(SH600519)"
+        },
+        {
+          "name": "ROC多周期(SH000300)"
+        }
+      ],
+      "action": "综合分=63.0，可小资金实盘验证（≤30%）"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-31 22:59:57",
+  "total_rounds": 6,
+  "symbols": [
+    "SH000300",
+    "SH600519",
+    "SH600036",
+    "SH601318",
+    "SZ000858"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "TRIX三重指数[N1/R5/V]",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -13.96,
+      "sharpe": -1.824,
+      "dd": 17.75,
+      "weight": 0.0
+    },
+    {
+      "rank": 2,
+      "name": "双均线交叉[N1/R5/S]",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -17.41,
+      "sharpe": -1.993,
+      "dd": 20.3,
+      "weight": 0.0
+    },
+    {
+      "rank": 3,
+      "name": "双均线交叉[N1/R10/E]",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -9.55,
+      "sharpe": -1.943,
+      "dd": 12.95,
+      "weight": 0.0
+    },
+    {
+      "rank": 4,
+      "name": "双均线交叉[N5/R20/E]",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -13.18,
+      "sharpe": -1.744,
+      "dd": 17.09,
+      "weight": 0.0
+    }
+  ],
+  "convergence": {
+    "round1_score": 100.0,
+    "final_score": 100.0,
+    "delta": 0.0,
+    "direction": "→平稳",
+    "converged": false
+  },
+  "suggestions": [
+    {
+      "risk_level": "进取型",
+      "strategies": [
+        {
+          "name": "TRIX三重指数[N1/R5/V]"
+        },
+        {
+          "name": "双均线交叉[N1/R5/S]"
+        },
+        {
+          "name": "双均线交叉[N1/R10/E]"
+        }
+      ],
+      "action": "综合分=100.0，可小资金实盘验证（≤30%）"
+    }
+  ]
+}

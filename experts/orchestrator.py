@@ -22,7 +22,7 @@ from experts.modules.blackboard import Blackboard
 from experts.modules.risk_engine import RiskExpert
 from experts.specialists.expert1a_trend import TrendExpert
 from experts.specialists.expert1b_mean_reversion import MeanReversionExpert
-from experts.evaluator import Evaluator
+from experts.evaluator import Evaluator, compute_benchmark_returns
 from experts.meta_monitor import MetaMonitor, RoundSnapshot
 from experts.debate_manager import DebateManager
 from experts.structured_feedback import FeedbackHistory
@@ -147,6 +147,15 @@ class Orchestrator:
         print("="*68)
 
         symbols_data = self._load_data()
+
+        # 设置评估基准（默认用第一个标的作为基准）
+        benchmark_sym = self._pick_benchmark()
+        benchmark_rets = self._compute_benchmark_returns(symbols_data, benchmark_sym)
+        self.evaluator = Evaluator(benchmark_daily_returns=benchmark_rets)
+        if benchmark_rets:
+            print(f"[基准] {benchmark_sym or '第一个标的'}，{len(benchmark_rets)} 个日收益率")
+        else:
+            print(f"[基准] 无基准数据，IR 评分将默认为 0")
 
         _rnd_times: list = []  # profiling accumulator
 
@@ -835,7 +844,25 @@ class Orchestrator:
     # Tencent realtime API symbol mapping (only well-known non-A-share symbols)
     _TENCENT_MAP = {'SPY': 'sh000300', 'BTCUSDT': 'btcusdt', 'ETHUSDT': 'ethusdt'}
 
+    @staticmethod
+    def _pick_benchmark() -> str:
+        # 留给子类或外部覆盖；默认 None 表示用第一个标的
+        return None
+
+    def _compute_benchmark_returns(self, symbols_data: list, benchmark_sym: str = None) -> list:
+        if benchmark_sym and symbols_data:
+            for sd in symbols_data:
+                if sd.get("symbol") == benchmark_sym:
+                    closes = sd.get("data", {}).get("closes", [])
+                    return compute_benchmark_returns(closes)
+        # 无明确基准则用第一个标的
+        if symbols_data:
+            closes = symbols_data[0].get("data", {}).get("closes", [])
+            return compute_benchmark_returns(closes)
+        return []
+
     def _load_data(self):
+
         result = {}
         for sym in self.symbols:
             # 1. Try Tencent API for mapped symbols
@@ -1011,7 +1038,7 @@ class Orchestrator:
         print(f"\n🏆 全局 Top {len(final.get('global_top',[]))}：")
         for s in final["global_top"]:
             w = s.get("weight", 0.0); w_str = f"{float(w):.1%}" if isinstance(w, (int,float)) and w == w else str(w)
-        print(f"  #{s['rank']} {s['name']}（{s['type']}）分={s['score']:.1f} 年化={s['ann']:.1f}% 夏普={s['sharpe']:.3f} 权重={w_str}")
+            print(f"  #{s['rank']} {s['name']}（{s['type']}）分={s['score']:.1f} 年化={s['ann']:.1f}% 夏普={s['sharpe']:.3f} 权重={w_str}")
         print("\n"+"🏆"*34)
 
 

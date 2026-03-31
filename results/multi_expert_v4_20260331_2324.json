@@ -1,0 +1,189 @@
+{
+  "generated_at": "2026-03-31 23:24:18",
+  "total_rounds": 2,
+  "symbols": [
+    "SH000300",
+    "SH600519",
+    "SH600036",
+    "SH601318",
+    "SZ000858"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "成交量异常[N5/R20/V]",
+      "type": "mean_reversion",
+      "score": 35.9,
+      "ann": 10.2,
+      "sharpe": 0.458,
+      "dd": 28.55,
+      "weight": {
+        "strategy_id": "me_ca2696fc",
+        "strategy_name": "成交量异常[N5/R20/V]",
+        "strategy_type": "mean_reversion",
+        "params": {
+          "vol_ma": 12,
+          "threshold": 3.0411,
+          "pf_n_stocks": 5,
+          "pf_rebalance_freq": 20,
+          "pf_weight_method": "vol_inverse",
+          "pf_max_position_pct": 0.71
+        },
+        "tags": [
+          "成交量异常"
+        ],
+        "total_return": 12.22,
+        "annualized_return": 10.2,
+        "sharpe_ratio": 0.458,
+        "max_drawdown_pct": 28.55,
+        "win_rate": 70.59,
+        "profit_factor": 4.53,
+        "total_trades": 34,
+        "sortino_score": 56.4,
+        "calmar_score": 21.4,
+        "ir_score": 22.7,
+        "drawdown_score": 40.0,
+        "composite": 35.9,
+        "decision": "CONDITIONAL",
+        "reason": "⚠️ 待观察（综合分=35.9，建议优化参数）",
+        "feedback": "收紧出场条件减少假信号；降低单笔仓位至≤10%",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "未知参数，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": -18.71,
+        "alpha": 30.84,
+        "structured_feedback": {
+          "strategy_id": "me_ca2696fc",
+          "strategy_name": "成交量异常[N5/R20/V]",
+          "strategy_type": "mean_reversion",
+          "template_key": "",
+          "weakness": {},
+          "weakness_desc": "⚠️ 待观察（综合分=35.9，建议优化参数）",
+          "ann_return": 10.2,
+          "sharpe_ratio": 0.458,
+          "max_drawdown": 28.55,
+          "win_rate": 70.59,
+          "profit_factor": 4.53,
+          "total_trades": 34,
+          "composite": 35.9,
+          "adjustment": {},
+          "adjustment_param": "",
+          "adjustment_magnitude": 0,
+          "adjustment_unit": "",
+          "recommended_regime": "SIDEWAYS",
+          "position_advice": "低配",
+          "alternative_strategies": [
+            "动量突破",
+            "ADX趋势确认"
+          ],
+          "raw_reason": "⚠️ 待观察（综合分=35.9，建议优化参数）",
+          "feedback_text": "收紧出场条件减少假信号；降低单笔仓位至≤10%"
+        }
+      }
+    },
+    {
+      "rank": 2,
+      "name": "OBOS超买超卖[N1/R20/S]",
+      "type": "mean_reversion",
+      "score": 35.4,
+      "ann": 2.17,
+      "sharpe": 0.231,
+      "dd": 8.92,
+      "weight": {
+        "strategy_id": "me_750fd812",
+        "strategy_name": "OBOS超买超卖[N1/R20/S]",
+        "strategy_type": "mean_reversion",
+        "params": {
+          "period": 33,
+          "pf_n_stocks": 1,
+          "pf_rebalance_freq": 20,
+          "pf_weight_method": "score_weighted",
+          "pf_max_position_pct": 0.33
+        },
+        "tags": [
+          "OBOS超买超卖"
+        ],
+        "total_return": 2.58,
+        "annualized_return": 2.17,
+        "sharpe_ratio": 0.231,
+        "max_drawdown_pct": 8.92,
+        "win_rate": 100.0,
+        "profit_factor": 0.0,
+        "total_trades": 11,
+        "sortino_score": 28.8,
+        "calmar_score": 14.6,
+        "ir_score": 20.6,
+        "drawdown_score": 90.0,
+        "composite": 35.4,
+        "decision": "CONDITIONAL",
+        "reason": "⚠️ 待观察（综合分=35.4，建议优化参数）",
+        "feedback": "收紧出场条件减少假信号；优化止盈止损比，减少赢转亏",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "PBO=0%（可信）",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": -18.71,
+        "alpha": 21.29,
+        "structured_feedback": {
+          "strategy_id": "me_750fd812",
+          "strategy_name": "OBOS超买超卖[N1/R20/S]",
+          "strategy_type": "mean_reversion",
+          "template_key": "",
+          "weakness": {},
+          "weakness_desc": "⚠️ 待观察（综合分=35.4，建议优化参数）",
+          "ann_return": 2.17,
+          "sharpe_ratio": 0.231,
+          "max_drawdown": 8.92,
+          "win_rate": 100.0,
+          "profit_factor": 0.0,
+          "total_trades": 11,
+          "composite": 35.4,
+          "adjustment": {},
+          "adjustment_param": "threshold",
+          "adjustment_magnitude": 0.03,
+          "adjustment_unit": "%",
+          "recommended_regime": "SIDEWAYS",
+          "position_advice": "高配",
+          "alternative_strategies": [
+            "动量突破",
+            "ADX趋势确认"
+          ],
+          "raw_reason": "⚠️ 待观察（综合分=35.4，建议优化参数）",
+          "feedback_text": "收紧出场条件减少假信号；优化止盈止损比，减少赢转亏"
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "name": "ADX趋势确认[N1/R60/V]",
+      "type": "trend",
+      "score": 27.7,
+      "ann": 0.0,
+      "sharpe": 0.0,
+      "dd": 0.0,
+      "weight": 0.0
+    },
+    {
+      "rank": 4,
+      "name": "MACD趋势[N1/R10/V]",
+      "type": "trend",
+      "score": 27.7,
+      "ann": 0.0,
+      "sharpe": 0.0,
+      "dd": 0.0,
+      "weight": 0.0
+    }
+  ],
+  "convergence": {
+    "round1_score": 35.4,
+    "final_score": 35.9,
+    "delta": 0.5,
+    "direction": "→平稳",
+    "converged": false
+  },
+  "suggestions": []
+}

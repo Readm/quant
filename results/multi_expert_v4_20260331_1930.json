@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-31 19:30:30",
+  "total_rounds": 6,
+  "symbols": [
+    "SH000300",
+    "SH600519",
+    "SH600036",
+    "SH601318",
+    "SZ000858"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "Donchian突破(SH000300)",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -9.68,
+      "sharpe": -1.545,
+      "dd": 13.22,
+      "weight": 0.0
+    },
+    {
+      "rank": 2,
+      "name": "动量突破(SZ000858)",
+      "type": "trend",
+      "score": 96.3,
+      "ann": -24.8,
+      "sharpe": -1.637,
+      "dd": 31.76,
+      "weight": 0.0
+    },
+    {
+      "rank": 3,
+      "name": "ADX趋势确认(SH600036)",
+      "type": "trend",
+      "score": 86.9,
+      "ann": 19.69,
+      "sharpe": 1.328,
+      "dd": 4.33,
+      "weight": 0.0
+    },
+    {
+      "rank": 4,
+      "name": "MACD趋势(SZ000858)",
+      "type": "trend",
+      "score": 82.9,
+      "ann": 28.21,
+      "sharpe": 1.254,
+      "dd": 12.98,
+      "weight": 0.0
+    }
+  ],
+  "convergence": {
+    "round1_score": 86.9,
+    "final_score": 82.9,
+    "delta": -4.0,
+    "direction": "↓下降",
+    "converged": true
+  },
+  "suggestions": [
+    {
+      "risk_level": "进取型",
+      "strategies": [
+        {
+          "name": "Donchian突破(SH000300)"
+        },
+        {
+          "name": "动量突破(SZ000858)"
+        },
+        {
+          "name": "ADX趋势确认(SH600036)"
+        }
+      ],
+      "action": "综合分=100.0，可小资金实盘验证（≤30%）"
+    }
+  ]
+}

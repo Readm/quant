@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-31 21:38:03",
+  "total_rounds": 20,
+  "symbols": [
+    "SH000300",
+    "SH600519",
+    "SH600036",
+    "SH601318",
+    "SZ000858"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "动量突破(SH600519)",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -14.72,
+      "sharpe": -1.552,
+      "dd": 17.21,
+      "weight": 0.0
+    },
+    {
+      "rank": 2,
+      "name": "Donchian突破(SH000300)",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -9.68,
+      "sharpe": -1.545,
+      "dd": 13.22,
+      "weight": 0.0
+    },
+    {
+      "rank": 3,
+      "name": "动量突破(SZ000858)",
+      "type": "trend",
+      "score": 100.0,
+      "ann": -46.46,
+      "sharpe": -2.326,
+      "dd": 54.39,
+      "weight": 0.0
+    },
+    {
+      "rank": 4,
+      "name": "KDJ波形(SZ000858)",
+      "type": "mean_reversion",
+      "score": 91.5,
+      "ann": 34.34,
+      "sharpe": 1.694,
+      "dd": 12.93,
+      "weight": 0.0754
+    }
+  ],
+  "convergence": {
+    "round1_score": 100.0,
+    "final_score": 75.6,
+    "delta": -24.4,
+    "direction": "↓下降",
+    "converged": false
+  },
+  "suggestions": [
+    {
+      "risk_level": "进取型",
+      "strategies": [
+        {
+          "name": "动量突破(SH600519)"
+        },
+        {
+          "name": "Donchian突破(SH000300)"
+        },
+        {
+          "name": "动量突破(SZ000858)"
+        }
+      ],
+      "action": "综合分=100.0，可小资金实盘验证（≤30%）"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-03-31 23:22:25",
+  "total_rounds": 0,
+  "symbols": [
+    "SH000300",
+    "SH600519",
+    "SH600036"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [],
+  "convergence": {
+    "round1_score": 0,
+    "final_score": 0,
+    "delta": 0,
+    "direction": "→首轮",
+    "converged": false
+  },
+  "suggestions": []
+}
