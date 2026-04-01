@@ -26,13 +26,13 @@ from experts.researchers.research_expert import ResearchExpert
 
 # ── 默认搜索查询（涵盖不同方向）────────────────────────────────────
 DEFAULT_QUERIES = [
-    "cross-sectional alpha factor A-share China stock momentum",
-    "quantitative factor equity market order flow imbalance",
-    "earnings announcement abnormal return stock market",
-    "short-term reversal factor transaction cost microstructure",
-    "machine learning feature stock return prediction factor",
-    "sentiment factor investor attention stock market",
-    "intraday price pattern overnight return factor",
+    "momentum factor stock return",
+    "order flow imbalance equity",
+    "earnings surprise alpha factor",
+    "volume price reversal",
+    "machine learning equity factor",
+    "sentiment factor stock market",
+    "intraday pattern overnight return",
 ]
 
 
@@ -46,6 +46,10 @@ def main():
                         help="用于沙盒测试的标的（默认 SH600519 SH600036）")
     parser.add_argument("--all-queries", action="store_true",
                         help="使用全部7个默认查询（运行时间较长）")
+    parser.add_argument("--urls", nargs="+", default=[],
+                        help="自定义 URL 列表（网页/论文链接）")
+    parser.add_argument("--pdfs", nargs="+", default=[],
+                        help="本地 PDF 文件路径列表")
     args = parser.parse_args()
 
     queries = args.queries
@@ -56,11 +60,20 @@ def main():
     print("  因子研究管线")
     print(f"  查询: {len(queries)} 个  |  每查询论文: {args.papers} 篇")
     print(f"  测试标的: {args.symbols}")
+    if args.urls:
+        print(f"  自定义 URL: {len(args.urls)} 个")
+    if args.pdfs:
+        print(f"  本地 PDF:  {len(args.pdfs)} 个")
     print("=" * 60)
 
     _t0 = time.perf_counter()
     researcher = ResearchExpert(symbols=args.symbols)
-    results = researcher.run(queries=queries, papers_per_query=args.papers)
+    results = researcher.run(
+        queries=queries,
+        papers_per_query=args.papers,
+        urls=args.urls,
+        pdfs=args.pdfs,
+    )
     dt = time.perf_counter() - _t0
 
     # ── 汇总 ────────────────────────────────────────────────────────

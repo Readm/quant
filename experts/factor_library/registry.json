@@ -1,0 +1,18 @@
+{
+  "price_momentum": {
+    "name_cn": "价格动量因子",
+    "type": "trend",
+    "source": "http://arxiv.org/abs/2412.12350v1",
+    "params": {
+      "lookback": 20
+    },
+    "param_ranges": {
+      "lookback": [
+        5,
+        60
+      ]
+    },
+    "ic_score": -0.0023,
+    "registered_at": "2026-04-01"
+  }
+}

@@ -38,7 +38,7 @@ _CODEGEN_PROMPT = """
 3. 不能有 import 语句（math 已在外部 import）
 4. t 索引不足时返回 0.0
 5. 返回 float：正值=买入信号，负值=卖出信号，0=中性
-6. 对于 {type} 策略：{"正值=强趋势方向" if type=="trend" else "正值=超卖/均值回归买入"}
+6. 对于 {type} 策略：{type_hint}
 7. 代码简洁，不超过 40 行，不要注释
 8. 从 extensions 访问额外数据：arr = extensions.get("key_name", [])
 
@@ -61,6 +61,8 @@ class FactorCodegen:
         生成 compute_score 函数代码字符串。
         失败时返回空字符串。
         """
+        type_hint = ("正值=强趋势方向" if proposal.type == "trend"
+                     else "正值=超卖/均值回归买入")
         prompt = _CODEGEN_PROMPT.format(
             name_cn=proposal.name_cn,
             type=proposal.type,
@@ -69,6 +71,7 @@ class FactorCodegen:
             formula=proposal.formula,
             params=proposal.params,
             extra_keys=extra_keys or "（无）",
+            type_hint=type_hint,
         )
 
         result = llm_analyze(prompt, task="factor_codegen", temperature=0.2, max_tokens=1024)
@@ -90,19 +93,38 @@ class FactorCodegen:
 
     @staticmethod
     def _extract_code(result: dict) -> str:
-        """从 llm_analyze 结果中提取代码字符串"""
-        # llm_analyze 会尝试解 JSON；代码不是 JSON，会进入 error 分支
-        # 检查几种可能的字段
+        """从 llm_analyze 结果中提取代码字符串，处理各种 LLM 输出格式"""
+        # 1. 检查已知代码字段
         for key in ("code", "python_code", "function", "compute_score"):
             if key in result and isinstance(result[key], str):
-                return result[key].strip()
-        # error 字段里可能藏着原始文本（解析失败时 llm_proxy 存在此情况）
-        raw = result.get("error", "") or result.get("raw", "")
-        if _FUNC_SIG in raw:
-            # 提取函数部分
+                v = result[key].strip()
+                if "def compute_score" in v:
+                    return FactorCodegen._strip_markdown(v)
+
+        # 2. 优先 raw 字段（完整内容），其次 error 字段（可能被截断到200字符）
+        raw = result.get("raw", "") or result.get("error", "") or ""
+        if not raw:
+            # 把整个 result dict 转成字符串兜底
+            raw = str(result)
+
+        # 3. 剥除 markdown 代码块（```python ... ``` 或 ``` ... ```）
+        raw = FactorCodegen._strip_markdown(raw)
+
+        if "def compute_score" in raw:
             idx = raw.find("def compute_score")
             return raw[idx:].strip()
         return ""
+
+    @staticmethod
+    def _strip_markdown(text: str) -> str:
+        """去除 LLM 常见的 ```python ... ``` 包裹"""
+        import re
+        # 匹配 ```python 或 ``` 开头的代码块
+        m = re.search(r"```(?:python)?\s*\n(.*?)```", text, re.S)
+        if m:
+            return m.group(1).strip()
+        # 去掉单行反引号
+        return text.replace("`", "").strip()
 
     def _retry_simple(self, proposal: FactorProposal) -> str:
         """第二次尝试：直接要求输出函数体，用 raw text 接口"""

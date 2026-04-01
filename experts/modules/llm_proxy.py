@@ -153,7 +153,8 @@ def llm_analyze(prompt: str,
 
     result = _extract_json(content)
     if not result:
-        return {"error": f"LLM 未返回有效 JSON: {content[:200]}"}
+        # 保留完整原始内容在 raw 字段，供调用方（如代码生成器）使用
+        return {"error": f"LLM 未返回有效 JSON: {content[:200]}", "raw": content}
     return result
 
 
