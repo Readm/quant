@@ -147,6 +147,9 @@ class Orchestrator:
         self._best_ever: dict = {}           # template_key → {params, portfolio_params, score}
         self._champion_evals: list = []      # carried-over top EvalResults from previous round
 
+        # ── 加载生成因子（插件注册）──────────────────────────────
+        self._load_generated_factors()
+
         # ── 元专家动态参数 ──────────────────────────────────
         self._meta_params = {
             "trend_candidates": 30,
@@ -868,6 +871,32 @@ class Orchestrator:
                 pp["n_stocks"] = max(1, pp["n_stocks"] - 1)
 
         return pp
+
+    # ── 生成因子注册 ──────────────────────────────────────────────────
+
+    def _load_generated_factors(self):
+        """加载 factor_library 中已生成的因子，注册到专家模板和参数空间"""
+        try:
+            from experts.factor_library import (
+                GENERATED_TEMPLATES, GENERATED_PARAM_RANGES
+            )
+            for tpl in GENERATED_TEMPLATES:
+                key   = tpl["key"]
+                stype = tpl.get("type", "trend")
+                entry = {"key": key, "name": tpl["name"], "params": tpl.get("params", {})}
+                if stype == "trend":
+                    if not any(t["key"] == key for t in self.trend_expert.TEMPLATES):
+                        self.trend_expert.TEMPLATES.append(entry)
+                else:
+                    if not any(t["key"] == key for t in self.mr_expert.TEMPLATES):
+                        self.mr_expert.TEMPLATES.append(entry)
+            for key, ranges in GENERATED_PARAM_RANGES.items():
+                if key not in self._PARAM_RANGES:
+                    self._PARAM_RANGES[key] = ranges
+            if GENERATED_TEMPLATES:
+                print(f"[因子库] 注册 {len(GENERATED_TEMPLATES)} 个生成因子到专家模板")
+        except Exception as e:
+            print(f"[因子库] 加载失败（首次运行时正常）: {e}")
 
     @staticmethod
     def _sf_to_text(sf):

@@ -413,6 +413,15 @@ def compute_factor_score(
                 signal *= 1.4
         return signal * 20  # 放大到合理分值范围
 
+    # ── 生成因子插件（自动发现）────────────────────────────────────────
+    try:
+        from experts.factor_library import GENERATED_FACTORS
+        if template_key in GENERATED_FACTORS:
+            extensions = data.get("extensions", {})
+            return GENERATED_FACTORS[template_key](closes, data, indicators, extensions, params, t)
+    except Exception:
+        pass
+
     return 0.0
 
 
