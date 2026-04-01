@@ -26,17 +26,18 @@ def load_symbol(symbol: str, data_dir: str = "data/raw", n: int = 0) -> Optional
     except Exception:
         ind = {}
     return {
-        "symbol":  symbol,
-        "dates":   [r["date"]  for r in rows],
-        "opens":   [r["open"]  for r in rows],
-        "highs":   [r["high"]  for r in rows],
-        "lows":    [r["low"]   for r in rows],
-        "closes":  closes,
-        "volumes": [r["vol"]   for r in rows],
-        "returns": returns,
+        "symbol":     symbol,
+        "dates":      [r["date"]  for r in rows],
+        "opens":      [r["open"]  for r in rows],
+        "highs":      [r["high"]  for r in rows],
+        "lows":       [r["low"]   for r in rows],
+        "closes":     closes,
+        "volumes":    [r["vol"]   for r in rows],
+        "returns":    returns,
         "indicators": ind,
-        "source":  f"cache:{files[0].name}",
-        "count":   len(rows),
+        "extensions": d.get("extensions", {}),   # Tushare 附加数据
+        "source":     f"cache:{files[0].name}",
+        "count":      len(rows),
     }
 
 def load_multiple(symbols: List[str], data_dir: str = "data/raw", n: int = 0) -> Dict[str,dict]:

@@ -1,0 +1,214 @@
+{
+  "generated_at": "2026-04-01 23:49:59",
+  "total_rounds": 17,
+  "symbols": [
+    "SH600519",
+    "SH600036",
+    "SH601318",
+    "SZ000858"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "RVI相对活力[N5/R60/S]",
+      "type": "mean_reversion",
+      "score": 44.0,
+      "ann": 11.78,
+      "sharpe": 0.914,
+      "dd": 17.96,
+      "weight": 0.0906
+    },
+    {
+      "rank": 2,
+      "name": "Ichimoku云图[N5/R60/S]",
+      "type": "trend",
+      "score": 43.6,
+      "ann": 17.63,
+      "sharpe": 1.128,
+      "dd": 25.44,
+      "weight": {
+        "strategy_id": "tr_92c7d23e",
+        "strategy_name": "Ichimoku云图[N5/R60/S]",
+        "strategy_type": "trend",
+        "params": {
+          "tenkan": 8.64,
+          "kijun": 16.64,
+          "pf_n_stocks": 5,
+          "pf_rebalance_freq": 60,
+          "pf_weight_method": "score_weighted",
+          "pf_max_position_pct": 0.3
+        },
+        "tags": [
+          "Ichimoku云图"
+        ],
+        "total_return": 400.55,
+        "annualized_return": 17.63,
+        "sharpe_ratio": 1.128,
+        "max_drawdown_pct": 25.44,
+        "win_rate": 91.21,
+        "profit_factor": 5.12,
+        "total_trades": 91,
+        "sortino_score": 73.8,
+        "calmar_score": 39.6,
+        "ir_score": 14.1,
+        "drawdown_score": 40.0,
+        "composite": 43.6,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=43.6，Sortino=1.55 Calmar=0.69，Alpha=-8.1%，IR=14分）",
+        "feedback": "降低单笔仓位至≤10%",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "未知参数，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": 25.57,
+        "alpha": -8.12,
+        "template_key": "ichimoku_signal",
+        "structured_feedback": {
+          "strategy_id": "tr_92c7d23e",
+          "strategy_name": "Ichimoku云图[N5/R60/S]",
+          "strategy_type": "trend",
+          "template_key": "ichimoku_signal",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=43.6，Sortino=1.55 Calmar=0.69，Alpha=-8.1%，IR=14分）",
+          "ann_return": 17.63,
+          "sharpe_ratio": 1.128,
+          "max_drawdown": 25.44,
+          "win_rate": 91.21,
+          "profit_factor": 5.12,
+          "total_trades": 91,
+          "composite": 43.6,
+          "adjustment": {},
+          "adjustment_param": "",
+          "adjustment_magnitude": 0,
+          "adjustment_unit": "",
+          "recommended_regime": "STRONG_TREND",
+          "position_advice": "低配",
+          "alternative_strategies": [
+            "RSI均值回归",
+            "布林带回归"
+          ],
+          "raw_reason": "✅ 纳入（综合分=43.6，Sortino=1.55 Calmar=0.69，Alpha=-8.1%，IR=14分）",
+          "feedback_text": "降低单笔仓位至≤10%"
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "name": "多信号组合[N5/R60/S]",
+      "type": "mean_reversion",
+      "score": 42.7,
+      "ann": 11.6,
+      "sharpe": 0.854,
+      "dd": 19.93,
+      "weight": 0.0296
+    },
+    {
+      "rank": 4,
+      "name": "Ichimoku云图[N5/R40/S]",
+      "type": "trend",
+      "score": 41.6,
+      "ann": 14.71,
+      "sharpe": 1.072,
+      "dd": 24.93,
+      "weight": 0.0417
+    }
+  ],
+  "convergence": {
+    "round1_score": 32.4,
+    "final_score": 42.7,
+    "delta": 10.3,
+    "direction": "↑改善",
+    "converged": true
+  },
+  "suggestions": [],
+  "meta_architecture_review": {
+    "overall_rating": "C",
+    "strengths": [
+      "模块化六层架构设计清晰，各层职责边界明确，便于独立迭代优化",
+      "结构化反馈机制(Weakness/AdjustmentDirection枚举)提升了参数调整的可解析性",
+      "PBO过拟合检测机制有效，17轮迭代筛选掉80%低质量候选，20.3%接受率显示严格风控",
+      "LLM辩论(E3A+B)提供策略优选的多维度视角，减少单一评估偏差",
+      "Walk-Forward三种模式(expanding/rolling/purged)覆盖不同验证需求，设计完整"
+    ],
+    "weaknesses": [
+      "候选池严重倾向趋势策略，均值回归8种模板几乎未被选中，策略空间同质化风险高",
+      "评估体系缺失IC(信息系数)指标，仅用ann/dd/score无法验证因子有效性统计显著性",
+      "数据源仅300天日K线，缠论等需精确数据的因子计算可靠性存疑，且无备用数据方案",
+      "回测结果依赖单一指标(score)排序，KST动量271次交易但ann仅10.4%显示过度交易问题",
+      "组合权重无容量限制，忽略了策略容量和市场冲击成本的相互作用"
+    ],
+    "critical_issues": [
+      "17轮迭代最优score仅44.0且全部是趋势策略，IC接近0说明因子打分未产生有效Alpha信号，策略层可能陷入局部最优",
+      "PBO>0.6拒绝机制过于激进但缺乏理论依据，MiniMax LLM辩论成本高昂且输出不稳定，未建立熔断降级方案",
+      "仅用Stooq+akshare的数据组合对A股覆盖不足，akshare为第三方库存在数据完整性风险，300天数据对短周期策略样本不足"
+    ],
+    "improvement_priorities": [
+      {
+        "priority": "P0",
+        "area": "评估层",
+        "action": "引入IC(信息系数)作为核心评估指标，增加因子预测能力统计检验，要求IC>0.02且p-value<0.05才能进入策略候选",
+        "impact": "避免选择低预测能力因子，预期提升策略质量20%以上，减少无效交易"
+      },
+      {
+        "priority": "P0",
+        "area": "策略层",
+        "action": "强制增加均值回归/统计套利/事件驱动等非趋势策略候选比例，建立策略类型多样性惩罚函数",
+        "impact": "分散策略风险，避免市场风格切换导致组合失效，预期降低最大回撤15%"
+      },
+      {
+        "priority": "P1",
+        "area": "反馈层",
+        "action": "建立LLM调用熔断降级机制，当MiniMax API超时/失败时自动切换为规则引擎评分，增加反馈路径可观测性",
+        "impact": "降低外部依赖风险，提升系统可用性至99.5%以上"
+      },
+      {
+        "priority": "P1",
+        "area": "数据层",
+        "action": "接入Tushare/JoinQuant等国内专业数据源作为主备，增加分钟级数据支持，将历史窗口扩展至500天以上",
+        "impact": "提升数据可靠性，支持更精细化策略，IC预期提升0.03-0.05"
+      },
+      {
+        "priority": "P2",
+        "area": "组合层",
+        "action": "增加策略容量估算模型，引入市场冲击成本模型，优化再平衡触发阈值从固定周期转为波动率驱动",
+        "impact": "提升组合实盘可执行性，避免大资金冲击成本"
+      }
+    ],
+    "architecture_suggestions": [
+      {
+        "component": "因子库(factor_library.py)",
+        "current": "32个技术因子，10种template_key打分",
+        "proposed": "分离Alpha因子(预测收益)与Risk因子(预测波动)，增加机器学习增强因子(XGBoost/LSTM预测)，引入另类数据因子(舆情、资金流)",
+        "rationale": "纯技术因子IC天花板低，ML增强因子IC可达0.05-0.15，当前架构无法捕获非结构化数据信号"
+      },
+      {
+        "component": "评估层E2",
+        "current": "PBO门控+Sortino/Calmar/IR/DD四维评分",
+        "proposed": "增加IC分组检验(因子IC、策略IC、组合IC三层)，引入Sharpe/Calmar显著性检验(bootstrap验证)，建立评分权重动态调整机制",
+        "rationale": "当前评分体系未验证策略是否真正捕获Alpha，回测期过短(300天)需bootstrap增加显著性置信度"
+      },
+      {
+        "component": "回测系统PortfolioBacktester",
+        "current": "固定滑点(买0.08%卖0.18%)+固定再平衡周期",
+        "proposed": "引入流动性分层滑点模型(订单簿深度分级)，增加VWAP/TWAP执行模拟，建立波动率/流动性双触发再平衡机制",
+        "rationale": "固定滑点无法反映实际执行质量，271次交易的KST策略实际年化可能低于10%"
+      },
+      {
+        "component": "专家系统E3 LLM辩论",
+        "current": "MiniMax API调用，输出策略优劣分析",
+        "proposed": "构建本地LLM备选(LLama2/Qwen)，建立辩论结果置信度评分，对低置信度输出增加人工复核节点",
+        "rationale": "外部API依赖存在延迟、成本、单点故障风险，实盘系统不能依赖不可控外部服务"
+      },
+      {
+        "component": "MetaMonitor元专家",
+        "current": "LLM驱动的动态参数规划和收敛判断",
+        "proposed": "增加收敛诊断仪表盘(候选池分布熵、接受率趋势、IC移动平均)，建立自动终止条件(连续5轮无显著改善)",
+        "rationale": "17轮迭代最高分44.0停滞，需明确收敛判据避免无效计算资源消耗"
+      }
+    ],
+    "next_iteration_focus": "下一次迭代应将重心放在评估层重构：(1)强制引入IC>0.02门槛，从因子层面过滤无效信号；(2)要求候选池策略类型多样性达到阈值(趋势:均值回归:套利=5:3:2)；(3)建立候选池淘汰机制，对IC持续为负的策略类型降低生成权重。同时接入Tushare Pro提升A股数据质量，作为当前akshare备选方案的主数据源升级。",
+    "_llm_available": true
+  }
+}

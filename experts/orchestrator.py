@@ -1147,14 +1147,14 @@ class Orchestrator:
             out.append({
                 "symbol":     sym,
                 "data":       {
-                    "closes":  closes,
-                    "returns": rets,
-                    # Pass OHLCV for experts that need highs/lows/volumes
-                    "opens":   raw_d.get("opens",  closes),
-                    "highs":   raw_d.get("highs",  closes),
-                    "lows":    raw_d.get("lows",   closes),
-                    "volumes": raw_d.get("volumes", [1e9]*len(closes)),
-                    "dates":   raw_d.get("dates",  []),
+                    "closes":     closes,
+                    "returns":    rets,
+                    "opens":      raw_d.get("opens",      closes),
+                    "highs":      raw_d.get("highs",      closes),
+                    "lows":       raw_d.get("lows",       closes),
+                    "volumes":    raw_d.get("volumes",    [1e9]*len(closes)),
+                    "dates":      raw_d.get("dates",      []),
+                    "extensions": raw_d.get("extensions", {}),  # Tushare附加数据
                 },
                 "indicators": inds,
             })
