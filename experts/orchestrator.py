@@ -1094,6 +1094,26 @@ class Orchestrator:
                 if sd.get("symbol") == benchmark_sym:
                     closes = sd.get("data", {}).get("closes", [])
                     return compute_benchmark_returns(closes)
+
+        # 优先尝试沪深300指数作为基准
+        try:
+            from pathlib import Path as _P
+            import pandas as _pd
+            idx_path = _P(__file__).parent.parent / "data" / "tushare" / "index_daily" / "000300.SH.csv"
+            if idx_path.exists():
+                df = _pd.read_csv(idx_path, dtype={"trade_date": str}).sort_values("trade_date")
+                # 截取与策略数据对齐的日期范围
+                if symbols_data:
+                    strat_dates = set(symbols_data[0].get("data", {}).get("dates", []))
+                    if strat_dates:
+                        df = df[df["trade_date"].isin(strat_dates)]
+                closes = df["close"].tolist()
+                if len(closes) > 50:
+                    print(f"[基准] 使用沪深300(000300.SH)，{len(closes)} 个交易日")
+                    return compute_benchmark_returns(closes)
+        except Exception:
+            pass
+
         # 无明确基准则用第一个标的
         if symbols_data:
             closes = symbols_data[0].get("data", {}).get("closes", [])
