@@ -37,6 +37,11 @@ class TrendExpert:
         {"key": "trix",              "name": "TRIX三重指数",   "params": {"period": 14}},
         {"key": "donchian_breakout", "name": "Donchian突破",   "params": {"period": 20}},
         {"key": "aroon_signal",      "name": "Aroon交叉",      "params": {"period": 25}},
+        # ── 创新策略 ────────────────────────────────────────────────
+        {"key": "smart_money",       "name": "主力资金流",     "params": {"period": 20, "vol_weight": 1.5}},
+        {"key": "gap_break",         "name": "跳空缺口突破",   "params": {"min_gap_pct": 0.02, "lookback": 10}},
+        {"key": "limit_board",       "name": "涨停动能",       "params": {"gain_thr": 0.07, "lookback": 15}},
+        {"key": "trend_composite",   "name": "趋势复合信号",   "params": {"ma_fast": 10, "ma_slow": 30, "mom_period": 15, "vol_period": 20}},
     ]
 
     def __init__(self, seed: int = 42):

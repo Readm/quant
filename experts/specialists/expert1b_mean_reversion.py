@@ -33,6 +33,11 @@ class MeanReversionExpert:
         {"key": "multi_roc_signal", "name": "ROC多周期",       "params": {"p1": 10, "p2": 20, "p3": 40}},
         {"key": "obos_composite",   "name": "OBOS超买超卖",    "params": {"period": 20}},
         {"key": "elder_ray_signal", "name": "Elder Ray信号",   "params": {"ema_period": 13}},
+        # ── 创新策略 ────────────────────────────────────────────────
+        {"key": "lanban_fade",       "name": "烂板反转",       "params": {"limit_thr": 0.08, "fade_days": 3, "confirm_days": 2}},
+        {"key": "vol_price_diverge", "name": "量价背离",       "params": {"lookback": 20, "sensitivity": 1.0}},
+        {"key": "multi_signal_combo","name": "多信号组合",     "params": {"rsi_period": 14, "rsi_lower": 35, "bb_period": 20, "vol_surge_thr": 1.5}},
+        {"key": "mean_rev_composite","name": "均值回归复合",   "params": {"period": 20, "z_enter": 1.5, "z_exit": 0.5}},
     ]
 
     def __init__(self, seed: int = 42):

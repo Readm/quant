@@ -145,6 +145,7 @@ class Orchestrator:
         self.monitor        = MetaMonitor(report_every=5)
         self._seen_cand_hashes: set = set()  # similarity dedup across all rounds
         self._best_ever: dict = {}           # template_key → {params, portfolio_params, score}
+        self._champion_evals: list = []      # carried-over top EvalResults from previous round
 
         # ── 元专家动态参数 ──────────────────────────────────
         self._meta_params = {
@@ -229,6 +230,23 @@ class Orchestrator:
             Evaluator.print_batch_report(self.evaluator.evaluate_batch(all_reports), rnd)
             t_evals = self.evaluator.evaluate_batch(t_reports)
             mr_evals = self.evaluator.evaluate_batch(mr_reports)
+
+            # ── 注入冠军保留（Champion Elitism）──────────────────────
+            # 将上一轮的冠军策略注入本轮评估列表，保证不因探索失败而退步
+            if self._champion_evals and rnd > 1:
+                current_names = {e.strategy_name for e in t_evals + mr_evals}
+                injected = 0
+                for ce in self._champion_evals:
+                    if ce.strategy_name not in current_names:
+                        if getattr(ce, "strategy_type", "") == "trend":
+                            t_evals.append(ce)
+                        else:
+                            mr_evals.append(ce)
+                        current_names.add(ce.strategy_name)
+                        injected += 1
+                if injected:
+                    print(f"  [冠军保留] 注入 {injected} 个上轮冠军策略")
+
             t_pass = [e for e in t_evals if e.decision != "REJECT"]
             mr_pass = [e for e in mr_evals if e.decision != "REJECT"]
             all_pass = t_pass + mr_pass
@@ -247,6 +265,12 @@ class Orchestrator:
                         'portfolio_params': dict(cand.get('portfolio_params', {})),
                         'score': e.composite,
                     }
+
+            # 更新冠军注册表：保留 top-3 非REJECT策略用于下轮注入
+            self._champion_evals = sorted(
+                [e for e in t_evals + mr_evals if e.decision != "REJECT"],
+                key=lambda e: float(e.composite), reverse=True
+            )[:3]
 
             if not all_pass:
                 print("  ⚠️ 无候选通过，跳过本轮"); continue
@@ -558,6 +582,16 @@ class Orchestrator:
         "multi_roc_signal":  {"p1": (5, 15),       "p2": (15, 30),    "p3": (25, 60)},
         "obos_composite":    {"period": (10, 40)},
         "elder_ray_signal":  {"ema_period": (8, 26)},
+        # ── 创新趋势策略 ─────────────────────────────────────────────
+        "smart_money":       {"period": (10, 40),   "vol_weight": (1.0, 3.0)},
+        "gap_break":         {"min_gap_pct": (0.01, 0.05), "lookback": (5, 20)},
+        "limit_board":       {"gain_thr": (0.05, 0.10),    "lookback": (5, 30)},
+        "trend_composite":   {"ma_fast": (5, 20), "ma_slow": (20, 60), "mom_period": (10, 30), "vol_period": (10, 30)},
+        # ── 创新均值回归策略 ──────────────────────────────────────────
+        "lanban_fade":       {"limit_thr": (0.06, 0.10), "fade_days": (1, 7), "confirm_days": (1, 5)},
+        "vol_price_diverge": {"lookback": (10, 40),     "sensitivity": (0.5, 2.0)},
+        "multi_signal_combo":{"rsi_period": (7, 21), "rsi_lower": (25, 45), "bb_period": (10, 30), "vol_surge_thr": (1.2, 3.0)},
+        "mean_rev_composite":{"period": (10, 40),     "z_enter": (1.0, 2.5), "z_exit": (0.2, 1.0)},
     }
 
     @staticmethod

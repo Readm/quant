@@ -205,6 +205,214 @@ def compute_factor_score(
         mom = (c[t] / c[t - lb] - 1) * 100 if c[t - lb] > 0 else 0.0
         return -mom  # 均值回归：跌越多分越高
 
+    # ── 创新趋势策略 ───────────────────────────────────────────────
+
+    elif template_key == "smart_money":
+        # 主力资金流：OBV加权累计，成交量×涨跌幅 累积判断机构方向
+        period = max(int(params.get("period", 20)), 5)
+        vol_w  = float(params.get("vol_weight", 1.5))
+        vols   = data.get("volumes", [1.0] * n)
+        if t < period:
+            return 0.0
+        avg_vol = sum(float(v or 1) for v in vols[t - period: t]) / period
+        if avg_vol <= 0:
+            return 0.0
+        score = 0.0
+        for i in range(t - period, t):
+            if i < 1:
+                continue
+            chg = (c[i] / c[i - 1] - 1) if c[i - 1] > 0 else 0.0
+            vol_ratio = float(vols[i] or 1) / avg_vol if avg_vol > 0 else 1.0
+            # 放量上涨 = 主力买入；缩量下跌 = 主力控盘
+            weight = vol_ratio ** vol_w if chg > 0 else (1.0 / (vol_ratio ** vol_w + 1e-6))
+            score += chg * weight
+        return score * 100
+
+    elif template_key == "gap_break":
+        # 跳空缺口突破：检测向上跳空且缺口未被回补 → 强趋势信号
+        min_gap = float(params.get("min_gap_pct", 0.02))
+        lookback = max(int(params.get("lookback", 10)), 3)
+        lows = data.get("lows", c)
+        if t < lookback + 1:
+            return 0.0
+        best_gap = 0.0
+        for i in range(max(1, t - lookback), t):
+            # 跳空：当日最低 > 前日最高（简化：当日开盘 > 前日收盘 * (1+gap)）
+            if c[i - 1] > 0:
+                gap_pct = (float(lows[i]) / c[i - 1] - 1)
+                if gap_pct > min_gap:
+                    # 检查缺口是否被回补（之后各日最低 > 前日收盘）
+                    filled = any(float(lows[j]) < c[i - 1] for j in range(i, t + 1) if j < n)
+                    if not filled:
+                        # 缺口越新、越大，信号越强
+                        recency = (t - i + 1)
+                        best_gap = max(best_gap, gap_pct * 100 / recency)
+        return best_gap
+
+    elif template_key == "limit_board":
+        # 涨停动能：统计 lookback 内近涨停天数，多 = 强趋势
+        gain_thr = float(params.get("gain_thr", 0.07))
+        lookback = max(int(params.get("lookback", 15)), 5)
+        if t < lookback + 1:
+            return 0.0
+        # 统计近期大涨日，加权（越近权重越高）
+        score = 0.0
+        for i in range(t - lookback, t):
+            if i < 1 or c[i - 1] <= 0:
+                continue
+            daily_gain = c[i] / c[i - 1] - 1
+            if daily_gain >= gain_thr:
+                weight = (i - (t - lookback) + 1) / lookback  # 越近权重越高
+                score += daily_gain * weight * 100
+        # 最近一日没有大涨的话减弱信号
+        last_chg = (c[t] / c[t - 1] - 1) if c[t - 1] > 0 else 0.0
+        if last_chg < -0.02:
+            score *= 0.5
+        return score
+
+    elif template_key == "trend_composite":
+        # 趋势复合信号：均线 + 动量 + 量能确认，三者一致才出强信号
+        ma_fast  = max(int(params.get("ma_fast", 10)), 3)
+        ma_slow  = max(int(params.get("ma_slow", 30)), ma_fast + 5)
+        mom_p    = max(int(params.get("mom_period", 15)), 5)
+        vol_p    = max(int(params.get("vol_period", 20)), 5)
+        vols     = data.get("volumes", [1.0] * n)
+        if t < max(ma_slow, mom_p, vol_p):
+            return 0.0
+        # 1. 均线信号
+        maf = sum(c[t - ma_fast: t]) / ma_fast
+        mas = sum(c[t - ma_slow: t]) / ma_slow
+        ma_sig = (maf / mas - 1) * 100 if mas > 0 else 0.0
+        # 2. 动量信号
+        mom_sig = (c[t] / c[t - mom_p] - 1) * 100 if c[t - mom_p] > 0 else 0.0
+        # 3. 量能信号（近期成交量 vs 历史均量）
+        avg_vol = sum(float(v or 1) for v in vols[t - vol_p: t]) / vol_p
+        recent_vol = float(vols[t] or 1)
+        vol_sig = (recent_vol / avg_vol - 1) if avg_vol > 0 else 0.0
+        # 三者加权，方向一致时乘以提升系数
+        raw = ma_sig * 0.4 + mom_sig * 0.4 + vol_sig * 20 * 0.2
+        if ma_sig > 0 and mom_sig > 0 and vol_sig > 0:
+            raw *= 1.3  # 三重确认
+        elif ma_sig < 0 and mom_sig < 0:
+            raw *= 1.2  # 趋势反转确认
+        return raw
+
+    # ── 创新均值回归策略 ─────────────────────────────────────────
+
+    elif template_key == "lanban_fade":
+        # 烂板反转：检测近期"烂板"（近涨停但收盘大幅回落）后的超卖反弹
+        limit_thr   = float(params.get("limit_thr", 0.08))
+        fade_days   = max(int(params.get("fade_days", 3)), 1)
+        confirm_days= max(int(params.get("confirm_days", 2)), 1)
+        highs       = data.get("highs", c)
+        if t < fade_days + confirm_days + 2:
+            return 0.0
+        signal = 0.0
+        for i in range(max(1, t - fade_days - confirm_days), t - confirm_days + 1):
+            if i < 1 or c[i - 1] <= 0:
+                continue
+            hi = float(highs[i])
+            intraday_high_gain = hi / c[i - 1] - 1
+            close_gain         = c[i] / c[i - 1] - 1
+            # 烂板条件：盘中近涨停，但收盘回落超过一半涨幅
+            if intraday_high_gain >= limit_thr and close_gain < intraday_high_gain * 0.5:
+                # 烂板强度：盘中涨幅越大、收盘越低 = 越强的反弹信号
+                strength = (intraday_high_gain - close_gain) * 100
+                # 距今越近信号越强
+                recency_w = 1.0 / (t - i + 1)
+                signal += strength * recency_w
+        # 若当前价格已经从烂板低点反弹过多，信号衰减
+        if signal > 0 and t >= 2:
+            recent_gain = (c[t] / c[t - 2] - 1) if c[t - 2] > 0 else 0.0
+            if recent_gain > 0.05:
+                signal *= 0.5
+        return signal
+
+    elif template_key == "vol_price_diverge":
+        # 量价背离：价格上涨但成交量萎缩 → 趋势弱，均值回归机会
+        lookback    = max(int(params.get("lookback", 20)), 10)
+        sensitivity = float(params.get("sensitivity", 1.0))
+        vols        = data.get("volumes", [1.0] * n)
+        if t < lookback + 1:
+            return 0.0
+        # 计算价格动量和量能动量
+        price_mom = (c[t] / c[t - lookback] - 1) * 100 if c[t - lookback] > 0 else 0.0
+        vol_early  = sum(float(v or 1) for v in vols[t - lookback: t - lookback // 2]) / (lookback // 2)
+        vol_recent = sum(float(v or 1) for v in vols[t - lookback // 2: t]) / max(lookback // 2, 1)
+        vol_trend  = (vol_recent / vol_early - 1) if vol_early > 0 else 0.0
+        # 量价背离：价格涨、量能跌 → 做多（均值回归，价格将回落）
+        # 量价同步：价格涨、量能也涨 → 不利于均值回归
+        diverge_score = -price_mom * sensitivity  # 基础反转
+        if price_mom > 0 and vol_trend < -0.1:
+            # 涨价缩量：强背离信号
+            diverge_score = abs(price_mom) * (1 + abs(vol_trend)) * sensitivity
+        elif price_mom < 0 and vol_trend > 0.1:
+            # 跌价放量：恐慌抛售后反弹信号
+            diverge_score = abs(price_mom) * 0.8 * sensitivity
+        return diverge_score
+
+    elif template_key == "multi_signal_combo":
+        # 多信号组合：RSI超卖 + 价格近布林下轨 + 成交量放大 → 强均值回归
+        rsi_period = max(int(params.get("rsi_period", 14)), 5)
+        rsi_lower  = float(params.get("rsi_lower", 35))
+        bb_period  = max(int(params.get("bb_period", 20)), 10)
+        vol_thr    = float(params.get("vol_surge_thr", 1.5))
+        vols       = data.get("volumes", [1.0] * n)
+        if t < max(rsi_period, bb_period) + 1:
+            return 0.0
+        # 1. RSI信号（超卖 → 正分）
+        rsi_v = _ind("rsi14", 50.0)
+        if rsi_period != 14:
+            # 近似计算非14周期RSI
+            gains = [max(c[i] - c[i-1], 0) for i in range(t - rsi_period, t) if i >= 1]
+            losses= [max(c[i-1] - c[i], 0) for i in range(t - rsi_period, t) if i >= 1]
+            avg_g = sum(gains) / rsi_period if gains else 0.0
+            avg_l = sum(losses) / rsi_period if losses else 1e-6
+            rs = avg_g / avg_l if avg_l > 0 else 100
+            rsi_v = 100 - 100 / (1 + rs)
+        rsi_sig = max(0.0, rsi_lower - rsi_v) / rsi_lower  # 越超卖分越高
+
+        # 2. 布林带信号（近下轨 → 正分）
+        seg  = c[t - bb_period: t]
+        mean = sum(seg) / bb_period
+        std  = (sum((x - mean)**2 for x in seg) / bb_period) ** 0.5
+        bb_sig = max(0.0, -(c[t] - mean) / (2.0 * std + 1e-6))  # 低于均线正值
+
+        # 3. 成交量信号（放量 → 确认反转）
+        avg_vol = sum(float(v or 1) for v in vols[t - bb_period: t]) / bb_period
+        cur_vol = float(vols[t] or 1)
+        vol_sig = min(cur_vol / avg_vol / vol_thr, 2.0) if avg_vol > 0 else 1.0
+
+        # 三者组合（AND逻辑加权）
+        combo = (rsi_sig * 40 + bb_sig * 40) * (0.5 + 0.5 * vol_sig)
+        return combo
+
+    elif template_key == "mean_rev_composite":
+        # 均值回归复合：Z-Score偏离 + 动量反转 + 成交量确认
+        period  = max(int(params.get("period", 20)), 10)
+        z_enter = float(params.get("z_enter", 1.5))
+        z_exit  = float(params.get("z_exit", 0.5))
+        if t < period + 1:
+            return 0.0
+        seg  = c[t - period: t]
+        mean = sum(seg) / period
+        std  = (sum((x - mean)**2 for x in seg) / period) ** 0.5
+        if std <= 0:
+            return 0.0
+        z = (c[t] - mean) / std  # Z-Score
+        # 超卖（z < -z_enter）→ 强正信号；超买（z > z_enter）→ 强负信号
+        if abs(z) < z_exit:
+            return 0.0  # 在均值附近，无信号
+        signal = -z  # 反转：z负→正分，z正→负分
+        # 动量反转确认：如果近2天开始反弹（方向变化），放大信号
+        if t >= 3:
+            recent_chg = (c[t] / c[t - 2] - 1) if c[t - 2] > 0 else 0.0
+            if z < -z_exit and recent_chg > 0:
+                signal *= 1.4  # 超卖后开始反弹
+            elif z > z_exit and recent_chg < 0:
+                signal *= 1.4
+        return signal * 20  # 放大到合理分值范围
+
     return 0.0
 
 
