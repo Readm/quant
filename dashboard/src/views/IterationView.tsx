@@ -93,10 +93,10 @@ function EquityCurvesChart({ strategies, benchmarkEquity }: {
   strategies: Strategy[]
   benchmarkEquity?: EquityPoint[]
 }) {
-  // Only show ACCEPT strategies with equity data
-  const visible = strategies.filter(s => s.decision === 'ACCEPT' && s.equity_curve.length > 0)
+  // Show all non-REJECT strategies (ACCEPT + CONDITIONAL = "通过") with equity data
+  const visible = strategies.filter(s => s.decision !== 'REJECT' && s.equity_curve.length > 0)
   if (visible.length === 0)
-    return <div className="text-slate-500 text-sm p-4">本轮无 ACCEPT 策略</div>
+    return <div className="text-slate-500 text-sm p-4">本轮无通过策略（全部淘汰）</div>
 
   const hasBench = benchmarkEquity && benchmarkEquity.length > 0
   const minLen = Math.min(
@@ -131,7 +131,8 @@ function EquityCurvesChart({ strategies, benchmarkEquity }: {
           formatter={(v: number, key: string) => {
             if (key === '__bench__') return [`${(v as number).toFixed(2)}`, '沪深300基准']
             const s = visible.find(x => x.id === key)
-            const label = s ? `${s.name} (alpha ${s.alpha >= 0 ? '+' : ''}${s.alpha?.toFixed(1) ?? '0.0'}%)` : key
+            const tag = s?.decision === 'ACCEPT' ? '✅' : s?.decision === 'CONDITIONAL' ? '⚠️' : ''
+            const label = s ? `${tag}${s.name} α${s.alpha >= 0 ? '+' : ''}${s.alpha?.toFixed(1) ?? '0.0'}%` : key
             return [`${(v as number).toFixed(2)}`, label]
           }}
         />
@@ -139,14 +140,16 @@ function EquityCurvesChart({ strategies, benchmarkEquity }: {
           formatter={(_v, entry) => {
             if (entry.dataKey === '__bench__') return '沪深300基准'
             const s = visible.find(x => x.id === entry.dataKey)
-            return s ? `${s.name} [α${s.alpha >= 0 ? '+' : ''}${s.alpha?.toFixed(1) ?? '0'}%]` : String(entry.dataKey)
+            const tag = s?.decision === 'ACCEPT' ? '✅' : s?.decision === 'CONDITIONAL' ? '⚠️' : ''
+            return s ? `${tag}${s.name} [α${s.alpha >= 0 ? '+' : ''}${s.alpha?.toFixed(1) ?? '0'}%]` : String(entry.dataKey)
           }}
           wrapperStyle={{ fontSize: 10, paddingTop: 6 }}
         />
         {visible.map((s, i) => (
           <Line key={s.id} type="monotone" dataKey={s.id}
             stroke={COLORS[i % COLORS.length]}
-            strokeWidth={s.selected ? 2.5 : 1.5}
+            strokeWidth={s.selected ? 2.5 : s.decision === 'ACCEPT' ? 2 : 1.2}
+            strokeDasharray={s.decision === 'CONDITIONAL' ? '5 3' : undefined}
             dot={false} />
         ))}
         {hasBench && (
@@ -438,7 +441,7 @@ function RoundPanel({ round }: { round: Round }) {
       {tab === 'curves' && (
         <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
           <div className="text-xs text-slate-400 mb-3">
-            本轮 ACCEPT 策略净值曲线（初始=100），灰色虚线=沪深300基准
+            本轮通过策略净值曲线（实线=入选，虚线=待观察），灰色=沪深300基准
           </div>
           <EquityCurvesChart
             strategies={round.strategies}
@@ -465,10 +468,10 @@ function RoundPanel({ round }: { round: Round }) {
 // ── Score Trend Chart ─────────────────────────────────────────────
 function ScoreTrend({ rounds }: { rounds: Round[] }) {
   const data = rounds.map(r => {
-    const accepted = r.strategies.filter(s => s.decision === 'ACCEPT')
-    // Champion alpha = alpha of top-scoring accepted strategy this round
-    const champion = accepted.length > 0
-      ? accepted.reduce((a, b) => a.score > b.score ? a : b)
+    const passed = r.strategies.filter(s => s.decision !== 'REJECT')
+    // Champion alpha = alpha of top-scoring passed (ACCEPT or CONDITIONAL) strategy
+    const champion = passed.length > 0
+      ? passed.reduce((a, b) => a.score > b.score ? a : b)
       : null
     return {
       round: r.round,
