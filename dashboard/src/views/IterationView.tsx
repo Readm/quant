@@ -3,7 +3,7 @@ import { GitBranch, CheckCircle, XCircle,
          AlertCircle, MessageSquare, ChevronDown, ChevronRight,
          Award, RefreshCw, Layers } from 'lucide-react'
 import {
-  LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ComposedChart, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
 
@@ -492,7 +492,7 @@ function ScoreTrend({ rounds }: { rounds: Round[] }) {
   return (
     <div className="space-y-1">
       <ResponsiveContainer width="100%" height={140}>
-        <AreaChart data={data} margin={{ top: 6, right: 48, left: 0, bottom: 0 }}>
+        <ComposedChart data={data} margin={{ top: 6, right: 48, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="bestGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor="#a78bfa" stopOpacity={0.3}/>
@@ -504,12 +504,10 @@ function ScoreTrend({ rounds }: { rounds: Round[] }) {
             label={{ value: '轮次', position: 'insideBottomRight', fill: '#475569', fontSize: 10 }} />
           <YAxis yAxisId="score" domain={[yMinScore, 105]} tick={{ fill: '#64748b', fontSize: 10 }}
             tickFormatter={v => `${v}`} width={28} />
-          {hasAlpha && (
-            <YAxis yAxisId="alpha" orientation="right"
-              domain={[yMinAlpha, yMaxAlpha]}
-              tick={{ fill: '#fbbf24', fontSize: 9 }}
-              tickFormatter={v => `${v}%`} width={34} />
-          )}
+          <YAxis yAxisId="alpha" orientation="right"
+            domain={[yMinAlpha, yMaxAlpha]}
+            tick={{ fill: hasAlpha ? '#fbbf24' : 'transparent', fontSize: 9 }}
+            tickFormatter={v => `${v}%`} width={34} />
           <Tooltip
             contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 11 }}
             formatter={(v: number, key: string) => [
@@ -520,11 +518,9 @@ function ScoreTrend({ rounds }: { rounds: Round[] }) {
             fill="url(#bestGrad)" dot={{ fill: '#a78bfa', r: 3 }} />
           <Line yAxisId="score" type="monotone" dataKey="avg" stroke="#22d3ee" strokeWidth={1.5}
             strokeDasharray="4 3" dot={false} />
-          {hasAlpha && (
-            <Line yAxisId="alpha" type="monotone" dataKey="alpha" stroke="#fbbf24" strokeWidth={1.5}
-              strokeDasharray="3 2" dot={{ fill: '#fbbf24', r: 2 }} connectNulls />
-          )}
-        </AreaChart>
+          <Line yAxisId="alpha" type="monotone" dataKey="alpha" stroke="#fbbf24" strokeWidth={1.5}
+            strokeDasharray="3 2" dot={{ fill: '#fbbf24', r: 2 }} connectNulls />
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   )
