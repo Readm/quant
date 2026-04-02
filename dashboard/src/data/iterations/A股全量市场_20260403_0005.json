@@ -1,0 +1,150 @@
+{
+  "thread_id": "A股全量市场_20260403_0005",
+  "name": "A股全量市场",
+  "run_at": "2026-04-03 00:05:16",
+  "symbols": [
+    "AAPL",
+    "NVDA",
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "days": 500,
+  "total_rounds": 6,
+  "rounds": [],
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "主力资金流[N5/R20/S]",
+      "type": "trend",
+      "score": 74.7,
+      "ann": 90.59,
+      "sharpe": 3.367,
+      "dd": 14.52,
+      "weight": 0.0116
+    },
+    {
+      "rank": 2,
+      "name": "量价背离[N4/R20/E]",
+      "type": "mean_reversion",
+      "score": 74.5,
+      "ann": 78.01,
+      "sharpe": 2.833,
+      "dd": 14.07,
+      "weight": 0.0066
+    },
+    {
+      "rank": 3,
+      "name": "趋势复合信号[N2/R5/V]",
+      "type": "trend",
+      "score": 73.7,
+      "ann": 53.12,
+      "sharpe": 1.959,
+      "dd": 13.88,
+      "weight": null
+    },
+    {
+      "rank": 4,
+      "name": "情绪-价格动量交互因子[N5/R10/V]",
+      "type": "trend",
+      "score": 72.2,
+      "ann": 136.71,
+      "sharpe": 4.235,
+      "dd": 19.8,
+      "weight": 0.0111
+    }
+  ],
+  "convergence": {
+    "round1_score": 74.7,
+    "final_score": 74.5,
+    "delta": -0.2,
+    "direction": "→平稳",
+    "converged": true
+  },
+  "meta_architecture_review": {
+    "overall_rating": "C",
+    "strengths": [
+      "模块化六层架构设计清晰，各层职责边界明确，便于独立演进",
+      "结构化反馈机制(Weakness/AdjustmentDirection枚举)实现机器可解析的策略调优闭环",
+      "PBO过拟合检测与Walk-Forward验证相结合，有效防止历史数据过拟合",
+      "专家辩论系统(E3A+B LLM)引入多视角策略评估，增强决策稳健性",
+      "多权重方式(equal/score_weighted/vol_inverse)支持灵活组合配置"
+    ],
+    "weaknesses": [
+      "94.6%候选接受率(351/371)严重偏高，PBO门控几乎失效",
+      "Top策略100%集中于主力资金流因子，策略空间探索不足",
+      "300天历史数据窗口对多参数策略统计显著性不足",
+      "回撤14.6%-17.4%偏高，风险调整后收益待优化",
+      "参数反馈调参机制存在路径依赖风险，易陷入局部最优"
+    ],
+    "critical_issues": [
+      "PBO门控机制完全失效：当前94.6%接受率远高于合理水平(应<70%)，导致几乎所有候选策略通过检验，20个拒绝案例可能集中在首轮，PBO的概率阈值(>0.6拒绝)需结合接受率动态调整或引入惩罚项",
+      "策略同质化严重：四轮迭代后Top4策略均为主力资金流[Nx/Rx/S]变体，说明因子空间探索不足，策略库多样性优势未体现，需引入多样性促进机制(如最大相关性强制约束、跨因子正交化)"
+    ],
+    "improvement_priorities": [
+      {
+        "priority": "P0",
+        "area": "评估层",
+        "action": "将PBO拒绝阈值从固定0.6调整为动态阈值：首轮0.4→末轮0.7，同时引入AcceptanceRate惩罚项，当接受率>75%时对所有候选score*=0.9^(接受率-0.75)/0.25",
+        "impact": "预期接受率降至60-70%，过滤低质量候选，减少过拟合风险"
+      },
+      {
+        "priority": "P0",
+        "area": "策略层",
+        "action": "实施策略多样性配额制度：每轮候选中强制要求至少30%来自非上一轮Top3因子家族，Top策略相关矩阵<0.7约束",
+        "impact": "打破主力资金流策略垄断，Top策略分散度提升至3个以上因子家族"
+      },
+      {
+        "priority": "P1",
+        "area": "数据层",
+        "action": "扩展历史数据至500-1000天，对短周期策略(N4/N5)增加样本外滚动测试窗口，引入Bootstrap置信区间评估",
+        "impact": "统计显著性提升，减少小样本偏差导致的虚假高评分"
+      },
+      {
+        "priority": "P1",
+        "area": "评估层",
+        "action": "增加Calmar比率作为核心筛选指标(要求>1.5)，将Sortino权重从当前比例提升至总评分30%",
+        "impact": "筛选出风险收益更平衡的策略，降低实盘最大回撤"
+      },
+      {
+        "priority": "P2",
+        "area": "反馈层",
+        "action": "引入ParameterEntropy指标监控参数收敛程度，当连续3轮某参数调整幅度<5%时触发多样性重启机制",
+        "impact": "防止参数空间陷入局部最优，保持策略进化活力"
+      }
+    ],
+    "architecture_suggestions": [
+      {
+        "component": "E2评估模块",
+        "current": "PBO>0.6拒绝+固定阈值四维评分",
+        "proposed": "PBO动态阈值(基于历史接受率反馈调节)+评分分层机制：Risk-adjusted(权重40%)+Robustness(权重30%)+Diversity(权重20%)+Novelty(权重10%)",
+        "rationale": "当前评分过度聚焦收益指标，忽视策略多样性和新颖性贡献，导致系统向单一最优因子家族收敛"
+      },
+      {
+        "component": "策略库候选生成",
+        "current": "随机参数空间搜索+反馈调参",
+        "proposed": "引入贝叶斯优化(Hyperopt)作为主要搜索方式，随机搜索降为辅助(20%)，增加遗传算法变异算子避免近亲繁殖",
+        "rationale": "随机搜索在32因子×多参数空间下效率低下，贝叶斯优化可更高效探索高维空间"
+      },
+      {
+        "component": "META元监控",
+        "current": "LLM驱动动态参数规划+收敛判断",
+        "proposed": "增加显式多样性监控指标：因子覆盖度(Top10策略因子分布熵)、策略相关性矩阵，当系统熵下降超过阈值时强制注入随机策略",
+        "rationale": "纯LLM判断缺乏数值化多样性感知能力，需量化指标辅助决策"
+      },
+      {
+        "component": "数据层缓存",
+        "current": "本地缓存+300天历史",
+        "proposed": "分层缓存架构：Redis热数据(最近60天高频访问)+PostgreSQL温数据(300天)+增量更新机制(每日只拉取新数据)",
+        "rationale": "300天全量缓存对高频候选生成造成IO瓶颈，分层架构提升数据访问效率"
+      },
+      {
+        "component": "组合权重模块",
+        "current": "equal/score_weighted/vol_inverse三种方式",
+        "proposed": "增加风险平价(Risk Parity)和最大多元化权重方式，支持夏普比最优化动态权重，结合E4相关性惩罚",
+        "rationale": "现有权重方式未充分考虑因子间相关性对组合风险的贡献"
+      }
+    ],
+    "next_iteration_focus": "本轮核心问题是策略多样性与PBO门控失效。下次迭代应优先：(1)修复PBO动态阈值机制，确保接受率控制在合理范围；(2)强制引入多样性选择压力，打破主力资金流策略垄断；(3)增加风险调整后收益(Calmar/Sortino)筛选权重，降低极端回撤风险。预期通过这两项改进，虽然单策略峰值分可能略降，但组合稳健性和实盘存活率将显著提升。",
+    "_llm_available": true
+  }
+}
