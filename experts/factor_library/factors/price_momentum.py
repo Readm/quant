@@ -16,7 +16,7 @@ REQUIRED_DATA  = ["closes"]
 
 import math
 def compute_score(closes, data, indicators, extensions, params, t):
-    lookback = params.get('lookback', 20)
+    lookback = int(params.get('lookback', 20))
     if t < lookback or len(closes) <= t:
         return 0.0
     return (closes[t] / closes[t - lookback]) - 1

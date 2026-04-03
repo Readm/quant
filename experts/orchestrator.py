@@ -10,22 +10,26 @@ orchestrator.py — 多专家迭代系统 v4.0（全面改进版）
   ✅ 三专家辩论（Trend + MeanReversion + Regime）
 """
 
-import sys, json, math, random, re, urllib.request, os, time
+import sys, json, math, random, os, time
 from pathlib import Path
 from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from backtest.local_data import load_multiple
-
 from experts.modules.blackboard import Blackboard
-# TODO: from experts.modules.news_sentiment import NewsSentimentAnalyzer  # 待接入真实搜索 API
 from experts.modules.risk_engine import RiskExpert
 from experts.specialists.expert1a_trend import TrendExpert
 from experts.specialists.expert1b_mean_reversion import MeanReversionExpert
-from experts.evaluator import Evaluator, compute_benchmark_returns
+from experts.evaluator import Evaluator
 from experts.meta_monitor import MetaMonitor, RoundSnapshot
 from experts.debate_manager import DebateManager
 from experts.structured_feedback import FeedbackHistory
+from experts.data_loader import (
+    load_symbols_data, compute_benchmark_for_symbols, compute_indicators,
+)
+from experts.report_writer import (
+    make_snapshot, generate_final_report, to_serializable,
+    save_report, print_final_report,
+)
 
 # ── 并行回测 worker（模块级，可被 ProcessPoolExecutor pickle）─────
 _worker_symbols_data = None
@@ -42,21 +46,16 @@ def _backtest_one_cand(args):
     组合回测：对所有标的做因子打分 → 选 Top-N → 持仓回测。
     返回 PortfolioBacktester 生成的 BacktestReport。
     """
-    from experts.modules.portfolio_backtest import PortfolioBacktester
+    from backtest.engine import PortfolioBacktester
     expert, cand = args
     pp = cand.get("portfolio_params", {})
-    try:
-        bt = PortfolioBacktester(
-            symbols_data=_worker_symbols_data,
-            expert=expert,
-            candidate=cand,
-            portfolio_params=pp,
-        )
-        return bt.run()
-    except Exception:
-        from experts.specialists.expert1a_trend import BacktestReport
-        return BacktestReport(strategy_id=cand["strategy_id"],
-                              strategy_name=cand["strategy_name"])
+    bt = PortfolioBacktester(
+        symbols_data=_worker_symbols_data,
+        expert=expert,
+        candidate=cand,
+        portfolio_params=pp,
+    )
+    return bt.run()
 
 _N_BT_WORKERS = max(1, (os.cpu_count() or 4))
 
@@ -146,6 +145,7 @@ class Orchestrator:
         self._seen_cand_hashes: set = set()  # similarity dedup across all rounds
         self._best_ever: dict = {}           # template_key → {params, portfolio_params, score}
         self._champion_evals: list = []      # carried-over top EvalResults from previous round
+        self._load_search_state()
 
         # ── 加载生成因子（插件注册）──────────────────────────────
         self._load_generated_factors()
@@ -172,11 +172,11 @@ class Orchestrator:
         print("  Pipeline(A) + Adversarial(B) + Correlation(C) + Holdout(D)")
         print("="*68)
 
-        symbols_data = self._load_data()
+        symbols_data = load_symbols_data(self.symbols, self.n_days)
 
         # 设置评估基准（默认用第一个标的作为基准）
-        benchmark_sym = self._pick_benchmark()
-        benchmark_rets = self._compute_benchmark_returns(symbols_data, benchmark_sym)
+        benchmark_sym = None  # override in subclass if needed
+        benchmark_rets = compute_benchmark_for_symbols(symbols_data, benchmark_sym)
         self.evaluator = Evaluator(benchmark_daily_returns=benchmark_rets)
         if benchmark_rets:
             print(f"[基准] {benchmark_sym or '第一个标的'}，{len(benchmark_rets)} 个日收益率")
@@ -334,7 +334,7 @@ class Orchestrator:
                     print(f"  平均偏差：{avg_bias:+.1f}%（|<10% 为理想）")
 
             # 元监控快照
-            snap = self._make_snapshot(rnd, t_evals, mr_evals, debate, risk_results, sent, regime)
+            snap = make_snapshot(rnd, t_evals, mr_evals, debate, risk_results, sent, regime)
             self.monitor.record_round(snap)
 
             # 收敛判断：基于 all_pass（不只是 final 前4名），5轮无提升才收敛
@@ -510,11 +510,43 @@ class Orchestrator:
 
         self._architecture_review = arch_review
 
-        final_report = self._generate_final_report()
+        self._save_search_state()
+
+        final_report = generate_final_report(self.round_reports, self.top_n, self.symbols)
         final_report["meta_architecture_review"] = arch_review
-        self._save_report(final_report)
-        self._print_final_report(final_report)
+        save_report(final_report)
+        print_final_report(final_report)
         return final_report
+
+    # ── 搜索状态持久化 ────────────────────────────────────────────────
+
+    _STATE_PATH = Path("results/search_state.json")
+
+    def _load_search_state(self):
+        if not self._STATE_PATH.exists():
+            return
+        try:
+            state = json.loads(self._STATE_PATH.read_text(encoding="utf-8"))
+            self._seen_cand_hashes = set(state.get("seen_hashes", []))
+            self._best_ever = state.get("best_ever", {})
+            print(f"[搜索状态] 恢复: {len(self._seen_cand_hashes)} 个已探索 hash，"
+                  f"{len(self._best_ever)} 个最优参数记录")
+        except Exception as e:
+            print(f"[搜索状态] 加载失败，从空状态开始: {e}")
+
+    def _save_search_state(self):
+        self._STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        state = {
+            "saved_at":   datetime.now().isoformat(),
+            "seen_hashes": sorted(self._seen_cand_hashes),
+            "best_ever":  self._best_ever,
+        }
+        self._STATE_PATH.write_text(
+            json.dumps(state, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f"[搜索状态] 已保存: {len(self._seen_cand_hashes)} 个 hash，"
+              f"{len(self._best_ever)} 个最优参数 → {self._STATE_PATH}")
 
     # ── 多样性约束生成 ─────────────────────
 
@@ -984,321 +1016,12 @@ class Orchestrator:
 
     # ── 数据加载（实盘 + 腾讯API）───────────────
 
-    def _fetch_tencent(self, sym, n=300):
-        """Fetch daily K-line from Tencent API"""
-        url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?_var=kline_day&param={sym},day,,,{n},qfq"
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                text = resp.read().decode()
-            m = re.search(r'=\s*(\{.*\})', text, re.DOTALL)
-            if not m: return None
-            obj = json.loads(m.group(1))
-            data = obj.get('data', {})
-            val = data.get(sym)
-            if isinstance(val, list):
-                klines = val
-            elif isinstance(val, dict):
-                klines = val.get('day', [])
-            else:
-                return None
-            if not klines: return None
-            # klines: [[date, open, close, high, low, volume], ...]
-            closes = [float(k[2]) for k in klines]
-            if not closes or closes[-1] < 1: return None
-            return {
-                'dates':   [k[0] for k in klines],
-                'opens':   [float(k[1]) for k in klines],
-                'closes':  closes,
-                'highs':   [float(k[3]) for k in klines],
-                'lows':    [float(k[4]) for k in klines],
-                'volumes': [float(k[5]) for k in klines],
-            }
-        except Exception as e:
-            print(f"[腾讯API] {sym} fetch error: {e}")
-            return None
 
-    def _compute_indicators(self, data):
-        """Compute basic technical indicators from raw data"""
-        closes = data.get('closes', [])
-        highs  = data.get('highs', [])
-        lows   = data.get('lows', [])
-        volumes= data.get('volumes', [])
-        n = len(closes)
-        if n < 60: return {}
-        # Returns
-        rets = [0.0] + [(closes[i]/closes[i-1]-1) for i in range(1,n)]
-        # SMA
-        def sma(arr, period):
-            out = [None]*(period-1)
-            for i in range(period-1, len(arr)):
-                out.append(sum(arr[i-period+1:i+1])/period)
-            return out
-        # RSI
-        def rsi(closes, period=14):
-            deltas = [closes[i]-closes[i-1] for i in range(1,len(closes))]
-            gains = [max(d,0) for d in deltas]
-            losses = [abs(min(d,0)) for d in deltas]
-            out = [None]*period
-            aggr = sum(gains[:period])/period
-            alss = sum(losses[:period])/period
-            if alss == 0: out.append(100)
-            else: out.append(100-(100/(1+aggr/alss)))
-            for i in range(period, len(deltas)):
-                aggr = (aggr*(period-1)+gains[i])/period
-                alss = (alss*(period-1)+losses[i])/period
-                if alss == 0: out.append(100)
-                else: out.append(100-(100/(1+aggr/alss)))
-            return out
-        # ATR
-        def atr(highs, lows, closes, period=14):
-            trs = [highs[0]-lows[0]] + [max(highs[i]-lows[i], abs(highs[i]-closes[i-1]), abs(lows[i]-closes[i-1])) for i in range(1,len(closes))]
-            out = [None]*(period-1)
-            out.append(sum(trs[:period])/period)
-            for i in range(period, len(trs)):
-                out.append((out[-1]*(period-1)+trs[i])/period)
-            return out
-        # Wilder ADX
-        try:
-            from experts.modules.data_fetcher import compute_realistic_indicators as _cri
-            _ext = _cri({'closes': closes, 'highs': highs or closes, 'lows': lows or closes})
-            adx_v  = _ext.get('adx',  [0.0]*n)
-            ma5_v  = _ext.get('ma5',  [0.0]*n)
-            ma10_v = _ext.get('ma10', [0.0]*n)
-        except Exception:
-            adx_v = ma5_v = ma10_v = [0.0]*n
 
-        return {
-            'returns': rets,
-            'ma5':     ma5_v,
-            'ma10':    ma10_v,
-            'ma20':    sma(closes, 20),
-            'ma60':    sma(closes, 60),
-            'ma200':   sma(closes, 200) if n >= 200 else [None]*n,
-            'rsi14':   rsi(closes, 14),
-            'atr14':   atr(highs, lows, closes, 14),
-            'adx':     adx_v,
-        }
 
-    # Tencent realtime API symbol mapping (only well-known non-A-share symbols)
-    _TENCENT_MAP = {'SPY': 'sh000300', 'BTCUSDT': 'btcusdt', 'ETHUSDT': 'ethusdt'}
 
-    @staticmethod
-    def _pick_benchmark() -> str:
-        # 留给子类或外部覆盖；默认 None 表示用第一个标的
-        return None
 
-    def _compute_benchmark_returns(self, symbols_data: list, benchmark_sym: str = None) -> list:
-        if benchmark_sym and symbols_data:
-            for sd in symbols_data:
-                if sd.get("symbol") == benchmark_sym:
-                    closes = sd.get("data", {}).get("closes", [])
-                    return compute_benchmark_returns(closes)
 
-        # 优先尝试沪深300指数作为基准
-        try:
-            from pathlib import Path as _P
-            import pandas as _pd
-            idx_path = _P(__file__).parent.parent / "data" / "tushare" / "index_daily" / "000300.SH.csv"
-            if idx_path.exists():
-                df = _pd.read_csv(idx_path, dtype={"trade_date": str}).sort_values("trade_date")
-                # 截取与策略数据对齐的日期范围
-                if symbols_data:
-                    strat_dates = set(symbols_data[0].get("data", {}).get("dates", []))
-                    if strat_dates:
-                        df = df[df["trade_date"].isin(strat_dates)]
-                closes = df["close"].tolist()
-                if len(closes) > 50:
-                    print(f"[基准] 使用沪深300(000300.SH)，{len(closes)} 个交易日")
-                    return compute_benchmark_returns(closes)
-        except Exception:
-            pass
-
-        # 无明确基准则用第一个标的
-        if symbols_data:
-            closes = symbols_data[0].get("data", {}).get("closes", [])
-            return compute_benchmark_returns(closes)
-        return []
-
-    def _load_data(self):
-
-        result = {}
-        for sym in self.symbols:
-            # 1. Try Tencent API for mapped symbols
-            api_sym = self._TENCENT_MAP.get(sym)
-            if api_sym:
-                d = self._fetch_tencent(api_sym, self.n_days)
-                if d and len(d.get('closes', [])) > 50:
-                    result[sym] = {'data': d, 'indicators': self._compute_indicators(d)}
-                    print(f"[数据] {sym}: {len(d['closes'])} bars (腾讯API, {d['dates'][0]}→{d['dates'][-1]})")
-                    continue
-
-            # 2. Load from local cache (A-share SH*/SZ* and fallback for others)
-            local = load_multiple([sym], n=self.n_days)
-            if sym in local and local[sym].get('closes'):
-                ld = local[sym]
-                d = {
-                    'closes':  ld['closes'],
-                    'dates':   ld.get('dates', []),
-                    'opens':   ld.get('opens', []),
-                    'highs':   ld.get('highs', []),
-                    'lows':    ld.get('lows', []),
-                    'volumes': ld.get('volumes', []),
-                }
-                inds = ld.get('indicators') or self._compute_indicators(d)
-                result[sym] = {'data': d, 'indicators': inds}
-                dates = ld.get('dates', [])
-                span = f"{dates[0]}→{dates[-1]}" if dates else "?"
-                print(f"[数据] {sym}: {len(ld['closes'])} bars (本地缓存, {span})")
-            else:
-                print(f"[数据] {sym}: ❌ 数据加载失败")
-
-        if not result:
-            raise RuntimeError(f"无法加载数据: {self.symbols}")
-        # Build output in same format as before
-        out = []
-        for sym in self.symbols:
-            if sym not in result:
-                raise RuntimeError(f"数据加载失败：{sym}")
-            inds  = result[sym]["indicators"]
-            raw_d = result[sym]["data"]
-            closes = raw_d["closes"]
-            rets = [0.0] + [(closes[i]/closes[i-1]-1) for i in range(1, len(closes))]
-            out.append({
-                "symbol":     sym,
-                "data":       {
-                    "closes":     closes,
-                    "returns":    rets,
-                    "opens":      raw_d.get("opens",      closes),
-                    "highs":      raw_d.get("highs",      closes),
-                    "lows":       raw_d.get("lows",       closes),
-                    "volumes":    raw_d.get("volumes",    [1e9]*len(closes)),
-                    "dates":      raw_d.get("dates",      []),
-                    "extensions": raw_d.get("extensions", {}),  # Tushare附加数据
-                },
-                "indicators": inds,
-            })
-        return out
-
-    # ── 元监控快照 ────────────────────────
-
-    def _make_snapshot(self, rnd, t_evals, mr_evals, debate, risk_results, sent, regime):
-        elim_causes = {}
-        for e in (t_evals or []) + (mr_evals or []):
-            if e.decision == "REJECT":
-                key = (e.elimination_note or e.reason or "?")[:20]
-                elim_causes[key] = elim_causes.get(key, 0) + 1
-        avg_var = sum(r.var_99 for r in (risk_results or []))/max(len(risk_results),1)
-        all_ev  = (t_evals or []) + (mr_evals or [])
-        top_score  = max([e.composite for e in all_ev], default=0.0)
-        avg_score  = sum(e.composite for e in all_ev)/max(len(all_ev),1)
-        t_pass = [e for e in (t_evals or []) if e.decision!="REJECT"]
-        mr_pass= [e for e in (mr_evals or []) if e.decision!="REJECT"]
-        return RoundSnapshot(round_num=rnd, top_score=round(top_score,1), avg_score=round(avg_score,1),
-            total_candidates=len(all_ev), accepted_count=len(t_pass)+len(mr_pass),
-            rejected_count=len(all_ev)-len(t_pass)-len(mr_pass),
-            trend_count=len(t_pass), mr_count=len(mr_pass),
-            debate_winner=debate.winner if debate else "TIE",
-            trend_win_streak=0, mr_win_streak=0,
-            sentiment_label=(sent.get("sentiment_label","NEUTRAL") if sent else "NEUTRAL"),
-            sentiment_score=sent.get("sentiment_score",0.0) if sent else 0.0,
-            sentiment_conf=sent.get("confidence",0.0) if sent else 0.0,
-            sentiment_enabled=False,  # TODO: news_sentiment 未启用，接入API后改为 True
-            market_regime=(regime.name if regime else "UNKNOWN"),
-            avg_var99=round(avg_var,3), elimination_causes=elim_causes)
-
-    # ── 最终报告 ─────────────────────────
-
-    def _generate_final_report(self):
-        all_evals = []
-        for rp in self.round_reports:
-            all_evals.extend(getattr(rp,"trend_evals",[]))
-            all_evals.extend(getattr(rp,"mr_evals",[]))
-        all_evals.sort(key=lambda x: x.composite, reverse=True)
-        # 去重：同一 strategy_name 只保留评分最高的
-        seen, global_top = set(), []
-        for e in all_evals:
-            key = (e.strategy_name, e.strategy_type)
-            if key not in seen:
-                seen.add(key); global_top.append(e)
-            if len(global_top) >= self.top_n: break
-        for e in global_top: e.weight = getattr(e,"weight",0.0)
-        if len(self.round_reports) >= 2:
-            r1=self.round_reports[0]; r2=self.round_reports[-1]
-            ev1 = getattr(r1,"trend_evals",[])+getattr(r1,"mr_evals",[])
-            ev2 = getattr(r2,"trend_evals",[])+getattr(r2,"mr_evals",[])
-            s1  = max([e.composite for e in ev1], default=0)
-            s2  = max([e.composite for e in ev2], default=0)
-            delta = round(s2-s1,1)
-            conv_dir = "↑改善" if delta>3 else ("↓下降" if delta<-3 else "→平稳")
-            converged = getattr(r2,"converged",False)
-        else:
-            s1=s2=delta=0; conv_dir="→首轮"; converged=False
-        best = all_evals[0] if all_evals else None
-        sugg = []
-        if best and best.composite >= 60:
-            sugg.append({"risk_level":"进取型",
-                         "strategies":[{"name":s.strategy_name} for s in global_top[:3]],
-                         "action":f"综合分={best.composite}，可小资金实盘验证（≤30%）"})
-        __r__ = {
-            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "total_rounds": len(self.round_reports),
-            "symbols": self.symbols,
-            "data_note": "⚠️ 纯实盘数据，已移除合成数据",
-            "global_top": [{"rank":i+1,"name":e.strategy_name,"type":e.strategy_type,
-                             "score":e.composite,"ann":e.annualized_return,
-                             "sharpe":e.sharpe_ratio,"dd":e.max_drawdown_pct,
-                             "weight":getattr(e,"weight",0.0) or 0.0}
-                            for i,e in enumerate(global_top)],
-            "convergence": {"round1_score":s1,"final_score":s2,"delta":delta,
-                             "direction":conv_dir,"converged":converged},
-            "suggestions": sugg,
-        }
-        return Orchestrator._to_serializable(__r__)
-
-    @staticmethod
-    def _to_serializable(obj, _seen=None):
-        """安全序列化：只递归 dict / list / tuple，用 id() 做环检测"""
-        if _seen is None:
-            _seen = set()
-        if id(obj) in _seen:
-            return None                       # 打破循环
-        if isinstance(obj, dict):
-            _seen.add(id(obj))
-            return {k: Orchestrator._to_serializable(v, _seen) for k, v in obj.items()}
-        if isinstance(obj, (list, tuple)):
-            _seen.add(id(obj))
-            return [Orchestrator._to_serializable(v, _seen) for v in obj]
-        if hasattr(obj, "item"):             # numpy scalar
-            try: return obj.item()
-            except: pass
-        if hasattr(obj, "__dict__"):         # dataclass / arbitrary object
-            _seen.add(id(obj))
-            d = {}
-            for k, v in obj.__dict__.items():
-                if k.startswith("_"): continue
-                try: d[k] = Orchestrator._to_serializable(v, _seen)
-                except: d[k] = str(v)
-            return d
-        return obj
-
-    def _save_report(self, final, path=None):
-        path = path or str(Path(__file__).parent.parent/"results"/f"multi_expert_v4_{datetime.now().strftime('%Y%m%d_%H%M')}.json")
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        serializable = self._to_serializable(final)
-        with open(path,"w",encoding="utf-8") as f:
-            json.dump(serializable, f, ensure_ascii=False, indent=2)
-        print(f"\n💾 已保存: {path}")
-
-    def _print_final_report(self, final):
-        print("\n"+"🏆"*34+f"\n  最终报告（v4.0 纯实盘）\n"+"🏆"*34)
-        cv=final.get("convergence",{})
-        print(f"\n📈 收敛：第1轮={cv.get('round1_score',0):.1f} → 第{final['total_rounds']}轮={cv.get('final_score',0):.1f}（{cv.get('direction','?')}）")
-        print(f"\n🏆 全局 Top {len(final.get('global_top',[]))}：")
-        for s in final["global_top"]:
-            w = s.get("weight", 0.0); w_str = f"{float(w):.1%}" if isinstance(w, (int,float)) and w == w else str(w)
-            print(f"  #{s['rank']} {s['name']}（{s['type']}）分={s['score']:.1f} 年化={s['ann']:.1f}% 夏普={s['sharpe']:.3f} 权重={w_str}")
-        print("\n"+"🏆"*34)
 
 
 class RoundReportFake:

@@ -321,9 +321,10 @@ class ResearchExpert:
     ]
 
     def __init__(self, symbols: list[str] = None):
-        self.symbols    = symbols or ["SH600519"]
-        self._registry  = self._load_registry()
-        self._seen_ids  = self._load_seen_ids()
+        self.symbols     = symbols or ["SH600519"]
+        self._registry   = self._load_registry()
+        self._seen_ids   = self._load_seen_ids()
+        self._papers_meta = self._load_papers_meta()
 
     def run(
         self,
@@ -451,6 +452,8 @@ class ResearchExpert:
 
         factor_path = self._write_factor(proposal, code, extra_arrays)
         self._register(proposal, ic)
+        self._link_paper_to_factor(proposal.source, proposal.key)
+        self._save_seen_ids()
 
         return ResearchResult(
             proposal=proposal, status="registered",
@@ -525,13 +528,14 @@ REQUIRED_DATA  = {json.dumps(proposal.required_data)}
 
     def _register(self, proposal: FactorProposal, ic: float):
         self._registry[proposal.key] = {
-            "name_cn":       proposal.name_cn,
-            "type":          proposal.type,
-            "source":        proposal.source,
-            "params":        proposal.params,
-            "param_ranges":  proposal.param_ranges,
-            "ic_score":      round(ic, 4),
-            "registered_at": time.strftime("%Y-%m-%d"),
+            "name_cn":        proposal.name_cn,
+            "type":           proposal.type,
+            "source":         proposal.source,
+            "source_paper_id": proposal.source,   # arxiv_id / url:… / pdf:…
+            "params":         proposal.params,
+            "param_ranges":   proposal.param_ranges,
+            "ic_score":       round(ic, 4),
+            "registered_at":  time.strftime("%Y-%m-%d"),
         }
         _REGISTRY.write_text(
             json.dumps(self._registry, ensure_ascii=False, indent=2),
@@ -543,8 +547,8 @@ REQUIRED_DATA  = {json.dumps(proposal.required_data)}
         if _REGISTRY.exists():
             try:
                 return json.loads(_REGISTRY.read_text(encoding="utf-8"))
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"  [研究专家] registry.json 损坏，重置: {e}")
         return {}
 
     @staticmethod
@@ -553,15 +557,41 @@ REQUIRED_DATA  = {json.dumps(proposal.required_data)}
             try:
                 data = json.loads(_SEEN_FILE.read_text(encoding="utf-8"))
                 return set(data.get("ids", []))
+            except Exception as e:
+                print(f"  [研究专家] seen_papers.json 损坏，重置: {e}")
+        return set()
+
+    @staticmethod
+    def _load_papers_meta() -> dict:
+        """加载 seen_papers.json 中的 papers 元数据（title, produced_factor 等）。"""
+        if _SEEN_FILE.exists():
+            try:
+                data = json.loads(_SEEN_FILE.read_text(encoding="utf-8"))
+                return data.get("papers", {})
             except Exception:
                 pass
-        return set()
+        return {}
 
     def _save_seen_ids(self):
         _SEEN_FILE.write_text(
-            json.dumps({"ids": sorted(self._seen_ids)}, ensure_ascii=False, indent=2),
+            json.dumps(
+                {"ids": sorted(self._seen_ids), "papers": self._papers_meta},
+                ensure_ascii=False, indent=2,
+            ),
             encoding="utf-8",
         )
+
+    def _link_paper_to_factor(self, paper_id: str, factor_key: str):
+        """在 papers_meta 中记录论文产出了哪个因子（双向映射）。"""
+        entry = self._papers_meta.setdefault(paper_id, {})
+        existing = entry.get("produced_factor")
+        if existing is None:
+            entry["produced_factor"] = factor_key
+        elif isinstance(existing, list):
+            if factor_key not in existing:
+                existing.append(factor_key)
+        elif existing != factor_key:
+            entry["produced_factor"] = [existing, factor_key]
 
 
 # ── akshare 智能获取 ─────────────────────────────────────────────────

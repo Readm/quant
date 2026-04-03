@@ -16,8 +16,8 @@ REQUIRED_DATA  = ["closes", "volumes"]
 
 import math
 def compute_score(closes, data, indicators, extensions, params, t):
-    price_period = params.get('price_period', 5)
-    volume_window = params.get('volume_window', 20)
+    price_period = int(params.get('price_period', 5))
+    volume_window = int(params.get('volume_window', 20))
     if t < price_period or t < volume_window:
         return 0.0
     volumes = data.get('volumes', [])

@@ -78,6 +78,12 @@ LOG_DIR    = BASE_DIR  / "logs"
 for _d in [DATA_DIR, PARQUET_DIR, LOG_DIR]:
     _d.mkdir(parents=True, exist_ok=True)
 
+# ── 交易成本（A股，供所有回测模块统一引用）─────────────
+TRADING_COST = {
+    "buy":  0.0003 + 0.0005,          # 佣金(万3) + 滑点(万5) = 0.08%
+    "sell": 0.0003 + 0.0005 + 0.0010, # 同上 + 印花税(千1)   = 0.18%
+}
+
 # ── 回测参数 ──────────────────────────────────────────
 BACKTEST = {
     "start":       "2022-01-01",

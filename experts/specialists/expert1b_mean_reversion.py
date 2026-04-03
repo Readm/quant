@@ -151,54 +151,49 @@ class MeanReversionExpert:
             highs  = data.get("highs",  closes) if isinstance(data, dict) else closes
             lows   = data.get("lows",   closes) if isinstance(data, dict) else closes
             vols   = data.get("volumes", [1e9]*n) if isinstance(data, dict) else [1e9]*n
-            try:
-                from experts.modules.alpha158 import alpha158_features, alpha158_signal
-                sig_raw = alpha158_signal(closes, highs, lows, vols, alpha_name)
-                return sig_raw  # mean_reversion already has its own debounce
-            except Exception:
-                return [0]*n
+            from experts.modules.alpha158 import alpha158_features, alpha158_signal
+            sig_raw = alpha158_signal(closes, highs, lows, vols, alpha_name)
+            return sig_raw  # mean_reversion already has its own debounce
         elif key in ("mfi_signal", "rvi_signal", "kdwave", "multi_roc_signal", "obos_composite", "elder_ray_signal"):
             highs_d = data.get("highs",   closes) if isinstance(data, dict) else closes
             lows_d  = data.get("lows",    closes) if isinstance(data, dict) else closes
             vols_d  = data.get("volumes", [1e9]*n) if isinstance(data, dict) else [1e9]*n
-            try:
-                from factors.mean_reversion import mfi_signal as _mfi, rvi_signal as _rvi, kdwave as _kdw, obos_composite as _obos
-                from factors.momentum import elder_ray_signal as _eld, multi_roc_signal as _roc
-                if key == "mfi_signal":
-                    sig_raw = _mfi(closes, highs_d, lows_d, vols_d,
-                                   period=int(params.get("period", 14)))
-                elif key == "rvi_signal":
-                    sig_raw = _rvi(closes, highs_d, lows_d,
-                                   period=int(params.get("period", 10)))
-                elif key == "kdwave":
-                    _, _, sig_raw = _kdw(highs_d, lows_d, closes,
-                                         k_period=int(params.get("fastk", 9)),
-                                         d_period=int(params.get("slowk", 3)))
-                elif key == "multi_roc_signal":
-                    sig_raw = _roc(closes, periods=[
-                        int(params.get("p1", 5)),
-                        int(params.get("p2", 15)),
-                        int(params.get("p3", 30)),
-                    ])
-                elif key == "obos_composite":
-                    _, sig_raw = _obos(closes, vols_d,
-                                       rsi_period=int(params.get("period", 20)))
-                elif key == "elder_ray_signal":
-                    sig_raw = _eld(closes, highs_d, lows_d,
-                                   period=int(params.get("ema_period", 13)))
-                else:
-                    sig_raw = [0] * n
-                sig_raw = list(sig_raw)
-                if len(sig_raw) < n: sig_raw += [0] * (n - len(sig_raw))
-                return sig_raw[:n]
-            except Exception:
-                return [0] * n
+            from factors.mean_reversion import mfi_signal as _mfi, rvi_signal as _rvi, kdwave as _kdw, obos_composite as _obos
+            from factors.momentum import elder_ray_signal as _eld, multi_roc_signal as _roc
+            if key == "mfi_signal":
+                sig_raw = _mfi(closes, highs_d, lows_d, vols_d,
+                               period=int(params.get("period", 14)))
+            elif key == "rvi_signal":
+                sig_raw = _rvi(closes, highs_d, lows_d,
+                               period=int(params.get("period", 10)))
+            elif key == "kdwave":
+                _, _, sig_raw = _kdw(highs_d, lows_d, closes,
+                                     k_period=int(params.get("fastk", 9)),
+                                     d_period=int(params.get("slowk", 3)))
+            elif key == "multi_roc_signal":
+                sig_raw = _roc(closes, periods=[
+                    int(params.get("p1", 5)),
+                    int(params.get("p2", 15)),
+                    int(params.get("p3", 30)),
+                ])
+            elif key == "obos_composite":
+                _, sig_raw = _obos(closes, vols_d,
+                                   rsi_period=int(params.get("period", 20)))
+            elif key == "elder_ray_signal":
+                sig_raw = _eld(closes, highs_d, lows_d,
+                               period=int(params.get("ema_period", 13)))
+            else:
+                sig_raw = [0] * n
+            sig_raw = list(sig_raw)
+            if len(sig_raw) < n: sig_raw += [0] * (n - len(sig_raw))
+            return sig_raw[:n]
         return [0]*n
 
 
     # ── 交易成本参数（与 expert1a 保持一致）─────────────────────────
-    BUY_COST  = 0.0003 + 0.0005   # 佣金+滑点 = 0.08%
-    SELL_COST = 0.0003 + 0.0005 + 0.0010  # 佣金+滑点+印花税 = 0.18%
+    from config.settings import TRADING_COST as _TC
+    BUY_COST  = _TC["buy"]
+    SELL_COST = _TC["sell"]
 
     @staticmethod
     def _simulate(signals, closes, initial_cash):

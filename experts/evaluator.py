@@ -258,50 +258,46 @@ class Evaluator:
           - 0.85 → 可疑，打折
           - 1.0  → 可信，不打折
         """
-        try:
-            from experts.modules.pbo_analysis import compute_pbo, pbo_score_adjustment
+        from experts.modules.pbo_analysis import compute_pbo, pbo_score_adjustment
 
-            closes = getattr(report, "daily_returns", None)
-            if closes is None or len(closes) < 120:
-                return 1.0, "数据不足，跳过"
+        closes = getattr(report, "daily_returns", None)
+        if closes is None or len(closes) < 120:
+            return 1.0, "数据不足，跳过"
 
-            params = getattr(report, "params", {})
-            s_type = getattr(report, "strategy_type", "trend")
+        params = getattr(report, "params", {})
+        s_type = getattr(report, "strategy_type", "trend")
 
-            # 构建参数网格
-            if "period" in params:
-                grid = {
-                    "period":   [max(7, params["period"]-3), params["period"], params["period"]+3],
-                    "lower":    [25, 30], "upper": [70, 75],
-                }
-            elif "lookback" in params:
-                grid = {
-                    "lookback":  [max(10, params.get("lookback",20)-5), params.get("lookback",20), params.get("lookback",20)+5],
-                    "threshold": [0.03, 0.05, 0.08],
-                }
-            elif "fast" in params:
-                grid = {
-                    "fast": [params["fast"]//2, params["fast"], params["fast"]*2],
-                    "slow": [params["slow"]//2, params["slow"], params["slow"]*2],
-                }
-            else:
-                return 1.0, "未知参数，跳过"
+        # 构建参数网格
+        if "period" in params:
+            grid = {
+                "period":   [max(7, params["period"]-3), params["period"], params["period"]+3],
+                "lower":    [25, 30], "upper": [70, 75],
+            }
+        elif "lookback" in params:
+            grid = {
+                "lookback":  [max(10, params.get("lookback",20)-5), params.get("lookback",20), params.get("lookback",20)+5],
+                "threshold": [0.03, 0.05, 0.08],
+            }
+        elif "fast" in params:
+            grid = {
+                "fast": [params["fast"]//2, params["fast"], params["fast"]*2],
+                "slow": [params["slow"]//2, params["slow"], params["slow"]*2],
+            }
+        else:
+            return 1.0, "未知参数，跳过"
 
-            result = compute_pbo(
-                closes, lambda c, **kw: [0]*len(c),
-                grid, n_windows=6, train_ratio=0.6
-            )
-            pbo_val = result.pbo
+        result = compute_pbo(
+            closes, lambda c, **kw: [0]*len(c),
+            grid, n_windows=6, train_ratio=0.6
+        )
+        pbo_val = result.pbo
 
-            if pbo_val >= 0.6:
-                return 0.0, f"PBO={pbo_val:.0%}（严重过拟合）"
-            elif pbo_val >= 0.3:
-                return 0.85, f"PBO={pbo_val:.0%}（可疑）"
-            else:
-                return 1.0, f"PBO={pbo_val:.0%}（可信）"
-
-        except Exception:
-            return 1.0, "异常，跳过"
+        if pbo_val >= 0.6:
+            return 0.0, f"PBO={pbo_val:.0%}（严重过拟合）"
+        elif pbo_val >= 0.3:
+            return 0.85, f"PBO={pbo_val:.0%}（可疑）"
+        else:
+            return 1.0, f"PBO={pbo_val:.0%}（可信）"
 
     # ══════════════════════════════════════════
     #  四维度打分函数（0~100）

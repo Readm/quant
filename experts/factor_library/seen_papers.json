@@ -20,5 +20,16 @@
     "http://arxiv.org/abs/2601.11958v1",
     "http://arxiv.org/abs/2602.00776v1",
     "http://arxiv.org/abs/2603.24137v1"
-  ]
+  ],
+  "papers": {
+    "http://arxiv.org/abs/2412.12350v1": {
+      "produced_factor": "price_momentum"
+    },
+    "http://arxiv.org/abs/1709.08621v1": {
+      "produced_factor": [
+        "volume_sentiment_proxy",
+        "sentiment_price_momentum"
+      ]
+    }
+  }
 }

@@ -13,7 +13,8 @@
       ]
     },
     "ic_score": -0.0023,
-    "registered_at": "2026-04-01"
+    "registered_at": "2026-04-01",
+    "source_paper_id": "http://arxiv.org/abs/2412.12350v1"
   },
   "volume_sentiment_proxy": {
     "name_cn": "成交量情绪代理因子",
@@ -29,7 +30,8 @@
       ]
     },
     "ic_score": 0.0067,
-    "registered_at": "2026-04-01"
+    "registered_at": "2026-04-01",
+    "source_paper_id": "http://arxiv.org/abs/1709.08621v1"
   },
   "sentiment_price_momentum": {
     "name_cn": "情绪-价格动量交互因子",
@@ -50,6 +52,7 @@
       ]
     },
     "ic_score": 0.0167,
-    "registered_at": "2026-04-01"
+    "registered_at": "2026-04-01",
+    "source_paper_id": "http://arxiv.org/abs/1709.08621v1"
   }
 }

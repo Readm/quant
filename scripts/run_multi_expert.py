@@ -19,9 +19,8 @@ def fetch_tx(sym, start, end, count=500):
     rows = []
     for it in days:
         if len(it) < 6: continue
-        try: rows.append({"date":it[0],"open":float(it[1]),"close":float(it[2]),
-                          "high":float(it[3]),"low":float(it[4]),"vol":float(it[5])})
-        except: pass
+        rows.append({"date":it[0],"open":float(it[1]),"close":float(it[2]),
+                     "high":float(it[3]),"low":float(it[4]),"vol":float(it[5])})
     rows.reverse()
     return rows
 
@@ -35,34 +34,28 @@ def fetch_emf(secid, start="20220101", end="20241231", limit=800):
         "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         "Referer":"https://quote.eastmoney.com/",
     })
-    try:
-        with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
-            raw = r.read(80_000).decode("utf-8")
-        j = json.loads(raw)
-        rows = []
-        for kl in j.get("data",{}).get("klines",[]):
-            p = kl.split(",")
-            if len(p) < 6: continue
-            try: rows.append({"date":p[0],"open":float(p[1]),"close":float(p[2]),
-                              "high":float(p[3]),"low":float(p[4]),"vol":float(p[5])})
-            except: pass
-        return rows
-    except: return []
+    with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
+        raw = r.read(80_000).decode("utf-8")
+    j = json.loads(raw)
+    rows = []
+    for kl in j.get("data",{}).get("klines",[]):
+        p = kl.split(",")
+        if len(p) < 6: continue
+        rows.append({"date":p[0],"open":float(p[1]),"close":float(p[2]),
+                     "high":float(p[3]),"low":float(p[4]),"vol":float(p[5])})
+    return rows
 
 # ── Stooq ────────────────────────────────────────────────
 def fetch_stooq(sym, n=300):
     url = f"https://stooq.com/q/d/l/?s={sym}&d1=20230101&d2=20241231&i=d"
     req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
-    try:
-        with urllib.request.urlopen(req, context=ctx, timeout=10) as r:
-            raw = r.read(5000).decode()
-    except: return []
+    with urllib.request.urlopen(req, context=ctx, timeout=10) as r:
+        raw = r.read(5000).decode()
     rows = []
     for line in raw.strip().split("\r\n")[1:]:
         p = line.split(",")
         if len(p) < 5: continue
-        try: rows.append({"date":p[0],"close":float(p[4])})
-        except: pass
+        rows.append({"date":p[0],"close":float(p[4])})
     rows.reverse()
     return rows[:n]
 
@@ -98,7 +91,8 @@ def get_data():
                 bh = (cps[-1]/cps[0]-1)*100
                 print(f"  HK/{name}: {len(rows)}天 {bh:+.1f}%")
                 results[f"HK_{name}"] = cps
-        except: pass
+        except Exception as e:
+            errors.append(f"HK/{name}: {e}")
 
     # ③ A股个股（东方财富）
     a_map = [
@@ -113,7 +107,8 @@ def get_data():
                 bh = (cps[-1]/cps[0]-1)*100
                 print(f"  AShare/{name}: {len(rows)}天 {bh:+.1f}%")
                 results[f"A_{name}"] = cps
-        except: pass
+        except Exception as e:
+            errors.append(f"AShare/{name}: {e}")
 
     # ④ 加密+黄金（Stooq）
     stooq_map = [("btc.v","BTC"),("eth.v","ETH"),("gld.US","GLD")]
@@ -125,8 +120,13 @@ def get_data():
                 bh = (cps[-1]/cps[0]-1)*100
                 print(f"  {name}: {len(rows)}天 {bh:+.1f}%")
                 results[name] = cps
-        except: pass
+        except Exception as e:
+            errors.append(f"{name}: {e}")
 
+    if errors:
+        print(f"\n[警告] {len(errors)} 个标的获取失败:")
+        for e in errors:
+            print(f"  ✗ {e}")
     print(f"\n共获取 {len(results)} 个标的")
     return results
 

@@ -67,7 +67,7 @@ def safe_float(v, default=0.0) -> float:
     try:
         f = float(v)
         return default if (math.isnan(f) or math.isinf(f)) else round(f, 4)
-    except Exception:
+    except (TypeError, ValueError):
         return default
 
 

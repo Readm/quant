@@ -467,6 +467,7 @@ function RoundPanel({ round }: { round: Round }) {
 
 // ── Score Trend Chart ─────────────────────────────────────────────
 function ScoreTrend({ rounds }: { rounds: Round[] }) {
+  if (!rounds || rounds.length === 0) return null
   const data = rounds.map(r => {
     const passed = r.strategies.filter(s => s.decision !== 'REJECT')
     // Champion alpha = alpha of top-scoring passed (ACCEPT or CONDITIONAL) strategy
@@ -483,7 +484,7 @@ function ScoreTrend({ rounds }: { rounds: Round[] }) {
     }
   })
   const scoreVals = data.flatMap(d => [d.best, d.avg])
-  const yMinScore = Math.max(0, Math.floor(Math.min(...scoreVals) - 5))
+  const yMinScore = scoreVals.length > 0 ? Math.max(0, Math.floor(Math.min(...scoreVals) - 5)) : 0
   const alphaVals = data.map(d => d.alpha).filter((v): v is number => v !== null)
   const yMinAlpha = alphaVals.length > 0 ? Math.floor(Math.min(...alphaVals) - 3) : -10
   const yMaxAlpha = alphaVals.length > 0 ? Math.ceil(Math.max(...alphaVals) + 3) : 30
@@ -629,7 +630,9 @@ export default function IterationView() {
     </div>
   )
 
-  const round = log.rounds.find(r => r.round === activeRound) ?? log.rounds[0]
+  const round = log.rounds.length > 0
+    ? (log.rounds.find(r => r.round === activeRound) ?? log.rounds[0])
+    : null
 
   return (
     <div className="space-y-5">

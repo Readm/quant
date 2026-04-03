@@ -16,7 +16,7 @@ REQUIRED_DATA  = ["volumes"]
 
 import math
 def compute_score(closes, data, indicators, extensions, params, t):
-    window = params.get("window", 20)
+    window = int(params.get("window", 20))
     volumes = data.get("volumes", [])
     if t < window or len(volumes) <= t:
         return 0.0

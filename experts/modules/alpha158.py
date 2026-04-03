@@ -32,13 +32,11 @@ def alpha158_features(
     features = {}
 
     def safe(f):
-        """安全执行表达式，返回 list"""
-        try:
-            r = f()
-            if r is None: return [float("nan")]*n
-            return r if isinstance(r, list) else [float("nan")]*n
-        except Exception:
-            return [float("nan")]*n
+        """执行因子表达式，返回 list；计算错误时抛出异常"""
+        r = f()
+        if r is None:
+            return [float("nan")] * n
+        return r if isinstance(r, list) else [float("nan")] * n
 
     def fill_nan(base: list, vals: list) -> list:
         """将vals对齐到base长度，前面补nan"""

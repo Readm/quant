@@ -56,7 +56,8 @@ def fetch_real(symbol: str, end: str = "20241231",
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
             raw = r.read().decode("utf-8")
-    except Exception:
+    except Exception as e:
+        print(f"[data_fetcher] {symbol} Stooq 请求失败: {e}")
         return None
 
     rows = _parse_csv(raw)
@@ -142,12 +143,9 @@ def fetch_multiple(symbols: list) -> dict:
         futures = {ex.submit(fetch_real, sym): sym for sym in symbols}
         for fut in concurrent.futures.as_completed(futures, timeout=30):
             sym = futures[fut]
-            try:
-                data = fut.result()
-                if data:
-                    results[sym] = data
-            except Exception:
-                pass
+            data = fut.result()
+            if data:
+                results[sym] = data
     return results
 
 

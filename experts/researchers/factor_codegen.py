@@ -135,37 +135,34 @@ class FactorCodegen:
             f"只用 math 模块，不能 import，返回 float。直接输出代码，无其他文字。"
         )
         # 直接调 llm_proxy 的底层，获取原始文本
-        try:
-            from experts.modules.llm_proxy import _API_KEY, _BASE_URL, _ENDPOINT, _MODEL
-            import json, urllib.request
-            payload = json.dumps({
-                "model": _MODEL(),
-                "messages": [
-                    {"role": "system", "content": "你是Python工程师，只输出代码，无任何说明。"},
-                    {"role": "user", "content": prompt},
-                ],
-                "temperature": 0.1,
-                "max_tokens": 800,
-            }, ensure_ascii=False).encode()
-            req = urllib.request.Request(
-                f"{_BASE_URL()}{_ENDPOINT()}",
-                data=payload,
-                headers={"Content-Type": "application/json",
-                         "Authorization": f"Bearer {_API_KEY()}"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=20) as r:
-                body = json.loads(r.read())
-            choices = body.get("choices") or body.get("reply", "")
-            if isinstance(choices, list) and choices:
-                text = choices[0].get("message", {}).get("content", "")
-            else:
-                text = str(choices)
-            if _FUNC_SIG in text:
-                idx = text.find("def compute_score")
-                return text[idx:].strip()
-        except Exception:
-            pass
+        from experts.modules.llm_proxy import _API_KEY, _BASE_URL, _ENDPOINT, _MODEL
+        import json, urllib.request
+        payload = json.dumps({
+            "model": _MODEL(),
+            "messages": [
+                {"role": "system", "content": "你是Python工程师，只输出代码，无任何说明。"},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.1,
+            "max_tokens": 800,
+        }, ensure_ascii=False).encode()
+        req = urllib.request.Request(
+            f"{_BASE_URL()}{_ENDPOINT()}",
+            data=payload,
+            headers={"Content-Type": "application/json",
+                     "Authorization": f"Bearer {_API_KEY()}"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=20) as r:
+            body = json.loads(r.read())
+        choices = body.get("choices") or body.get("reply", "")
+        if isinstance(choices, list) and choices:
+            text = choices[0].get("message", {}).get("content", "")
+        else:
+            text = str(choices)
+        if _FUNC_SIG in text:
+            idx = text.find("def compute_score")
+            return text[idx:].strip()
         return ""
 
     @staticmethod

@@ -12,8 +12,6 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 OUT_PATH = Path("dashboard/src/data/status.json")
-
-
 # ── 1. Data Layer ────────────────────────────────────────────────
 def scan_data():
     files = sorted(glob.glob("data/raw/*.json"))
@@ -36,15 +34,14 @@ def scan_data():
                 "last_close": round(closes[-1], 2),
                 "change_pct": round((closes[-1] / closes[0] - 1) * 100, 1),
             })
-        except Exception:
+        except Exception as e:
+            print(f"  [数据扫描] {os.path.basename(f)} 解析失败: {e}")
             continue
     return {
         "status":  "ok" if symbols else "empty",
         "count":   len(symbols),
         "symbols": symbols,
     }
-
-
 # ── 2. Factor Library ────────────────────────────────────────────
 def scan_factors():
     errors = []
@@ -77,8 +74,6 @@ def scan_factors():
         "factor_table": factor_table_count,
         "factor_ids":   factors_list[:10],   # sample
     }
-
-
 # ── 3. Strategy Library ──────────────────────────────────────────
 def scan_strategies():
     errors = []
@@ -107,8 +102,6 @@ def scan_strategies():
         "errors":  errors[:5],
         "modules": modules,
     }
-
-
 # ── 4. Expert System ─────────────────────────────────────────────
 def scan_experts():
     errors = []
@@ -137,15 +130,13 @@ def scan_experts():
         "errors":  errors[:5],
         "modules": modules,
     }
-
-
 # ── 5. Backtest Engines ──────────────────────────────────────────
 def scan_backtest():
     engines = []
     for mod_name, label in [
         ("backtest.local_data",       "local_data"),
-        ("backtest.runner",           "runner"),
-        ("backtest.vectorbt_engine",  "vectorbt_engine"),
+        
+        ("backtest.engine",         "engine"),
     ]:
         try:
             importlib.import_module(mod_name)
@@ -158,8 +149,6 @@ def scan_backtest():
         "status":  "ok" if ok == len(engines) else "warn",
         "engines": engines,
     }
-
-
 # ── 6. Config ────────────────────────────────────────────────────
 def scan_config():
     try:
@@ -176,8 +165,6 @@ def scan_config():
             return {"status": "ok", "note": str(vars(S))[:200]}
         except Exception as e2:
             return {"status": "error", "error": str(e2)}
-
-
 # ── Main ─────────────────────────────────────────────────────────
 def main():
     print("Scanning project status...")
@@ -202,7 +189,5 @@ def main():
     print(f"  Strategies: {status['strategies']['ok']}/{status['strategies']['total']} modules ok")
     print(f"  Experts:    {status['experts']['ok']}/{status['experts']['total']} modules ok")
     print(f"  Backtest:   {status['backtest']['status']}")
-
-
 if __name__ == "__main__":
     main()

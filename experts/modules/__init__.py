@@ -182,7 +182,8 @@ def _parse_ak_df(df, symbol: str) -> Optional[dict]:
             "volumes": df["成交量"].tolist() if "成交量" in df.columns else [],
             "source":  "akshare",
         }
-    except Exception:
+    except Exception as e:
+        print(f"  [akshare] _parse_ak_df {symbol} 解析失败: {e}")
         return None
 
 

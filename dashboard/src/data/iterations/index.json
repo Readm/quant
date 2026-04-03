@@ -2,15 +2,16 @@
   {
     "id": "A股全量市场_20260403_0005",
     "name": "A股全量市场",
-    "run_at": "2026-04-03 00:05",
-    "total_rounds": 6,
-    "top_score": 74.7,
+    "run_at": "2026-04-03 00:05:16",
     "symbols": [
       "AAPL",
       "NVDA",
       "BTCUSDT",
       "ETHUSDT"
     ],
-    "days": 500
+    "days": 500,
+    "total_rounds": 6,
+    "best_score": 74.7,
+    "converged": true
   }
 ]

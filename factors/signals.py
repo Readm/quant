@@ -102,8 +102,5 @@ def generate_signal(factor_id: str, closes: List[float],
 
     fn = mapping.get(factor_id)
     if fn:
-        try:
-            return fn()
-        except Exception:
-            return [0] * len(closes)
+        return fn()
     return [0] * len(closes)

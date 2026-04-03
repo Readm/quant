@@ -111,32 +111,29 @@ class SandboxEvaluator:
             files = sorted(_DATA_DIR.glob(f"{sym}_*.json"), reverse=True)
             if not files:
                 continue
-            try:
-                raw = json.loads(files[0].read_text(encoding="utf-8"))
-                # 支持两种格式：平铺数组 或 rows 列表
-                if "rows" in raw:
-                    rows   = raw["rows"]
-                    closes  = [float(r["close"])  for r in rows]
-                    highs   = [float(r.get("high",  r["close"])) for r in rows]
-                    lows    = [float(r.get("low",   r["close"])) for r in rows]
-                    volumes = [float(r.get("vol",   1e6))        for r in rows]
-                    opens   = [float(r.get("open",  r["close"])) for r in rows]
-                else:
-                    closes  = [float(c) for c in raw.get("closes",  [])]
-                    highs   = [float(x) for x in raw.get("highs",   closes)]
-                    lows    = [float(x) for x in raw.get("lows",    closes)]
-                    volumes = [float(x) for x in raw.get("volumes", [1e6]*len(closes))]
-                    opens   = [float(x) for x in raw.get("opens",   closes)]
-                if len(closes) < 50:
-                    continue
-                return {
-                    "closes": closes,
-                    "data": {"highs": highs, "lows": lows,
-                             "volumes": volumes, "opens": opens},
-                    "indicators": self._build_indicators(closes),
-                }
-            except Exception:
+            raw = json.loads(files[0].read_text(encoding="utf-8"))
+            # 支持两种格式：平铺数组 或 rows 列表
+            if "rows" in raw:
+                rows   = raw["rows"]
+                closes  = [float(r["close"])  for r in rows]
+                highs   = [float(r.get("high",  r["close"])) for r in rows]
+                lows    = [float(r.get("low",   r["close"])) for r in rows]
+                volumes = [float(r.get("vol",   1e6))        for r in rows]
+                opens   = [float(r.get("open",  r["close"])) for r in rows]
+            else:
+                closes  = [float(c) for c in raw.get("closes",  [])]
+                highs   = [float(x) for x in raw.get("highs",   closes)]
+                lows    = [float(x) for x in raw.get("lows",    closes)]
+                volumes = [float(x) for x in raw.get("volumes", [1e6]*len(closes))]
+                opens   = [float(x) for x in raw.get("opens",   closes)]
+            if len(closes) < 50:
                 continue
+            return {
+                "closes": closes,
+                "data": {"highs": highs, "lows": lows,
+                         "volumes": volumes, "opens": opens},
+                "indicators": self._build_indicators(closes),
+            }
         return None
 
     @staticmethod

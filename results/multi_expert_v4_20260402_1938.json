@@ -1,0 +1,369 @@
+{
+  "generated_at": "2026-04-02 19:38:51",
+  "total_rounds": 2,
+  "symbols": [
+    "SPY",
+    "BTCUSDT"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "双均线交叉[N2/R20/V]",
+      "type": "trend",
+      "score": 77.2,
+      "ann": 25.15,
+      "sharpe": 2.072,
+      "dd": 5.96,
+      "weight": 0.0255
+    },
+    {
+      "rank": 2,
+      "name": "成交量情绪代理因子[N4/R60/V]",
+      "type": "trend",
+      "score": 75.6,
+      "ann": 16.91,
+      "sharpe": 2.034,
+      "dd": 3.36,
+      "weight": {
+        "strategy_id": "tr_9b3b0f29",
+        "strategy_name": "成交量情绪代理因子[N4/R60/V]",
+        "strategy_type": "trend",
+        "params": {
+          "window": 24.0,
+          "pf_n_stocks": 4,
+          "pf_rebalance_freq": 60,
+          "pf_weight_method": "vol_inverse",
+          "pf_max_position_pct": 0.86
+        },
+        "tags": [
+          "成交量情绪代理因子"
+        ],
+        "total_return": 20.37,
+        "annualized_return": 16.91,
+        "sharpe_ratio": 2.034,
+        "max_drawdown_pct": 3.36,
+        "win_rate": 66.67,
+        "profit_factor": 1.73,
+        "total_trades": 3,
+        "sortino_score": 89.5,
+        "calmar_score": 100.0,
+        "ir_score": 15.1,
+        "drawdown_score": 100.0,
+        "composite": 75.6,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=75.6，Sortino=2.30 Calmar=5.04，Alpha=+0.5%，IR=15分）",
+        "feedback": "放宽入场条件增加交易频率",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "未知参数，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": 15.56,
+        "alpha": 0.45,
+        "template_key": "volume_sentiment_proxy",
+        "structured_feedback": {
+          "strategy_id": "tr_9b3b0f29",
+          "strategy_name": "成交量情绪代理因子[N4/R60/V]",
+          "strategy_type": "trend",
+          "template_key": "volume_sentiment_proxy",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=75.6，Sortino=2.30 Calmar=5.04，Alpha=+0.5%，IR=15分）",
+          "ann_return": 16.91,
+          "sharpe_ratio": 2.034,
+          "max_drawdown": 3.36,
+          "win_rate": 66.67,
+          "profit_factor": 1.73,
+          "total_trades": 3,
+          "composite": 75.6,
+          "adjustment": {},
+          "adjustment_param": "",
+          "adjustment_magnitude": 0,
+          "adjustment_unit": "",
+          "recommended_regime": "STRONG_TREND",
+          "position_advice": "高配",
+          "alternative_strategies": [
+            "RSI均值回归",
+            "布林带回归"
+          ],
+          "raw_reason": "✅ 纳入（综合分=75.6，Sortino=2.30 Calmar=5.04，Alpha=+0.5%，IR=15分）",
+          "feedback_text": "放宽入场条件增加交易频率"
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "name": "双均线交叉[N2/R60/V]",
+      "type": "trend",
+      "score": 74.8,
+      "ann": 24.35,
+      "sharpe": 2.017,
+      "dd": 7.45,
+      "weight": {
+        "strategy_id": "tr_487d4252",
+        "strategy_name": "双均线交叉[N2/R60/V]",
+        "strategy_type": "trend",
+        "params": {
+          "r1": 9.6,
+          "r2": 15.6,
+          "pf_n_stocks": 2,
+          "pf_rebalance_freq": 60,
+          "pf_weight_method": "vol_inverse",
+          "pf_max_position_pct": 0.48
+        },
+        "tags": [
+          "双均线交叉"
+        ],
+        "total_return": 29.51,
+        "annualized_return": 24.35,
+        "sharpe_ratio": 2.017,
+        "max_drawdown_pct": 7.45,
+        "win_rate": 100.0,
+        "profit_factor": 0.0,
+        "total_trades": 3,
+        "sortino_score": 92.3,
+        "calmar_score": 100.0,
+        "ir_score": 16.6,
+        "drawdown_score": 90.0,
+        "composite": 74.8,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=74.8，Sortino=2.49 Calmar=3.27，Alpha=+6.9%，IR=17分）",
+        "feedback": "优化止盈止损比，减少赢转亏；放宽入场条件增加交易频率",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "未知参数，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": 15.56,
+        "alpha": 6.9,
+        "template_key": "ma_cross",
+        "structured_feedback": {
+          "strategy_id": "tr_487d4252",
+          "strategy_name": "双均线交叉[N2/R60/V]",
+          "strategy_type": "trend",
+          "template_key": "ma_cross",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=74.8，Sortino=2.49 Calmar=3.27，Alpha=+6.9%，IR=17分）",
+          "ann_return": 24.35,
+          "sharpe_ratio": 2.017,
+          "max_drawdown": 7.45,
+          "win_rate": 100.0,
+          "profit_factor": 0.0,
+          "total_trades": 3,
+          "composite": 74.8,
+          "adjustment": {},
+          "adjustment_param": "fast",
+          "adjustment_magnitude": -5,
+          "adjustment_unit": "天",
+          "recommended_regime": "STRONG_TREND",
+          "position_advice": "高配",
+          "alternative_strategies": [
+            "RSI均值回归",
+            "布林带回归"
+          ],
+          "raw_reason": "✅ 纳入（综合分=74.8，Sortino=2.49 Calmar=3.27，Alpha=+6.9%，IR=17分）",
+          "feedback_text": "优化止盈止损比，减少赢转亏；放宽入场条件增加交易频率"
+        }
+      }
+    },
+    {
+      "rank": 4,
+      "name": "双均线交叉[N5/R60/S]",
+      "type": "trend",
+      "score": 74.3,
+      "ann": 53.65,
+      "sharpe": 2.348,
+      "dd": 12.72,
+      "weight": {
+        "strategy_id": "trend_09c037b2",
+        "strategy_name": "双均线交叉[N5/R60/S]",
+        "strategy_type": "trend",
+        "params": {
+          "period": 51,
+          "pf_n_stocks": 5,
+          "pf_rebalance_freq": 60,
+          "pf_weight_method": "score_weighted",
+          "pf_max_position_pct": 1.0
+        },
+        "tags": [
+          "趋势跟踪",
+          "双均线交叉"
+        ],
+        "total_return": 66.47,
+        "annualized_return": 53.65,
+        "sharpe_ratio": 2.348,
+        "max_drawdown_pct": 12.72,
+        "win_rate": 100.0,
+        "profit_factor": 0.0,
+        "total_trades": 3,
+        "sortino_score": 97.6,
+        "calmar_score": 100.0,
+        "ir_score": 19.9,
+        "drawdown_score": 75.0,
+        "composite": 74.3,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=74.3，Sortino=2.84 Calmar=4.22，Alpha=+30.0%，IR=20分）",
+        "feedback": "优化止盈止损比，减少赢转亏；放宽入场条件增加交易频率",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "PBO=0%（可信）",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": 15.56,
+        "alpha": 30.01,
+        "template_key": "ma_cross",
+        "structured_feedback": {
+          "strategy_id": "trend_09c037b2",
+          "strategy_name": "双均线交叉[N5/R60/S]",
+          "strategy_type": "trend",
+          "template_key": "ma_cross",
+          "weakness": null,
+          "weakness_desc": "✅ 纳入（综合分=74.3，Sortino=2.84 Calmar=4.22，Alpha=+30.0%，IR=20分）",
+          "ann_return": 53.65,
+          "sharpe_ratio": 2.348,
+          "max_drawdown": 12.72,
+          "win_rate": 100.0,
+          "profit_factor": 0.0,
+          "total_trades": 3,
+          "composite": 74.3,
+          "adjustment": null,
+          "adjustment_param": "fast",
+          "adjustment_magnitude": -5,
+          "adjustment_unit": "天",
+          "recommended_regime": "STRONG_TREND",
+          "position_advice": "标配",
+          "alternative_strategies": [
+            "RSI均值回归",
+            "布林带回归"
+          ],
+          "raw_reason": "✅ 纳入（综合分=74.3，Sortino=2.84 Calmar=4.22，Alpha=+30.0%，IR=20分）",
+          "feedback_text": "优化止盈止损比，减少赢转亏；放宽入场条件增加交易频率"
+        }
+      }
+    }
+  ],
+  "convergence": {
+    "round1_score": 77.2,
+    "final_score": 77.2,
+    "delta": 0.0,
+    "direction": "→平稳",
+    "converged": false
+  },
+  "suggestions": [
+    {
+      "risk_level": "进取型",
+      "strategies": [
+        {
+          "name": "双均线交叉[N2/R20/V]"
+        },
+        {
+          "name": "成交量情绪代理因子[N4/R60/V]"
+        },
+        {
+          "name": "双均线交叉[N2/R60/V]"
+        }
+      ],
+      "action": "综合分=77.2，可小资金实盘验证（≤30%）"
+    }
+  ],
+  "meta_architecture_review": {
+    "overall_rating": "B",
+    "strengths": [
+      "六层架构设计清晰，各层职责明确，便于独立迭代和团队分工开发",
+      "结构化反馈机制(Weakness+AdjustmentDirection枚举)实现了机器可解析的参数调优",
+      "PBO过拟合检测结合四维评分(Sortino/Calmar/IR/DD)提供了多角度策略评估",
+      "LLM辩论机制(E3A+B)引入大模型进行策略推理，增强了策略筛选的智能化程度",
+      "组合回测支持三种权重方式(equal/score_weighted/vol_inverse)，灵活性较好"
+    ],
+    "weaknesses": [
+      "数据窗口仅300天，对低频策略(当前Top策略仅3-46次交易)统计显著性严重不足",
+      "最终Top4策略全为趋势类型，均值回归策略最高分仅62.3分，策略类型严重失衡",
+      "PBO阈值固定(>0.6拒绝，>0.3打折)，未针对不同交易频率策略进行自适应调整",
+      "因子库32个因子但缺乏基本面因子(PE/ROE/现金流等)，因子同质化风险高",
+      "未观察到明显的策略去相关化机制，Top4策略可能共享相同的市场暴露"
+    ],
+    "critical_issues": [
+      "统计显著性严重不足：交易次数3次的策略在300天数据上无法建立可靠的统计推断，PBO检测本身也因样本量过小而不可靠",
+      "策略类型单一化：系统声称支持趋势+均值回归各10种和8种template，但实际输出全是趋势型策略，说明均值回归分支可能存在系统性失效"
+    ],
+    "improvement_priorities": [
+      {
+        "priority": "P0",
+        "area": "评估层",
+        "action": "针对低频策略引入最小交易次数约束(如每轮至少15笔交易)和复合PBO验证(需PBO<0.3且交易次数>阈值才接受)，同时添加Bootstrap置信区间评估",
+        "impact": "显著降低过拟合风险，提升策略样本外稳健性，预计可过滤掉当前Top策略中2-3个低置信度候选"
+      },
+      {
+        "priority": "P0",
+        "area": "策略层",
+        "action": "检查均值回归分支失效原因——可能因参数空间搜索范围不当或E2评估中四维指标对均值回归策略存在系统性偏见，强制要求每轮至少入选2个均值回归策略到Top候选",
+        "impact": "增加策略库多样性，降低系统对单一市场状态的依赖，提升组合抗风险能力"
+      },
+      {
+        "priority": "P1",
+        "area": "数据层",
+        "action": "将历史数据窗口扩展至1000天以上(建议2000天)，并引入多个数据源(Stooq+akshare+yfinance组合)，实现全球市场和多资产类别的覆盖",
+        "impact": "为低频策略提供足够的统计样本，增强PBO检测和回测结果的可信度"
+      },
+      {
+        "priority": "P1",
+        "area": "因子层",
+        "action": "扩展因子库添加基本面因子(PE/PB/ROE/营收增速/负债率)和宏观因子(利率/汇率/VIX)，使因子总数达到80个以上，并按因子类别实施分组正交化",
+        "impact": "降低因子同质化风险，增强策略在不同市场环境下的适应性"
+      },
+      {
+        "priority": "P2",
+        "area": "组合层",
+        "action": "在E4组合权重模块中加入策略相关性惩罚机制，设置最大策略间相关性阈值(如0.7)，强制Top组合中的策略实现分散化",
+        "impact": "避免策略共线性导致的风险集中，提升组合的整体稳健性"
+      }
+    ],
+    "architecture_suggestions": [
+      {
+        "component": "数据层",
+        "current": "Stooq.com(主)+akshare(备选)，300天历史K线",
+        "proposed": "多源冗余架构：Stooq+akshare+yfinance+eodhistoricaldata四源并行，本地缓存扩展至2000天，支持增量更新和版本回溯",
+        "rationale": "当前单主数据源存在单点风险，300天数据对低频策略严重不足，多源可实现全球市场覆盖"
+      },
+      {
+        "component": "因子库",
+        "current": "32个技术因子，支持10种template_key打分",
+        "proposed": "分层因子库：技术因子(30个)+基本面因子(30个)+宏观因子(10个)+情绪因子(10个)，总计80+，每类因子独立注册和版本管理",
+        "rationale": "技术因子主导的因子库会导致策略信号同质化，基本面因子可增强策略的长期有效性和鲁棒性"
+      },
+      {
+        "component": "E2评估模块",
+        "current": "固定PBO阈值(>0.6拒绝，>0.3打折)，四维评分",
+        "proposed": "自适应评估框架：低频策略(交易<20次)采用贝叶斯PBO+Bootstrap置信区间，高频策略(交易>100次)采用标准PBO+交叉验证，设置最小有效样本量门控",
+        "rationale": "固定阈值对不同交易频率策略不公平，低频策略需要更严格的统计验证以防止过拟合"
+      },
+      {
+        "component": "策略库",
+        "current": "趋势(10种template)+均值回归(8种template)，随机+反馈调参",
+        "proposed": "双向强化机制：设置策略类型平衡约束(每轮Top候选中趋势/均值回归比例≥1:1)，增加强化学习探索头寸，均值回归分支引入统计套利专用template",
+        "rationale": "当前均值回归分支系统性失效可能导致策略库多样性丧失，增加市场环境适应性风险"
+      },
+      {
+        "component": "E3A+B LLM辩论",
+        "current": "MiniMax API驱动LLM辩论进行策略筛选",
+        "proposed": "混合验证框架：保留LLM辩论作为初筛，但增加量化统计验证层(如Granger因果检验/滚动窗口稳定性测试)作为LLM判断的数学锚点",
+        "rationale": "LLM判断存在幻觉风险，纯LLM评估的策略可能缺乏统计基础，混合框架可兼顾创新性和严谨性"
+      },
+      {
+        "component": "MetaMonitor元专家",
+        "current": "LLM驱动的动态参数规划和收敛判断",
+        "proposed": "可解释性监控仪表盘：增加策略生命周期追踪、收益归因分析、过拟合预警信号、策略失效早期检测(Kyle's Lambda变化监控)",
+        "rationale": "当前元监控缺乏具体的量化监控指标，可解释性不足，难以支持快速问题定位和干预"
+      },
+      {
+        "component": "回测系统",
+        "current": "三种权重方式(equal/score_weighted/vol_inverse)，交易成本建模(买0.08%卖0.18%)",
+        "proposed": "增强回测框架：添加流动性约束(大单冲击成本建模)、滑点模型、隔夜风险因子、处理赢家和输家区别对待的Fee结构",
+        "rationale": "当前成本模型过于简化，真实交易中存在大单冲击、滑点、流动性限制等成本因子，可能导致回测绩效高估30%以上"
+      }
+    ],
+    "next_iteration_focus": "下一轮迭代应聚焦三个核心改进：(1)数据窗口扩展至1000天以上，为低频策略建立统计基础；(2)修复均值回归分支失效问题，通过调整参数搜索空间或评估指标权重，强制实现策略类型平衡；(3)引入自适应PBO阈值和Bootstrap置信区间，增强低交易量策略的评估严谨性。当前Top策略的3次交易频次几乎是赌博级置信度，必须优先解决",
+    "estimated_improvement": "实施上述P0级改进(自适应PBO阈值+数据窗口扩展+均值回归分支修复)后，预计系统评分可提升10-15分，从当前77.2提升至85-90区间。核心收益来源于：减少低质量策略入选Top组合(预期过滤率从76.6%降至60%左右)，提升策略样本外稳健性，降低组合相关性风险。但需要警惕：数据窗口扩展可能暴露当前策略在新数据上的真实表现，导致短期评分下降，这是正常的回归均值现象，应坚持长期评估",
+    "_llm_available": true
+  }
+}
