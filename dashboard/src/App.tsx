@@ -11,13 +11,13 @@ import IterationView from './views/IterationView'
 type ViewKey = 'status' | 'data' | 'backtest' | 'expert' | 'factor' | 'strategy' | 'iteration'
 
 const NAV = [
+  { key: 'iteration' as ViewKey, label: '迭代过程', Icon: GitBranch,   color: '#a855f7' },
   { key: 'status'    as ViewKey, label: '系统状态', Icon: Activity,    color: '#94a3b8' },
   { key: 'data'      as ViewKey, label: '数据来源', Icon: Database,    color: '#22d3ee' },
   { key: 'backtest'  as ViewKey, label: '回测框架', Icon: BarChart3,   color: '#6366f1' },
   { key: 'expert'    as ViewKey, label: '专家框架', Icon: Brain,       color: '#a78bfa' },
   { key: 'factor'    as ViewKey, label: '因子库',   Icon: Layers,      color: '#4ade80' },
   { key: 'strategy'  as ViewKey, label: '策略库',   Icon: ListOrdered, color: '#fbbf24' },
-  { key: 'iteration' as ViewKey, label: '迭代过程', Icon: GitBranch,   color: '#a855f7' },
 ]
 
 const VIEWS: Record<ViewKey, React.ComponentType> = {
@@ -31,7 +31,7 @@ const VIEWS: Record<ViewKey, React.ComponentType> = {
 }
 
 export default function App() {
-  const [active, setActive] = useState<ViewKey>('status')
+  const [active, setActive] = useState<ViewKey>('iteration')
 
   const View = VIEWS[active]
 

@@ -1,16 +1,13 @@
 {
-  "thread_id": "A股全量市场_20260403_0005",
-  "name": "A股全量市场",
-  "run_at": "2026-04-03 00:05:16",
+  "generated_at": "2026-04-03 00:05:16",
+  "total_rounds": 6,
   "symbols": [
     "AAPL",
     "NVDA",
     "BTCUSDT",
     "ETHUSDT"
   ],
-  "days": 500,
-  "total_rounds": 6,
-  "rounds": [],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
   "global_top": [
     {
       "rank": 1,
@@ -40,7 +37,74 @@
       "ann": 53.12,
       "sharpe": 1.959,
       "dd": 13.88,
-      "weight": null
+      "weight": {
+        "strategy_id": "tr_c711fc74",
+        "strategy_name": "趋势复合信号[N2/R5/V]",
+        "strategy_type": "trend",
+        "params": {
+          "ma_fast": 13.6,
+          "ma_slow": 26.4,
+          "mom_period": 8.0,
+          "vol_period": 25.2,
+          "pf_n_stocks": 2,
+          "pf_rebalance_freq": 5,
+          "pf_weight_method": "vol_inverse",
+          "pf_max_position_pct": 0.5
+        },
+        "tags": [
+          "趋势复合信号"
+        ],
+        "total_return": 132.49,
+        "annualized_return": 53.12,
+        "sharpe_ratio": 1.959,
+        "max_drawdown_pct": 13.88,
+        "win_rate": 98.77,
+        "profit_factor": 10.88,
+        "total_trades": 163,
+        "sortino_score": 98.9,
+        "calmar_score": 100.0,
+        "ir_score": 16.0,
+        "drawdown_score": 75.0,
+        "composite": 73.7,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=73.7，Sortino=2.93 Calmar=3.83，Alpha=+8.6%，IR=16分）",
+        "feedback": "指标良好，可适度扩大仓位",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "未知参数，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": 37.73,
+        "alpha": 8.56,
+        "template_key": "trend_composite",
+        "structured_feedback": {
+          "strategy_id": "tr_c711fc74",
+          "strategy_name": "趋势复合信号[N2/R5/V]",
+          "strategy_type": "trend",
+          "template_key": "trend_composite",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=73.7，Sortino=2.93 Calmar=3.83，Alpha=+8.6%，IR=16分）",
+          "ann_return": 53.12,
+          "sharpe_ratio": 1.959,
+          "max_drawdown": 13.88,
+          "win_rate": 98.77,
+          "profit_factor": 10.88,
+          "total_trades": 163,
+          "composite": 73.7,
+          "adjustment": {},
+          "adjustment_param": "",
+          "adjustment_magnitude": 0,
+          "adjustment_unit": "",
+          "recommended_regime": "STRONG_TREND",
+          "position_advice": "标配",
+          "alternative_strategies": [
+            "RSI均值回归",
+            "布林带回归"
+          ],
+          "raw_reason": "✅ 纳入（综合分=73.7，Sortino=2.93 Calmar=3.83，Alpha=+8.6%，IR=16分）",
+          "feedback_text": "指标良好，可适度扩大仓位"
+        }
+      }
     },
     {
       "rank": 4,
@@ -60,6 +124,23 @@
     "direction": "→平稳",
     "converged": true
   },
+  "suggestions": [
+    {
+      "risk_level": "进取型",
+      "strategies": [
+        {
+          "name": "主力资金流[N5/R20/S]"
+        },
+        {
+          "name": "量价背离[N4/R20/E]"
+        },
+        {
+          "name": "趋势复合信号[N2/R5/V]"
+        }
+      ],
+      "action": "综合分=74.7，可小资金实盘验证（≤30%）"
+    }
+  ],
   "meta_architecture_review": {
     "overall_rating": "C",
     "strengths": [
