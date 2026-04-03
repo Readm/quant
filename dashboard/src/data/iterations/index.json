@@ -13,5 +13,19 @@
     "total_rounds": 6,
     "best_score": 74.7,
     "converged": true
+  },
+  {
+    "id": "000300_600519_600036_20260331_1402",
+    "name": "A股核心",
+    "run_at": "2026-03-31T14:02:47.045709",
+    "symbols": [
+      "SH000300",
+      "SH600519",
+      "SH600036"
+    ],
+    "days": 728,
+    "total_rounds": 2,
+    "best_score": 41.9,
+    "converged": false
   }
 ]
