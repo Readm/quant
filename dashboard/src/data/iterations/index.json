@@ -1,5 +1,69 @@
 [
   {
+    "id": "A股20轮测试_20260404_1334",
+    "name": "A股20轮测试",
+    "symbols": [
+      "600519.SH",
+      "000001.SH",
+      "600036.SH"
+    ],
+    "run_at": "2026-04-04T13:34:55.198314",
+    "total_rounds": 10,
+    "days": 500,
+    "best_score": 57.6,
+    "converged": true
+  },
+  {
+    "id": "A股20轮测试_20260404_1333",
+    "name": "A股20轮测试",
+    "symbols": [
+      "600519.SH",
+      "000001.SH",
+      "600036.SH"
+    ],
+    "run_at": "2026-04-04T13:33:31.861509",
+    "total_rounds": 11,
+    "days": 500,
+    "best_score": 58.3,
+    "converged": true
+  },
+  {
+    "id": "test_fix_20260404_1256",
+    "name": "test_fix",
+    "symbols": [
+      "600519.SH"
+    ],
+    "run_at": "2026-04-04T12:56:47.535377",
+    "total_rounds": 1,
+    "days": 120,
+    "best_score": 75.8,
+    "converged": false
+  },
+  {
+    "id": "test_20260404_1254",
+    "name": "test",
+    "symbols": [
+      "600519.SH"
+    ],
+    "run_at": "2026-04-04T12:54:34.860998",
+    "total_rounds": 1,
+    "days": 120,
+    "best_score": 75.4,
+    "converged": false
+  },
+  {
+    "id": "测试迭代_20260404_1245",
+    "name": "测试迭代",
+    "symbols": [
+      "600519.SH"
+    ],
+    "run_at": "2026-04-04T12:45:54.331375",
+    "total_rounds": 2,
+    "days": 500,
+    "best_score": 44.5,
+    "converged": false
+  },
+  {
     "id": "A股全量市场_20260403_0005",
     "name": "A股全量市场",
     "run_at": "2026-04-03 00:05:16",

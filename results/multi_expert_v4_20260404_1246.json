@@ -1,0 +1,140 @@
+{
+  "generated_at": "2026-04-04 12:46:53",
+  "total_rounds": 2,
+  "symbols": [
+    "600519.SH"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "Elder Ray信号[N2/R5/E]",
+      "type": "mean_reversion",
+      "score": 44.5,
+      "ann": 4.8,
+      "sharpe": 0.667,
+      "dd": 10.13,
+      "weight": 0.0287
+    },
+    {
+      "rank": 2,
+      "name": "KDJ波形[N2/R5/S]",
+      "type": "mean_reversion",
+      "score": 44.3,
+      "ann": 6.31,
+      "sharpe": 0.646,
+      "dd": 13.65,
+      "weight": {
+        "strategy_id": "me_ace667f4",
+        "strategy_name": "KDJ波形[N2/R5/S]",
+        "strategy_type": "mean_reversion",
+        "params": {
+          "fastk": 6,
+          "slowk": 5,
+          "pf_n_stocks": 2,
+          "pf_rebalance_freq": 5,
+          "pf_weight_method": "score_weighted",
+          "pf_max_position_pct": 0.52
+        },
+        "tags": [
+          "KDJ波形"
+        ],
+        "total_return": 12.89,
+        "annualized_return": 6.31,
+        "sharpe_ratio": 0.646,
+        "max_drawdown_pct": 13.65,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_trades": 53,
+        "sortino_score": 59.6,
+        "calmar_score": 27.7,
+        "ir_score": 17.8,
+        "drawdown_score": 75.0,
+        "composite": 44.3,
+        "decision": "CONDITIONAL",
+        "reason": "⚠️ 待观察（综合分=44.3，建议优化参数）",
+        "feedback": "缩短持仓周期或加入趋势过滤；优化止盈止损比，减少赢转亏",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "未知参数，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": -6.22,
+        "alpha": 12.85,
+        "template_key": "kdwave",
+        "structured_feedback": {
+          "strategy_id": "me_ace667f4",
+          "strategy_name": "KDJ波形[N2/R5/S]",
+          "strategy_type": "mean_reversion",
+          "template_key": "kdwave",
+          "weakness": {},
+          "weakness_desc": "⚠️ 待观察（综合分=44.3，建议优化参数）",
+          "ann_return": 6.31,
+          "sharpe_ratio": 0.646,
+          "max_drawdown": 13.65,
+          "win_rate": 0.0,
+          "profit_factor": 0.0,
+          "total_trades": 53,
+          "composite": 44.3,
+          "adjustment": {},
+          "adjustment_param": "period",
+          "adjustment_magnitude": -8,
+          "adjustment_unit": "天",
+          "recommended_regime": "SIDEWAYS",
+          "position_advice": "标配",
+          "alternative_strategies": [
+            "动量突破",
+            "ADX趋势确认"
+          ],
+          "raw_reason": "⚠️ 待观察（综合分=44.3，建议优化参数）",
+          "feedback_text": "缩短持仓周期或加入趋势过滤；优化止盈止损比，减少赢转亏"
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "name": "KDJ波形[N3/R5/S]",
+      "type": "mean_reversion",
+      "score": 44.3,
+      "ann": 6.21,
+      "sharpe": 0.647,
+      "dd": 13.4,
+      "weight": 0.0286
+    },
+    {
+      "rank": 4,
+      "name": "ROC多周期[N5/R5/S]",
+      "type": "mean_reversion",
+      "score": 41.1,
+      "ann": 7.12,
+      "sharpe": 0.634,
+      "dd": 15.61,
+      "weight": 0.0265
+    }
+  ],
+  "convergence": {
+    "round1_score": 44.5,
+    "final_score": 44.5,
+    "delta": 0.0,
+    "direction": "→平稳",
+    "converged": false
+  },
+  "suggestions": [],
+  "meta_architecture_review": {
+    "overall_rating": "N/A",
+    "strengths": [
+      "LLM 不可用，无法评估"
+    ],
+    "weaknesses": [
+      "MiniMax API 连接失败"
+    ],
+    "critical_issues": [
+      "元专家 LLM 不可用"
+    ],
+    "improvement_priorities": [],
+    "architecture_suggestions": [],
+    "next_iteration_focus": "修复 LLM 连接",
+    "estimated_improvement": "N/A",
+    "_llm_available": false
+  }
+}

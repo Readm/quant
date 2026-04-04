@@ -1,0 +1,224 @@
+{
+  "generated_at": "2026-04-04 12:55:00",
+  "total_rounds": 1,
+  "symbols": [
+    "600519.SH"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "RSI均值回归[N3/R5/E]",
+      "type": "mean_reversion",
+      "score": 75.4,
+      "ann": 11.01,
+      "sharpe": 1.202,
+      "dd": 3.69,
+      "weight": {
+        "strategy_id": "mr_17244e6b",
+        "strategy_name": "RSI均值回归[N3/R5/E]",
+        "strategy_type": "mean_reversion",
+        "params": {
+          "p1": 11,
+          "p2": 25,
+          "p3": 29,
+          "pf_n_stocks": 3,
+          "pf_rebalance_freq": 5,
+          "pf_weight_method": "equal",
+          "pf_max_position_pct": 0.53
+        },
+        "tags": [
+          "均值回归",
+          "RSI均值回归"
+        ],
+        "total_return": 5.05,
+        "annualized_return": 11.01,
+        "sharpe_ratio": 1.202,
+        "max_drawdown_pct": 3.69,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_trades": 12,
+        "sortino_score": 87.8,
+        "calmar_score": 99.6,
+        "ir_score": 16.5,
+        "drawdown_score": 100.0,
+        "composite": 75.4,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=75.4，Sortino=2.18 Calmar=2.98，Alpha=+6.2%，IR=17分）",
+        "feedback": "缩短持仓周期或加入趋势过滤；优化止盈止损比，减少赢转亏",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "数据不足，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": 4.67,
+        "alpha": 6.23,
+        "template_key": "rsi",
+        "structured_feedback": {
+          "strategy_id": "mr_17244e6b",
+          "strategy_name": "RSI均值回归[N3/R5/E]",
+          "strategy_type": "mean_reversion",
+          "template_key": "rsi",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=75.4，Sortino=2.18 Calmar=2.98，Alpha=+6.2%，IR=17分）",
+          "ann_return": 11.01,
+          "sharpe_ratio": 1.202,
+          "max_drawdown": 3.69,
+          "win_rate": 0.0,
+          "profit_factor": 0.0,
+          "total_trades": 12,
+          "composite": 75.4,
+          "adjustment": {},
+          "adjustment_param": "slow",
+          "adjustment_magnitude": 10,
+          "adjustment_unit": "天",
+          "recommended_regime": "SIDEWAYS",
+          "position_advice": "高配",
+          "alternative_strategies": [
+            "动量突破",
+            "ADX趋势确认"
+          ],
+          "raw_reason": "✅ 纳入（综合分=75.4，Sortino=2.18 Calmar=2.98，Alpha=+6.2%，IR=17分）",
+          "feedback_text": "缩短持仓周期或加入趋势过滤；优化止盈止损比，减少赢转亏"
+        }
+      }
+    },
+    {
+      "rank": 2,
+      "name": "RSI均值回归[N2/R5/V]",
+      "type": "mean_reversion",
+      "score": 74.9,
+      "ann": 7.84,
+      "sharpe": 1.195,
+      "dd": 2.66,
+      "weight": {
+        "strategy_id": "mr_f07a1cdf",
+        "strategy_name": "RSI均值回归[N2/R5/V]",
+        "strategy_type": "mean_reversion",
+        "params": {
+          "vol_ma": 11,
+          "threshold": 2.381,
+          "pf_n_stocks": 2,
+          "pf_rebalance_freq": 5,
+          "pf_weight_method": "vol_inverse",
+          "pf_max_position_pct": 0.38
+        },
+        "tags": [
+          "均值回归",
+          "RSI均值回归"
+        ],
+        "total_return": 3.63,
+        "annualized_return": 7.84,
+        "sharpe_ratio": 1.195,
+        "max_drawdown_pct": 2.66,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "total_trades": 12,
+        "sortino_score": 87.5,
+        "calmar_score": 99.0,
+        "ir_score": 15.7,
+        "drawdown_score": 100.0,
+        "composite": 74.9,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=74.9，Sortino=2.17 Calmar=2.95，Alpha=+3.0%，IR=16分）",
+        "feedback": "缩短持仓周期或加入趋势过滤；优化止盈止损比，减少赢转亏",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "数据不足，跳过",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": 4.67,
+        "alpha": 2.99,
+        "template_key": "rsi",
+        "structured_feedback": {
+          "strategy_id": "mr_f07a1cdf",
+          "strategy_name": "RSI均值回归[N2/R5/V]",
+          "strategy_type": "mean_reversion",
+          "template_key": "rsi",
+          "weakness": null,
+          "weakness_desc": "✅ 纳入（综合分=74.9，Sortino=2.17 Calmar=2.95，Alpha=+3.0%，IR=16分）",
+          "ann_return": 7.84,
+          "sharpe_ratio": 1.195,
+          "max_drawdown": 2.66,
+          "win_rate": 0.0,
+          "profit_factor": 0.0,
+          "total_trades": 12,
+          "composite": 74.9,
+          "adjustment": null,
+          "adjustment_param": "slow",
+          "adjustment_magnitude": 10,
+          "adjustment_unit": "天",
+          "recommended_regime": "SIDEWAYS",
+          "position_advice": "高配",
+          "alternative_strategies": [
+            "动量突破",
+            "ADX趋势确认"
+          ],
+          "raw_reason": "✅ 纳入（综合分=74.9，Sortino=2.17 Calmar=2.95，Alpha=+3.0%，IR=16分）",
+          "feedback_text": "缩短持仓周期或加入趋势过滤；优化止盈止损比，减少赢转亏"
+        }
+      }
+    },
+    {
+      "rank": 3,
+      "name": "RSI均值回归[N3/R5/S]",
+      "type": "mean_reversion",
+      "score": 74.1,
+      "ann": 17.03,
+      "sharpe": 1.216,
+      "dd": 5.61,
+      "weight": 0.0324
+    },
+    {
+      "rank": 4,
+      "name": "RSI均值回归[N2/R10/E]",
+      "type": "mean_reversion",
+      "score": 73.5,
+      "ann": 11.11,
+      "sharpe": 1.102,
+      "dd": 3.44,
+      "weight": 0.0321
+    }
+  ],
+  "convergence": {
+    "round1_score": 0,
+    "final_score": 0,
+    "delta": 0,
+    "direction": "→首轮",
+    "converged": false
+  },
+  "suggestions": [
+    {
+      "risk_level": "进取型",
+      "strategies": [
+        {
+          "name": "RSI均值回归[N3/R5/E]"
+        },
+        {
+          "name": "RSI均值回归[N2/R5/V]"
+        },
+        {
+          "name": "RSI均值回归[N3/R5/S]"
+        }
+      ],
+      "action": "综合分=75.4，可小资金实盘验证（≤30%）"
+    }
+  ],
+  "meta_architecture_review": {
+    "overall_rating": "N/A",
+    "strengths": [
+      "LLM 不可用，无法评估"
+    ],
+    "weaknesses": [
+      "MiniMax API 连接失败"
+    ],
+    "critical_issues": [
+      "元专家 LLM 不可用"
+    ],
+    "improvement_priorities": [],
+    "architecture_suggestions": [],
+    "next_iteration_focus": "修复 LLM 连接",
+    "estimated_improvement": "N/A",
+    "_llm_available": false
+  }
+}

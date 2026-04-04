@@ -88,11 +88,44 @@ def generate_final_report(round_reports: list, top_n: int, symbols: list) -> dic
             "action": f"综合分={best.composite}，可小资金实盘验证（≤30%）",
         })
 
+    # ===== 添加 rounds 字段（每轮详细策略数据）=====
+    rounds_data = []
+    for rp in round_reports:
+        # 获取本轮所有策略评估
+        t_evals = getattr(rp, "trend_evals", []) or []
+        mr_evals = getattr(rp, "mr_evals", []) or []
+        all_round_evals = list(t_evals) + list(mr_evals)
+        
+        round_item = {
+            "round_num": getattr(rp, "round_num", len(rounds_data) + 1),
+            "top_score": getattr(rp, "top_score", 0),
+            "avg_score": getattr(rp, "avg_score", 0),
+            "total_candidates": getattr(rp, "total_candidates", len(all_round_evals)),
+            "accepted_count": getattr(rp, "accepted_count", 0),
+            "debate_winner": getattr(rp, "debate_winner", "TIE"),
+            "sentiment_label": getattr(rp, "sentiment_label", "NEUTRAL"),
+            "market_regime": getattr(rp, "market_regime", "UNKNOWN"),
+            "strategies": [
+                {
+                    "name": e.strategy_name,
+                    "type": e.strategy_type,
+                    "score": e.composite,
+                    "ann": e.annualized_return,
+                    "sharpe": e.sharpe_ratio,
+                    "dd": e.max_drawdown_pct,
+                    "decision": e.decision,
+                }
+                for e in all_round_evals
+            ],
+        }
+        rounds_data.append(round_item)
+    
     raw = {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "total_rounds": len(round_reports),
         "symbols":      symbols,
         "data_note":    "⚠️ 纯实盘数据，已移除合成数据",
+        "rounds": rounds_data,  # 每轮详细策略数据
         "global_top": [
             {
                 "rank":   i + 1,
