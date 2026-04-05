@@ -1,0 +1,2788 @@
+{
+  "generated_at": "2026-04-06 00:19:30",
+  "total_rounds": 5,
+  "symbols": [
+    "600519.SH",
+    "000001.SH",
+    "600036.SH"
+  ],
+  "data_note": "⚠️ 纯实盘数据，已移除合成数据",
+  "rounds": [
+    {
+      "round_num": 1,
+      "top_score": 0,
+      "avg_score": 0,
+      "total_candidates": 55,
+      "accepted_count": 0,
+      "debate_winner": "TIE",
+      "sentiment_label": "NEUTRAL",
+      "market_regime": null,
+      "strategies": [
+        {
+          "name": "涨停动能[N5/R60/V]",
+          "type": "trend",
+          "score": 34.8,
+          "ann": 1.32,
+          "sharpe": 0.502,
+          "dd": 3.74,
+          "decision": "REJECT"
+        },
+        {
+          "name": "主力资金流[N5/R60/S]",
+          "type": "trend",
+          "score": 29.4,
+          "ann": 4.19,
+          "sharpe": 0.263,
+          "dd": 18.04,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "双均线交叉[N3/R60/E]",
+          "type": "trend",
+          "score": 28.8,
+          "ann": 4.21,
+          "sharpe": 0.34,
+          "dd": 16.17,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "涨停动能[N5/R60/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N5/R60/E]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "跳空缺口突破[N5/R5/E]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N3/R5/V]",
+          "type": "trend",
+          "score": 25.5,
+          "ann": 5.39,
+          "sharpe": 0.274,
+          "dd": 20.07,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "双均线交叉[N5/R10/E]",
+          "type": "trend",
+          "score": 23.1,
+          "ann": -1.58,
+          "sharpe": -0.246,
+          "dd": 7.59,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N3/R10/S]",
+          "type": "trend",
+          "score": 23.1,
+          "ann": -1.47,
+          "sharpe": -0.245,
+          "dd": 7.13,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N3/R10/S]",
+          "type": "trend",
+          "score": 23.1,
+          "ann": -1.75,
+          "sharpe": -0.25,
+          "dd": 8.36,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N3/R5/S]",
+          "type": "trend",
+          "score": 21.9,
+          "ann": -3.44,
+          "sharpe": -0.569,
+          "dd": 9.37,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N2/R5/S]",
+          "type": "trend",
+          "score": 21.9,
+          "ann": -2.67,
+          "sharpe": -0.52,
+          "dd": 7.28,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N3/R20/S]",
+          "type": "trend",
+          "score": 20.2,
+          "ann": -3.32,
+          "sharpe": -0.25,
+          "dd": 14.92,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R5/S]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -3.71,
+          "sharpe": -0.56,
+          "dd": 10.13,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R5/V]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -3.74,
+          "sharpe": -0.579,
+          "dd": 10.09,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N3/R10/S]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -5.04,
+          "sharpe": -0.473,
+          "dd": 14.43,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R5/V]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -5.39,
+          "sharpe": -0.569,
+          "dd": 14.64,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N2/R5/E]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -5.42,
+          "sharpe": -0.584,
+          "dd": 14.27,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N5/R60/V]",
+          "type": "trend",
+          "score": 18.1,
+          "ann": -1.45,
+          "sharpe": -0.144,
+          "dd": 18.21,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R60/S]",
+          "type": "trend",
+          "score": 18.0,
+          "ann": -1.26,
+          "sharpe": -0.15,
+          "dd": 15.26,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N5/R60/E]",
+          "type": "trend",
+          "score": 17.8,
+          "ann": -2.1,
+          "sharpe": -0.175,
+          "dd": 18.47,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N2/R20/S]",
+          "type": "trend",
+          "score": 16.6,
+          "ann": -3.55,
+          "sharpe": -0.29,
+          "dd": 15.38,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N3/R20/E]",
+          "type": "trend",
+          "score": 15.8,
+          "ann": -6.34,
+          "sharpe": -0.547,
+          "dd": 17.5,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N3/R5/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -7.59,
+          "sharpe": -0.579,
+          "dd": 16.89,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N3/R10/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -7.71,
+          "sharpe": -0.631,
+          "dd": 18.31,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N3/R20/S]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -7.06,
+          "sharpe": -0.712,
+          "dd": 16.78,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R10/S]",
+          "type": "trend",
+          "score": 13.9,
+          "ann": -2.53,
+          "sharpe": -0.178,
+          "dd": 21.17,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N3/R60/E]",
+          "type": "trend",
+          "score": 12.8,
+          "ann": -4.53,
+          "sharpe": -0.28,
+          "dd": 25.71,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R20/S]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -7.41,
+          "sharpe": -0.635,
+          "dd": 22.52,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N2/R60/S]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -8.14,
+          "sharpe": -0.609,
+          "dd": 25.87,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N5/R10/S]",
+          "type": "mean_reversion",
+          "score": 43.1,
+          "ann": 7.9,
+          "sharpe": 0.486,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N3/R10/E]",
+          "type": "mean_reversion",
+          "score": 42.5,
+          "ann": 9.25,
+          "sharpe": 0.612,
+          "dd": 15.92,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N5/R5/S]",
+          "type": "mean_reversion",
+          "score": 41.7,
+          "ann": 5.72,
+          "sharpe": 0.489,
+          "dd": 12.29,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N2/R10/E]",
+          "type": "mean_reversion",
+          "score": 41.5,
+          "ann": 8.88,
+          "sharpe": 0.58,
+          "dd": 16.1,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 41.2,
+          "ann": 6.9,
+          "sharpe": 0.46,
+          "dd": 12.78,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "MFI资金流[N2/R60/E]",
+          "type": "mean_reversion",
+          "score": 40.7,
+          "ann": 3.2,
+          "sharpe": 0.397,
+          "dd": 7.0,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "多信号组合[N5/R5/E]",
+          "type": "mean_reversion",
+          "score": 40.5,
+          "ann": 7.63,
+          "sharpe": 0.499,
+          "dd": 16.04,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "布林带回归[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 40.1,
+          "ann": 6.92,
+          "sharpe": 0.405,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N3/R20/E]",
+          "type": "mean_reversion",
+          "score": 39.5,
+          "ann": 5.24,
+          "sharpe": 0.514,
+          "dd": 13.21,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N2/R5/V]",
+          "type": "mean_reversion",
+          "score": 36.7,
+          "ann": 6.78,
+          "sharpe": 0.416,
+          "dd": 18.91,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N2/R60/E]",
+          "type": "mean_reversion",
+          "score": 34.1,
+          "ann": 4.2,
+          "sharpe": 0.245,
+          "dd": 14.13,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "布林带回归[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 30.1,
+          "ann": 2.72,
+          "sharpe": 0.163,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "成交量异常[N3/R20/E]",
+          "type": "mean_reversion",
+          "score": 28.8,
+          "ann": 4.11,
+          "sharpe": 0.252,
+          "dd": 19.97,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 24.9,
+          "ann": 1.86,
+          "sharpe": 0.107,
+          "dd": 19.2,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N5/R20/S]",
+          "type": "mean_reversion",
+          "score": 24.1,
+          "ann": 0.31,
+          "sharpe": 0.024,
+          "dd": 14.14,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 24.0,
+          "ann": 2.83,
+          "sharpe": 0.196,
+          "dd": 20.7,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ROC多周期[N2/R20/V]",
+          "type": "mean_reversion",
+          "score": 23.4,
+          "ann": 3.2,
+          "sharpe": 0.177,
+          "dd": 23.34,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 22.5,
+          "ann": 2.23,
+          "sharpe": 0.151,
+          "dd": 20.97,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R5/S]",
+          "type": "mean_reversion",
+          "score": 21.6,
+          "ann": 1.96,
+          "sharpe": 0.111,
+          "dd": 21.69,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MFI资金流[N3/R20/S]",
+          "type": "mean_reversion",
+          "score": 21.6,
+          "ann": -1.03,
+          "sharpe": -0.092,
+          "dd": 14.1,
+          "decision": "REJECT"
+        },
+        {
+          "name": "OBOS超买超卖[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 20.8,
+          "ann": -0.04,
+          "sharpe": -0.003,
+          "dd": 19.19,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N2/R5/V]",
+          "type": "mean_reversion",
+          "score": 17.2,
+          "ann": 0.03,
+          "sharpe": 0.002,
+          "dd": 22.37,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R10/E]",
+          "type": "mean_reversion",
+          "score": 14.7,
+          "ann": -2.29,
+          "sharpe": -0.125,
+          "dd": 22.06,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N5/R10/E]",
+          "type": "mean_reversion",
+          "score": 14.3,
+          "ann": -2.72,
+          "sharpe": -0.151,
+          "dd": 21.8,
+          "decision": "REJECT"
+        },
+        {
+          "name": "多信号组合[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 13.3,
+          "ann": -2.93,
+          "sharpe": -0.192,
+          "dd": 24.35,
+          "decision": "REJECT"
+        }
+      ]
+    },
+    {
+      "round_num": 2,
+      "top_score": 0,
+      "avg_score": 0,
+      "total_candidates": 58,
+      "accepted_count": 0,
+      "debate_winner": "TIE",
+      "sentiment_label": "NEUTRAL",
+      "market_regime": null,
+      "strategies": [
+        {
+          "name": "成交量情绪代理因子[N2/R60/S]",
+          "type": "trend",
+          "score": 27.4,
+          "ann": 0.43,
+          "sharpe": 0.052,
+          "dd": 8.0,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "跳空缺口突破[N3/R20/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "跳空缺口突破[N5/R60/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N3/R60/V]",
+          "type": "trend",
+          "score": 25.8,
+          "ann": 0.05,
+          "sharpe": 0.007,
+          "dd": 8.01,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Aroon交叉[N3/R5/S]",
+          "type": "trend",
+          "score": 25.2,
+          "ann": 1.74,
+          "sharpe": 0.115,
+          "dd": 18.59,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "主力资金流[N5/R20/V]",
+          "type": "trend",
+          "score": 24.4,
+          "ann": 1.54,
+          "sharpe": 0.118,
+          "dd": 15.13,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R10/S]",
+          "type": "trend",
+          "score": 23.1,
+          "ann": -1.47,
+          "sharpe": -0.245,
+          "dd": 7.13,
+          "decision": "REJECT"
+        },
+        {
+          "name": "涨停动能[N3/R10/V]",
+          "type": "trend",
+          "score": 21.9,
+          "ann": -2.49,
+          "sharpe": -0.523,
+          "dd": 6.65,
+          "decision": "REJECT"
+        },
+        {
+          "name": "涨停动能[N2/R5/V]",
+          "type": "trend",
+          "score": 20.8,
+          "ann": -3.1,
+          "sharpe": -0.281,
+          "dd": 14.43,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N3/R20/V]",
+          "type": "trend",
+          "score": 20.7,
+          "ann": -2.19,
+          "sharpe": -0.195,
+          "dd": 11.34,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N2/R20/V]",
+          "type": "trend",
+          "score": 20.2,
+          "ann": -2.9,
+          "sharpe": -0.242,
+          "dd": 13.52,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Donchian突破[N2/R60/E]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -2.91,
+          "sharpe": -0.576,
+          "dd": 10.01,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Donchian突破[N3/R60/E]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -3.58,
+          "sharpe": -0.576,
+          "dd": 12.21,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N3/R10/V]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -5.31,
+          "sharpe": -0.554,
+          "dd": 14.38,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Aroon交叉[N3/R10/V]",
+          "type": "trend",
+          "score": 17.4,
+          "ann": 0.15,
+          "sharpe": 0.008,
+          "dd": 21.45,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N5/R60/V]",
+          "type": "trend",
+          "score": 17.2,
+          "ann": -2.65,
+          "sharpe": -0.24,
+          "dd": 18.61,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N2/R20/V]",
+          "type": "trend",
+          "score": 17.2,
+          "ann": -2.56,
+          "sharpe": -0.215,
+          "dd": 15.87,
+          "decision": "REJECT"
+        },
+        {
+          "name": "主力资金流[N5/R60/S]",
+          "type": "trend",
+          "score": 15.9,
+          "ann": -4.98,
+          "sharpe": -0.336,
+          "dd": 18.56,
+          "decision": "REJECT"
+        },
+        {
+          "name": "趋势复合信号[N3/R10/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -8.54,
+          "sharpe": -0.997,
+          "dd": 19.54,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N5/R10/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -8.12,
+          "sharpe": -0.821,
+          "dd": 18.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N3/R10/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -7.88,
+          "sharpe": -0.627,
+          "dd": 18.76,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N3/R5/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -8.73,
+          "sharpe": -1.126,
+          "dd": 18.33,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N5/R20/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -5.21,
+          "sharpe": -0.366,
+          "dd": 20.48,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R10/V]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -9.15,
+          "sharpe": -0.598,
+          "dd": 20.83,
+          "decision": "REJECT"
+        },
+        {
+          "name": "情绪-价格动量交互因子[N5/R10/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -10.78,
+          "sharpe": -0.871,
+          "dd": 26.82,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N3/R10/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -10.85,
+          "sharpe": -0.829,
+          "dd": 24.58,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N5/R10/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -10.63,
+          "sharpe": -0.959,
+          "dd": 24.15,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N3/R10/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -10.5,
+          "sharpe": -0.91,
+          "dd": 22.32,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N3/R20/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -10.15,
+          "sharpe": -0.857,
+          "dd": 22.24,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N5/R5/V]",
+          "type": "trend",
+          "score": 11.5,
+          "ann": -12.77,
+          "sharpe": -1.004,
+          "dd": 27.89,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MFI资金流[N3/R5/V]",
+          "type": "mean_reversion",
+          "score": 46.3,
+          "ann": 8.08,
+          "sharpe": 0.611,
+          "dd": 14.33,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "RSI均值回归[N3/R10/V]",
+          "type": "mean_reversion",
+          "score": 45.4,
+          "ann": 8.35,
+          "sharpe": 0.589,
+          "dd": 11.56,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "KDJ波形[N3/R5/S]",
+          "type": "mean_reversion",
+          "score": 42.2,
+          "ann": 6.34,
+          "sharpe": 0.493,
+          "dd": 13.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "KDJ波形[N3/R5/S]",
+          "type": "mean_reversion",
+          "score": 41.0,
+          "ann": 5.18,
+          "sharpe": 0.479,
+          "dd": 11.51,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "多信号组合[N2/R60/S]",
+          "type": "mean_reversion",
+          "score": 40.0,
+          "ann": 6.57,
+          "sharpe": 0.366,
+          "dd": 12.54,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "布林带回归[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 38.6,
+          "ann": 6.31,
+          "sharpe": 0.354,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "均值回归复合[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 37.2,
+          "ann": 5.29,
+          "sharpe": 0.4,
+          "dd": 13.46,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N2/R5/S]",
+          "type": "mean_reversion",
+          "score": 35.8,
+          "ann": 4.16,
+          "sharpe": 0.328,
+          "dd": 13.29,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "MFI资金流[N2/R10/V]",
+          "type": "mean_reversion",
+          "score": 35.6,
+          "ann": 4.64,
+          "sharpe": 0.327,
+          "dd": 13.76,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "量价背离[N2/R60/E]",
+          "type": "mean_reversion",
+          "score": 35.1,
+          "ann": 4.62,
+          "sharpe": 0.286,
+          "dd": 13.3,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N5/R10/V]",
+          "type": "mean_reversion",
+          "score": 32.9,
+          "ann": 3.52,
+          "sharpe": 0.266,
+          "dd": 14.96,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N2/R10/S]",
+          "type": "mean_reversion",
+          "score": 32.9,
+          "ann": 5.74,
+          "sharpe": 0.311,
+          "dd": 17.64,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "布林带回归[N5/R20/V]",
+          "type": "mean_reversion",
+          "score": 31.0,
+          "ann": 3.05,
+          "sharpe": 0.197,
+          "dd": 14.94,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Elder Ray信号[N2/R10/S]",
+          "type": "mean_reversion",
+          "score": 28.8,
+          "ann": 1.88,
+          "sharpe": 0.126,
+          "dd": 13.74,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Elder Ray信号[N2/R5/E]",
+          "type": "mean_reversion",
+          "score": 28.2,
+          "ann": 2.76,
+          "sharpe": 0.225,
+          "dd": 15.17,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N3/R10/S]",
+          "type": "mean_reversion",
+          "score": 27.8,
+          "ann": 1.41,
+          "sharpe": 0.115,
+          "dd": 11.88,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "烂板反转[N3/R20/S]",
+          "type": "mean_reversion",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "烂板反转[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 26.2,
+          "ann": -0.92,
+          "sharpe": -0.356,
+          "dd": 4.41,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N3/R60/V]",
+          "type": "mean_reversion",
+          "score": 25.7,
+          "ann": 2.31,
+          "sharpe": 0.134,
+          "dd": 16.01,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N2/R20/V]",
+          "type": "mean_reversion",
+          "score": 25.6,
+          "ann": 2.23,
+          "sharpe": 0.141,
+          "dd": 17.14,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N2/R5/S]",
+          "type": "mean_reversion",
+          "score": 22.8,
+          "ann": 0.74,
+          "sharpe": 0.05,
+          "dd": 19.59,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ROC多周期[N2/R10/V]",
+          "type": "mean_reversion",
+          "score": 20.5,
+          "ann": -1.41,
+          "sharpe": -0.162,
+          "dd": 10.2,
+          "decision": "REJECT"
+        },
+        {
+          "name": "多信号组合[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 20.2,
+          "ann": 1.38,
+          "sharpe": 0.089,
+          "dd": 21.24,
+          "decision": "REJECT"
+        },
+        {
+          "name": "量价背离[N2/R10/E]",
+          "type": "mean_reversion",
+          "score": 18.3,
+          "ann": -2.46,
+          "sharpe": -0.145,
+          "dd": 19.37,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 13.8,
+          "ann": -3.8,
+          "sharpe": -0.202,
+          "dd": 20.92,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N5/R10/S]",
+          "type": "mean_reversion",
+          "score": 43.1,
+          "ann": 7.9,
+          "sharpe": 0.486,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N3/R10/E]",
+          "type": "mean_reversion",
+          "score": 42.5,
+          "ann": 9.25,
+          "sharpe": 0.612,
+          "dd": 15.92,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N5/R5/S]",
+          "type": "mean_reversion",
+          "score": 41.7,
+          "ann": 5.72,
+          "sharpe": 0.489,
+          "dd": 12.29,
+          "decision": "CONDITIONAL"
+        }
+      ]
+    },
+    {
+      "round_num": 3,
+      "top_score": 0,
+      "avg_score": 0,
+      "total_candidates": 58,
+      "accepted_count": 0,
+      "debate_winner": "TIE",
+      "sentiment_label": "NEUTRAL",
+      "market_regime": null,
+      "strategies": [
+        {
+          "name": "主力资金流[N2/R60/V]",
+          "type": "trend",
+          "score": 28.8,
+          "ann": 3.83,
+          "sharpe": 0.206,
+          "dd": 19.13,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "涨停动能[N3/R5/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "跳空缺口突破[N3/R5/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "跳空缺口突破[N5/R60/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Aroon交叉[N3/R20/S]",
+          "type": "trend",
+          "score": 26.0,
+          "ann": 0.88,
+          "sharpe": 0.096,
+          "dd": 13.87,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "TRIX三重指数[N3/R60/V]",
+          "type": "trend",
+          "score": 25.9,
+          "ann": 1.2,
+          "sharpe": 0.122,
+          "dd": 12.49,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Aroon交叉[N5/R20/V]",
+          "type": "trend",
+          "score": 25.2,
+          "ann": 0.66,
+          "sharpe": 0.073,
+          "dd": 11.38,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Ichimoku云图[N5/R20/V]",
+          "type": "trend",
+          "score": 23.7,
+          "ann": 1.61,
+          "sharpe": 0.102,
+          "dd": 19.8,
+          "decision": "REJECT"
+        },
+        {
+          "name": "涨停动能[N2/R5/V]",
+          "type": "trend",
+          "score": 23.5,
+          "ann": -2.9,
+          "sharpe": -0.504,
+          "dd": 8.3,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N3/R5/S]",
+          "type": "trend",
+          "score": 21.9,
+          "ann": -3.44,
+          "sharpe": -0.569,
+          "dd": 9.37,
+          "decision": "REJECT"
+        },
+        {
+          "name": "主力资金流[N5/R60/S]",
+          "type": "trend",
+          "score": 21.8,
+          "ann": -0.86,
+          "sharpe": -0.076,
+          "dd": 14.03,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Donchian突破[N3/R60/V]",
+          "type": "trend",
+          "score": 21.0,
+          "ann": -0.75,
+          "sharpe": -0.139,
+          "dd": 10.01,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N2/R5/S]",
+          "type": "trend",
+          "score": 19.3,
+          "ann": -0.94,
+          "sharpe": -0.062,
+          "dd": 16.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N2/R20/V]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -3.67,
+          "sharpe": -0.491,
+          "dd": 14.1,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N3/R60/V]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -4.4,
+          "sharpe": -0.59,
+          "dd": 10.97,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R60/V]",
+          "type": "trend",
+          "score": 18.1,
+          "ann": -1.16,
+          "sharpe": -0.136,
+          "dd": 15.27,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N3/R60/V]",
+          "type": "trend",
+          "score": 17.2,
+          "ann": -2.63,
+          "sharpe": -0.224,
+          "dd": 17.61,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R20/V]",
+          "type": "trend",
+          "score": 15.9,
+          "ann": -4.1,
+          "sharpe": -0.367,
+          "dd": 15.62,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N5/R60/V]",
+          "type": "trend",
+          "score": 15.9,
+          "ann": -3.83,
+          "sharpe": -0.428,
+          "dd": 16.58,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N3/R20/V]",
+          "type": "trend",
+          "score": 15.8,
+          "ann": -4.85,
+          "sharpe": -0.545,
+          "dd": 16.51,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N3/R10/V]",
+          "type": "trend",
+          "score": 15.8,
+          "ann": -6.11,
+          "sharpe": -0.754,
+          "dd": 18.17,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N5/R60/V]",
+          "type": "trend",
+          "score": 13.0,
+          "ann": -3.41,
+          "sharpe": -0.243,
+          "dd": 22.36,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Donchian突破[N5/R20/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -6.36,
+          "sharpe": -0.468,
+          "dd": 22.55,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N5/R60/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -5.27,
+          "sharpe": -0.438,
+          "dd": 21.56,
+          "decision": "REJECT"
+        },
+        {
+          "name": "趋势复合信号[N5/R5/V]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -9.69,
+          "sharpe": -0.644,
+          "dd": 24.16,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N2/R20/V]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -7.11,
+          "sharpe": -0.575,
+          "dd": 22.39,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N5/R20/V]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -8.72,
+          "sharpe": -0.645,
+          "dd": 23.64,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N2/R10/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -11.8,
+          "sharpe": -0.807,
+          "dd": 26.23,
+          "decision": "REJECT"
+        },
+        {
+          "name": "趋势复合信号[N2/R5/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -11.27,
+          "sharpe": -0.897,
+          "dd": 26.13,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N2/R5/V]",
+          "type": "trend",
+          "score": 9.3,
+          "ann": -16.55,
+          "sharpe": -1.159,
+          "dd": 30.4,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 49.3,
+          "ann": 12.28,
+          "sharpe": 0.868,
+          "dd": 14.62,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "MFI资金流[N2/R5/V]",
+          "type": "mean_reversion",
+          "score": 45.6,
+          "ann": 7.7,
+          "sharpe": 0.663,
+          "dd": 14.41,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "RSI均值回归[N3/R5/V]",
+          "type": "mean_reversion",
+          "score": 42.6,
+          "ann": 5.33,
+          "sharpe": 0.482,
+          "dd": 14.14,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N5/R5/S]",
+          "type": "mean_reversion",
+          "score": 42.3,
+          "ann": 6.51,
+          "sharpe": 0.494,
+          "dd": 13.84,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "KDJ波形[N3/R5/S]",
+          "type": "mean_reversion",
+          "score": 42.1,
+          "ann": 6.25,
+          "sharpe": 0.491,
+          "dd": 13.18,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N2/R20/E]",
+          "type": "mean_reversion",
+          "score": 41.6,
+          "ann": 9.03,
+          "sharpe": 0.597,
+          "dd": 15.62,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N3/R60/V]",
+          "type": "mean_reversion",
+          "score": 41.1,
+          "ann": 6.22,
+          "sharpe": 0.474,
+          "dd": 11.38,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N2/R20/E]",
+          "type": "mean_reversion",
+          "score": 40.6,
+          "ann": 8.92,
+          "sharpe": 0.594,
+          "dd": 15.3,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "均值回归复合[N3/R20/S]",
+          "type": "mean_reversion",
+          "score": 34.0,
+          "ann": 6.23,
+          "sharpe": 0.362,
+          "dd": 16.16,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "均值回归复合[N5/R60/S]",
+          "type": "mean_reversion",
+          "score": 33.2,
+          "ann": 4.01,
+          "sharpe": 0.209,
+          "dd": 14.33,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "MFI资金流[N2/R5/V]",
+          "type": "mean_reversion",
+          "score": 31.7,
+          "ann": 2.39,
+          "sharpe": 0.212,
+          "dd": 14.74,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Elder Ray信号[N2/R5/E]",
+          "type": "mean_reversion",
+          "score": 31.7,
+          "ann": 4.27,
+          "sharpe": 0.301,
+          "dd": 17.16,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "布林带回归[N2/R20/V]",
+          "type": "mean_reversion",
+          "score": 31.0,
+          "ann": 3.05,
+          "sharpe": 0.197,
+          "dd": 14.94,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "量价背离[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 29.6,
+          "ann": 2.43,
+          "sharpe": 0.134,
+          "dd": 14.55,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "量价背离[N5/R20/V]",
+          "type": "mean_reversion",
+          "score": 28.5,
+          "ann": 1.62,
+          "sharpe": 0.16,
+          "dd": 12.57,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N5/R10/S]",
+          "type": "mean_reversion",
+          "score": 28.1,
+          "ann": 1.54,
+          "sharpe": 0.115,
+          "dd": 12.73,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "烂板反转[N5/R60/V]",
+          "type": "mean_reversion",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "烂板反转[N3/R10/V]",
+          "type": "mean_reversion",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "多信号组合[N5/R10/E]",
+          "type": "mean_reversion",
+          "score": 25.9,
+          "ann": 2.18,
+          "sharpe": 0.141,
+          "dd": 15.83,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "成交量异常[N3/R60/V]",
+          "type": "mean_reversion",
+          "score": 25.7,
+          "ann": 2.31,
+          "sharpe": 0.134,
+          "dd": 16.01,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "KDJ波形[N2/R60/E]",
+          "type": "mean_reversion",
+          "score": 23.4,
+          "ann": 1.21,
+          "sharpe": 0.075,
+          "dd": 17.74,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RVI相对活力[N2/R10/E]",
+          "type": "mean_reversion",
+          "score": 23.0,
+          "ann": 0.81,
+          "sharpe": 0.042,
+          "dd": 19.09,
+          "decision": "REJECT"
+        },
+        {
+          "name": "布林带回归[N3/R5/S]",
+          "type": "mean_reversion",
+          "score": 19.2,
+          "ann": 0.84,
+          "sharpe": 0.053,
+          "dd": 20.33,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N2/R10/V]",
+          "type": "mean_reversion",
+          "score": 15.8,
+          "ann": -5.6,
+          "sharpe": -0.389,
+          "dd": 17.88,
+          "decision": "REJECT"
+        },
+        {
+          "name": "多信号组合[N5/R5/E]",
+          "type": "mean_reversion",
+          "score": 13.1,
+          "ann": -3.54,
+          "sharpe": -0.213,
+          "dd": 25.38,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MFI资金流[N3/R5/V]",
+          "type": "mean_reversion",
+          "score": 46.3,
+          "ann": 8.08,
+          "sharpe": 0.611,
+          "dd": 14.33,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "RSI均值回归[N3/R10/V]",
+          "type": "mean_reversion",
+          "score": 45.4,
+          "ann": 8.35,
+          "sharpe": 0.589,
+          "dd": 11.56,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "RSI均值回归[N5/R10/S]",
+          "type": "mean_reversion",
+          "score": 43.1,
+          "ann": 7.9,
+          "sharpe": 0.486,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        }
+      ]
+    },
+    {
+      "round_num": 4,
+      "top_score": 0,
+      "avg_score": 0,
+      "total_candidates": 58,
+      "accepted_count": 0,
+      "debate_winner": "TIE",
+      "sentiment_label": "NEUTRAL",
+      "market_regime": null,
+      "strategies": [
+        {
+          "name": "情绪-价格动量交互因子[N3/R60/V]",
+          "type": "trend",
+          "score": 37.2,
+          "ann": 3.1,
+          "sharpe": 0.459,
+          "dd": 7.86,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Aroon交叉[N2/R10/V]",
+          "type": "trend",
+          "score": 35.3,
+          "ann": 4.15,
+          "sharpe": 0.342,
+          "dd": 12.29,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "涨停动能[N3/R60/V]",
+          "type": "trend",
+          "score": 34.7,
+          "ann": 0.67,
+          "sharpe": 0.501,
+          "dd": 1.93,
+          "decision": "REJECT"
+        },
+        {
+          "name": "情绪-价格动量交互因子[N2/R60/V]",
+          "type": "trend",
+          "score": 29.6,
+          "ann": 1.07,
+          "sharpe": 0.163,
+          "dd": 9.33,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "KST动量[N3/R60/V]",
+          "type": "trend",
+          "score": 29.6,
+          "ann": 2.68,
+          "sharpe": 0.159,
+          "dd": 13.87,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Aroon交叉[N2/R60/V]",
+          "type": "trend",
+          "score": 27.9,
+          "ann": 1.87,
+          "sharpe": 0.112,
+          "dd": 14.05,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "跳空缺口突破[N2/R60/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "涨停动能[N3/R20/V]",
+          "type": "trend",
+          "score": 26.9,
+          "ann": -0.16,
+          "sharpe": -0.043,
+          "dd": 4.34,
+          "decision": "REJECT"
+        },
+        {
+          "name": "主力资金流[N3/R60/E]",
+          "type": "trend",
+          "score": 25.3,
+          "ann": 0.77,
+          "sharpe": 0.067,
+          "dd": 14.78,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "跳空缺口突破[N5/R5/V]",
+          "type": "trend",
+          "score": 23.1,
+          "ann": -3.59,
+          "sharpe": -0.985,
+          "dd": 7.98,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N5/R60/V]",
+          "type": "trend",
+          "score": 21.9,
+          "ann": -3.61,
+          "sharpe": -0.58,
+          "dd": 9.06,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N3/R20/V]",
+          "type": "trend",
+          "score": 21.9,
+          "ann": -3.18,
+          "sharpe": -0.381,
+          "dd": 9.81,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N5/R20/V]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -2.94,
+          "sharpe": -0.349,
+          "dd": 13.48,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Donchian突破[N5/R60/V]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -3.68,
+          "sharpe": -0.575,
+          "dd": 12.52,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R5/S]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -4.18,
+          "sharpe": -0.528,
+          "dd": 11.84,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N5/R20/V]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -5.2,
+          "sharpe": -0.534,
+          "dd": 13.88,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N3/R60/V]",
+          "type": "trend",
+          "score": 18.1,
+          "ann": -1.51,
+          "sharpe": -0.146,
+          "dd": 18.61,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N5/R20/V]",
+          "type": "trend",
+          "score": 15.8,
+          "ann": -5.25,
+          "sharpe": -0.551,
+          "dd": 17.69,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N3/R10/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -8.45,
+          "sharpe": -0.758,
+          "dd": 19.1,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N2/R5/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -9.36,
+          "sharpe": -1.092,
+          "dd": 19.77,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N5/R10/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -8.2,
+          "sharpe": -0.611,
+          "dd": 19.75,
+          "decision": "REJECT"
+        },
+        {
+          "name": "主力资金流[N5/R20/S]",
+          "type": "trend",
+          "score": 11.9,
+          "ann": -5.12,
+          "sharpe": -0.329,
+          "dd": 21.46,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R20/V]",
+          "type": "trend",
+          "score": 11.9,
+          "ann": -4.45,
+          "sharpe": -0.417,
+          "dd": 21.22,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R5/E]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -4.92,
+          "sharpe": -0.375,
+          "dd": 20.74,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N5/R20/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -5.9,
+          "sharpe": -0.503,
+          "dd": 25.63,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N2/R60/V]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -7.11,
+          "sharpe": -0.539,
+          "dd": 24.1,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N5/R5/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -12.63,
+          "sharpe": -1.04,
+          "dd": 24.02,
+          "decision": "REJECT"
+        },
+        {
+          "name": "趋势复合信号[N3/R10/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -10.27,
+          "sharpe": -0.85,
+          "dd": 24.18,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N5/R5/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -10.22,
+          "sharpe": -0.948,
+          "dd": 22.59,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N2/R5/V]",
+          "type": "trend",
+          "score": 7.6,
+          "ann": -16.29,
+          "sharpe": -0.967,
+          "dd": 34.64,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MFI资金流[N5/R5/V]",
+          "type": "mean_reversion",
+          "score": 45.5,
+          "ann": 7.51,
+          "sharpe": 0.66,
+          "dd": 14.18,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "RVI相对活力[N3/R60/E]",
+          "type": "mean_reversion",
+          "score": 43.3,
+          "ann": 7.69,
+          "sharpe": 0.459,
+          "dd": 11.64,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "布林带回归[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 42.6,
+          "ann": 8.16,
+          "sharpe": 0.516,
+          "dd": 14.94,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 38.8,
+          "ann": 6.39,
+          "sharpe": 0.371,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "均值回归复合[N3/R60/S]",
+          "type": "mean_reversion",
+          "score": 37.4,
+          "ann": 5.67,
+          "sharpe": 0.307,
+          "dd": 13.82,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "均值回归复合[N3/R60/V]",
+          "type": "mean_reversion",
+          "score": 33.2,
+          "ann": 3.84,
+          "sharpe": 0.224,
+          "dd": 14.4,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Elder Ray信号[N3/R20/E]",
+          "type": "mean_reversion",
+          "score": 32.4,
+          "ann": 5.35,
+          "sharpe": 0.326,
+          "dd": 19.93,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 31.7,
+          "ann": 3.23,
+          "sharpe": 0.182,
+          "dd": 14.53,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Elder Ray信号[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 31.2,
+          "ann": 6.37,
+          "sharpe": 0.373,
+          "dd": 20.44,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N5/R5/V]",
+          "type": "mean_reversion",
+          "score": 31.2,
+          "ann": 4.04,
+          "sharpe": 0.287,
+          "dd": 17.21,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "量价背离[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 29.5,
+          "ann": 2.38,
+          "sharpe": 0.134,
+          "dd": 14.63,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "烂板反转[N5/R60/V]",
+          "type": "mean_reversion",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "烂板反转[N5/R60/V]",
+          "type": "mean_reversion",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MFI资金流[N2/R20/V]",
+          "type": "mean_reversion",
+          "score": 26.4,
+          "ann": 5.01,
+          "sharpe": 0.317,
+          "dd": 21.74,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N5/R10/V]",
+          "type": "mean_reversion",
+          "score": 26.3,
+          "ann": 2.43,
+          "sharpe": 0.15,
+          "dd": 15.92,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 25.9,
+          "ann": 0.93,
+          "sharpe": 0.085,
+          "dd": 10.49,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N5/R5/E]",
+          "type": "mean_reversion",
+          "score": 25.9,
+          "ann": 1.98,
+          "sharpe": 0.132,
+          "dd": 15.97,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "KDJ波形[N5/R60/E]",
+          "type": "mean_reversion",
+          "score": 25.4,
+          "ann": 0.79,
+          "sharpe": 0.067,
+          "dd": 13.66,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N3/R60/E]",
+          "type": "mean_reversion",
+          "score": 24.5,
+          "ann": 1.7,
+          "sharpe": 0.101,
+          "dd": 17.7,
+          "decision": "REJECT"
+        },
+        {
+          "name": "量价背离[N2/R20/V]",
+          "type": "mean_reversion",
+          "score": 23.5,
+          "ann": 3.13,
+          "sharpe": 0.181,
+          "dd": 22.85,
+          "decision": "REJECT"
+        },
+        {
+          "name": "多信号组合[N3/R10/E]",
+          "type": "mean_reversion",
+          "score": 21.2,
+          "ann": 0.11,
+          "sharpe": 0.006,
+          "dd": 17.63,
+          "decision": "REJECT"
+        },
+        {
+          "name": "布林带回归[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 18.3,
+          "ann": 0.65,
+          "sharpe": 0.038,
+          "dd": 20.86,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N5/R10/V]",
+          "type": "mean_reversion",
+          "score": 15.8,
+          "ann": -5.37,
+          "sharpe": -0.372,
+          "dd": 17.83,
+          "decision": "REJECT"
+        },
+        {
+          "name": "多信号组合[N5/R5/E]",
+          "type": "mean_reversion",
+          "score": 14.4,
+          "ann": -1.78,
+          "sharpe": -0.12,
+          "dd": 22.41,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N5/R5/V]",
+          "type": "mean_reversion",
+          "score": 11.5,
+          "ann": -13.01,
+          "sharpe": -0.919,
+          "dd": 26.03,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 49.3,
+          "ann": 12.28,
+          "sharpe": 0.868,
+          "dd": 14.62,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "MFI资金流[N3/R5/V]",
+          "type": "mean_reversion",
+          "score": 46.3,
+          "ann": 8.08,
+          "sharpe": 0.611,
+          "dd": 14.33,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "MFI资金流[N2/R5/V]",
+          "type": "mean_reversion",
+          "score": 45.6,
+          "ann": 7.7,
+          "sharpe": 0.663,
+          "dd": 14.41,
+          "decision": "ACCEPT"
+        }
+      ]
+    },
+    {
+      "round_num": 5,
+      "top_score": 0,
+      "avg_score": 0,
+      "total_candidates": 58,
+      "accepted_count": 0,
+      "debate_winner": "TIE",
+      "sentiment_label": "NEUTRAL",
+      "market_regime": null,
+      "strategies": [
+        {
+          "name": "涨停动能[N5/R20/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "跳空缺口突破[N2/R5/V]",
+          "type": "trend",
+          "score": 27.0,
+          "ann": 0.0,
+          "sharpe": 0.0,
+          "dd": 0.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N3/R60/V]",
+          "type": "trend",
+          "score": 25.7,
+          "ann": 1.09,
+          "sharpe": 0.076,
+          "dd": 13.23,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "涨停动能[N5/R20/V]",
+          "type": "trend",
+          "score": 24.3,
+          "ann": -0.56,
+          "sharpe": -0.2,
+          "dd": 5.8,
+          "decision": "REJECT"
+        },
+        {
+          "name": "跳空缺口突破[N5/R5/V]",
+          "type": "trend",
+          "score": 23.1,
+          "ann": -3.8,
+          "sharpe": -0.984,
+          "dd": 8.42,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量情绪代理因子[N5/R20/V]",
+          "type": "trend",
+          "score": 22.1,
+          "ann": -0.6,
+          "sharpe": -0.053,
+          "dd": 14.57,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Donchian突破[N2/R20/V]",
+          "type": "trend",
+          "score": 21.9,
+          "ann": -3.61,
+          "sharpe": -0.603,
+          "dd": 8.5,
+          "decision": "REJECT"
+        },
+        {
+          "name": "情绪-价格动量交互因子[N3/R10/V]",
+          "type": "trend",
+          "score": 21.0,
+          "ann": 0.02,
+          "sharpe": 0.001,
+          "dd": 17.95,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N2/R60/S]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -4.03,
+          "sharpe": -0.578,
+          "dd": 13.71,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Donchian突破[N2/R60/V]",
+          "type": "trend",
+          "score": 18.9,
+          "ann": -3.77,
+          "sharpe": -0.575,
+          "dd": 12.83,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N5/R10/V]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -5.97,
+          "sharpe": -0.859,
+          "dd": 13.55,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N2/R10/V]",
+          "type": "trend",
+          "score": 18.8,
+          "ann": -5.35,
+          "sharpe": -0.418,
+          "dd": 15.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N5/R20/V]",
+          "type": "trend",
+          "score": 16.8,
+          "ann": -3.89,
+          "sharpe": -0.28,
+          "dd": 17.13,
+          "decision": "REJECT"
+        },
+        {
+          "name": "TRIX三重指数[N2/R20/V]",
+          "type": "trend",
+          "score": 15.9,
+          "ann": -4.18,
+          "sharpe": -0.404,
+          "dd": 15.19,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R20/V]",
+          "type": "trend",
+          "score": 15.9,
+          "ann": -3.9,
+          "sharpe": -0.419,
+          "dd": 18.63,
+          "decision": "REJECT"
+        },
+        {
+          "name": "趋势复合信号[N3/R10/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -7.67,
+          "sharpe": -0.958,
+          "dd": 16.3,
+          "decision": "REJECT"
+        },
+        {
+          "name": "主力资金流[N5/R20/S]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -7.39,
+          "sharpe": -0.6,
+          "dd": 17.92,
+          "decision": "REJECT"
+        },
+        {
+          "name": "MACD趋势[N3/R5/V]",
+          "type": "trend",
+          "score": 15.7,
+          "ann": -7.07,
+          "sharpe": -0.955,
+          "dd": 15.98,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N5/R5/V]",
+          "type": "trend",
+          "score": 15.6,
+          "ann": -10.49,
+          "sharpe": -1.074,
+          "dd": 19.91,
+          "decision": "REJECT"
+        },
+        {
+          "name": "趋势复合信号[N2/R20/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -5.79,
+          "sharpe": -0.466,
+          "dd": 21.49,
+          "decision": "REJECT"
+        },
+        {
+          "name": "KST动量[N2/R60/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -5.25,
+          "sharpe": -0.405,
+          "dd": 23.88,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N3/R20/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -6.11,
+          "sharpe": -0.503,
+          "dd": 26.41,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Ichimoku云图[N2/R10/V]",
+          "type": "trend",
+          "score": 11.8,
+          "ann": -6.16,
+          "sharpe": -0.55,
+          "dd": 20.88,
+          "decision": "REJECT"
+        },
+        {
+          "name": "双均线交叉[N5/R5/V]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -7.23,
+          "sharpe": -0.686,
+          "dd": 20.29,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N2/R20/V]",
+          "type": "trend",
+          "score": 11.7,
+          "ann": -7.83,
+          "sharpe": -0.574,
+          "dd": 23.0,
+          "decision": "REJECT"
+        },
+        {
+          "name": "情绪-价格动量交互因子[N2/R5/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -12.13,
+          "sharpe": -0.891,
+          "dd": 26.37,
+          "decision": "REJECT"
+        },
+        {
+          "name": "ADX趋势确认[N3/R5/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -11.41,
+          "sharpe": -1.037,
+          "dd": 23.81,
+          "decision": "REJECT"
+        },
+        {
+          "name": "价格动量因子[N2/R5/V]",
+          "type": "trend",
+          "score": 11.6,
+          "ann": -12.04,
+          "sharpe": -0.88,
+          "dd": 25.82,
+          "decision": "REJECT"
+        },
+        {
+          "name": "动量突破[N5/R5/V]",
+          "type": "trend",
+          "score": 11.5,
+          "ann": -15.12,
+          "sharpe": -1.08,
+          "dd": 28.05,
+          "decision": "REJECT"
+        },
+        {
+          "name": "主力资金流[N3/R5/V]",
+          "type": "trend",
+          "score": 9.0,
+          "ann": -14.15,
+          "sharpe": -1.252,
+          "dd": 31.2,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R10/V]",
+          "type": "mean_reversion",
+          "score": 55.9,
+          "ann": 8.54,
+          "sharpe": 0.882,
+          "dd": 6.71,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "均值回归复合[N5/R20/S]",
+          "type": "mean_reversion",
+          "score": 43.4,
+          "ann": 8.83,
+          "sharpe": 0.519,
+          "dd": 12.94,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "量价背离[N3/R60/V]",
+          "type": "mean_reversion",
+          "score": 41.0,
+          "ann": 5.68,
+          "sharpe": 0.477,
+          "dd": 10.3,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "KDJ波形[N5/R5/S]",
+          "type": "mean_reversion",
+          "score": 39.9,
+          "ann": 4.51,
+          "sharpe": 0.458,
+          "dd": 10.68,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N2/R5/E]",
+          "type": "mean_reversion",
+          "score": 38.6,
+          "ann": 5.34,
+          "sharpe": 0.438,
+          "dd": 14.78,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "均值回归复合[N3/R60/S]",
+          "type": "mean_reversion",
+          "score": 38.5,
+          "ann": 6.09,
+          "sharpe": 0.331,
+          "dd": 13.44,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N5/R20/S]",
+          "type": "mean_reversion",
+          "score": 37.0,
+          "ann": 4.29,
+          "sharpe": 0.41,
+          "dd": 13.0,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "MFI资金流[N3/R10/V]",
+          "type": "mean_reversion",
+          "score": 35.6,
+          "ann": 4.64,
+          "sharpe": 0.327,
+          "dd": 13.76,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "OBOS超买超卖[N2/R10/E]",
+          "type": "mean_reversion",
+          "score": 34.6,
+          "ann": 5.62,
+          "sharpe": 0.423,
+          "dd": 15.6,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "多信号组合[N2/R60/S]",
+          "type": "mean_reversion",
+          "score": 34.3,
+          "ann": 3.93,
+          "sharpe": 0.263,
+          "dd": 12.1,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "布林带回归[N3/R10/S]",
+          "type": "mean_reversion",
+          "score": 33.1,
+          "ann": 3.81,
+          "sharpe": 0.241,
+          "dd": 14.55,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "Elder Ray信号[N2/R5/E]",
+          "type": "mean_reversion",
+          "score": 31.7,
+          "ann": 4.27,
+          "sharpe": 0.301,
+          "dd": 17.16,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RSI均值回归[N2/R10/V]",
+          "type": "mean_reversion",
+          "score": 31.7,
+          "ann": 4.73,
+          "sharpe": 0.319,
+          "dd": 16.44,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "ROC多周期[N5/R10/S]",
+          "type": "mean_reversion",
+          "score": 30.9,
+          "ann": 1.22,
+          "sharpe": 0.127,
+          "dd": 9.1,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N2/R20/S]",
+          "type": "mean_reversion",
+          "score": 27.1,
+          "ann": 3.06,
+          "sharpe": 0.197,
+          "dd": 18.15,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "MFI资金流[N5/R10/V]",
+          "type": "mean_reversion",
+          "score": 26.3,
+          "ann": 2.21,
+          "sharpe": 0.158,
+          "dd": 15.23,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "烂板反转[N5/R5/V]",
+          "type": "mean_reversion",
+          "score": 25.7,
+          "ann": -1.32,
+          "sharpe": -0.675,
+          "dd": 3.66,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N3/R60/V]",
+          "type": "mean_reversion",
+          "score": 25.6,
+          "ann": 2.44,
+          "sharpe": 0.129,
+          "dd": 18.5,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "KDJ波形[N2/R60/V]",
+          "type": "mean_reversion",
+          "score": 25.4,
+          "ann": 0.8,
+          "sharpe": 0.066,
+          "dd": 13.99,
+          "decision": "CONDITIONAL"
+        },
+        {
+          "name": "RVI相对活力[N5/R10/V]",
+          "type": "mean_reversion",
+          "score": 21.9,
+          "ann": 0.5,
+          "sharpe": 0.03,
+          "dd": 18.93,
+          "decision": "REJECT"
+        },
+        {
+          "name": "多信号组合[N3/R5/E]",
+          "type": "mean_reversion",
+          "score": 19.0,
+          "ann": 0.83,
+          "sharpe": 0.055,
+          "dd": 21.14,
+          "decision": "REJECT"
+        },
+        {
+          "name": "Elder Ray信号[N3/R10/E]",
+          "type": "mean_reversion",
+          "score": 18.0,
+          "ann": -2.11,
+          "sharpe": -0.147,
+          "dd": 16.3,
+          "decision": "REJECT"
+        },
+        {
+          "name": "成交量异常[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 17.8,
+          "ann": -2.75,
+          "sharpe": -0.184,
+          "dd": 16.25,
+          "decision": "REJECT"
+        },
+        {
+          "name": "布林带回归[N5/R5/V]",
+          "type": "mean_reversion",
+          "score": 13.4,
+          "ann": -2.64,
+          "sharpe": -0.177,
+          "dd": 20.7,
+          "decision": "REJECT"
+        },
+        {
+          "name": "量价背离[N2/R10/V]",
+          "type": "mean_reversion",
+          "score": 13.0,
+          "ann": -4.02,
+          "sharpe": -0.227,
+          "dd": 21.08,
+          "decision": "REJECT"
+        },
+        {
+          "name": "RSI均值回归[N3/R20/V]",
+          "type": "mean_reversion",
+          "score": 49.3,
+          "ann": 12.28,
+          "sharpe": 0.868,
+          "dd": 14.62,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "MFI资金流[N3/R5/V]",
+          "type": "mean_reversion",
+          "score": 46.3,
+          "ann": 8.08,
+          "sharpe": 0.611,
+          "dd": 14.33,
+          "decision": "ACCEPT"
+        },
+        {
+          "name": "MFI资金流[N2/R5/V]",
+          "type": "mean_reversion",
+          "score": 45.6,
+          "ann": 7.7,
+          "sharpe": 0.663,
+          "dd": 14.41,
+          "decision": "ACCEPT"
+        }
+      ]
+    }
+  ],
+  "global_top": [
+    {
+      "rank": 1,
+      "name": "RSI均值回归[N3/R10/V]",
+      "type": "mean_reversion",
+      "score": 55.9,
+      "ann": 8.54,
+      "sharpe": 0.882,
+      "dd": 6.71,
+      "weight": {
+        "strategy_id": "me_5d7896b0",
+        "strategy_name": "RSI均值回归[N3/R10/V]",
+        "strategy_type": "mean_reversion",
+        "params": {
+          "period": 17.25,
+          "lower": 27.2,
+          "upper": 51.0,
+          "pf_n_stocks": 3,
+          "pf_rebalance_freq": 10,
+          "pf_weight_method": "vol_inverse",
+          "pf_max_position_pct": 0.48
+        },
+        "tags": [
+          "RSI均值回归"
+        ],
+        "total_return": 17.61,
+        "annualized_return": 8.54,
+        "sharpe_ratio": 0.882,
+        "max_drawdown_pct": 6.71,
+        "win_rate": 63.64,
+        "profit_factor": 1.78,
+        "total_trades": 22,
+        "sortino_score": 59.9,
+        "calmar_score": 61.8,
+        "ir_score": 18.0,
+        "drawdown_score": 90.0,
+        "composite": 55.9,
+        "decision": "ACCEPT",
+        "reason": "✅ 纳入（综合分=55.9，Sortino=1.00 Calmar=1.27，Alpha=+14.8%，IR=18分）",
+        "feedback": "指标良好，可适度扩大仓位",
+        "elimination_note": "【淘汰】",
+        "weight": null,
+        "pbo_score": 0.0,
+        "pbo_label": "PBO=0%（可信）",
+        "pbo_multiplier": 1.0,
+        "benchmark_ann_return": -6.22,
+        "alpha": 14.85,
+        "template_key": "rsi",
+        "structured_feedback": {
+          "strategy_id": "me_5d7896b0",
+          "strategy_name": "RSI均值回归[N3/R10/V]",
+          "strategy_type": "mean_reversion",
+          "template_key": "rsi",
+          "weakness": {},
+          "weakness_desc": "✅ 纳入（综合分=55.9，Sortino=1.00 Calmar=1.27，Alpha=+14.8%，IR=18分）",
+          "ann_return": 8.54,
+          "sharpe_ratio": 0.882,
+          "max_drawdown": 6.71,
+          "win_rate": 63.64,
+          "profit_factor": 1.78,
+          "total_trades": 22,
+          "composite": 55.9,
+          "adjustment": {},
+          "adjustment_param": "",
+          "adjustment_magnitude": 0,
+          "adjustment_unit": "",
+          "recommended_regime": "SIDEWAYS",
+          "position_advice": "高配",
+          "alternative_strategies": [
+            "动量突破",
+            "ADX趋势确认"
+          ],
+          "raw_reason": "✅ 纳入（综合分=55.9，Sortino=1.00 Calmar=1.27，Alpha=+14.8%，IR=18分）",
+          "feedback_text": "指标良好，可适度扩大仓位"
+        }
+      }
+    },
+    {
+      "rank": 2,
+      "name": "RSI均值回归[N3/R20/V]",
+      "type": "mean_reversion",
+      "score": 49.3,
+      "ann": 12.28,
+      "sharpe": 0.868,
+      "dd": 14.62,
+      "weight": 0.016
+    },
+    {
+      "rank": 3,
+      "name": "MFI资金流[N3/R5/V]",
+      "type": "mean_reversion",
+      "score": 46.3,
+      "ann": 8.08,
+      "sharpe": 0.611,
+      "dd": 14.33,
+      "weight": 0.015
+    },
+    {
+      "rank": 4,
+      "name": "MFI资金流[N2/R5/V]",
+      "type": "mean_reversion",
+      "score": 45.6,
+      "ann": 7.7,
+      "sharpe": 0.663,
+      "dd": 14.41,
+      "weight": 0.0148
+    }
+  ],
+  "convergence": {
+    "round1_score": 43.1,
+    "final_score": 55.9,
+    "delta": 12.8,
+    "direction": "↑改善",
+    "converged": false
+  },
+  "suggestions": [],
+  "meta_architecture_review": {
+    "overall_rating": "N/A",
+    "strengths": [
+      "LLM 不可用，无法评估"
+    ],
+    "weaknesses": [
+      "MiniMax API 连接失败"
+    ],
+    "critical_issues": [
+      "元专家 LLM 不可用"
+    ],
+    "improvement_priorities": [],
+    "architecture_suggestions": [],
+    "next_iteration_focus": "修复 LLM 连接",
+    "estimated_improvement": "N/A",
+    "_llm_available": false
+  }
+}
