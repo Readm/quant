@@ -191,9 +191,18 @@ class InstrumentedOrchestrator:
 
 # ── Main ──────────────────────────────────────────────────────────
 
+def _load_a_share_symbols() -> list:
+    """从本地 tushare/daily 目录读取所有 A 股代码。"""
+    from pathlib import Path as _P
+    files = sorted(_P("data/tushare/daily").glob("*.csv"))
+    return [f.stem for f in files]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--symbols", nargs="+", default=["SPY", "BTCUSDT"])
+    parser.add_argument("--universe", default="",
+                        help="'a_shares' 自动加载所有本地 A 股，覆盖 --symbols")
     parser.add_argument("--days",    type=int,  default=300)
     parser.add_argument("--rounds",  type=int,  default=20)
     parser.add_argument("--seed",    type=int,  default=2026)
@@ -203,6 +212,12 @@ def main():
     parser.add_argument("--out",     default="",
                         help="Override output path (optional, normally auto-determined)")
     args = parser.parse_args()
+
+    if args.universe == "a_shares":
+        args.symbols = _load_a_share_symbols()
+        if not args.name:
+            args.name = "A股全量"
+        print(f"[universe] 加载 {len(args.symbols)} 只 A 股")
 
     ts         = datetime.now().strftime("%Y%m%d_%H%M")
     thread_id  = _make_thread_id(args.name, args.symbols, ts)
@@ -249,10 +264,16 @@ def main():
     # Update index
     best_score = max((s["score"] for r in round_logs for s in r["strategies"]), default=0.0)
     last_round = round_logs[-1] if round_logs else {}
+    # 全量 universe 时只在 index 存代表性摘要
+    index_symbols = (
+        [f"A股全量({len(args.symbols)}只)"]
+        if args.universe == "a_shares"
+        else args.symbols
+    )
     _update_index({
         "id":           thread_id,
         "name":         name,
-        "symbols":      args.symbols,
+        "symbols":      index_symbols,
         "run_at":       run_at,
         "total_rounds": len(round_logs),
         "days":         args.days,

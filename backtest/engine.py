@@ -543,7 +543,19 @@ class PortfolioBacktester:
         data_by_sym    = {sd["symbol"]: sd["data"]      for sd in self.symbols_data}
         ind_by_sym     = {sd["symbol"]: sd["indicators"] for sd in self.symbols_data}
 
+        # 过滤数据不足的标的，防止新股（几 bars）把 min() 拉到 < 30
+        _MIN_BARS = 100
+        if len(closes_by_sym) > 1:
+            closes_by_sym = {s: c for s, c in closes_by_sym.items() if len(c) >= _MIN_BARS}
+            data_by_sym   = {s: d for s, d in data_by_sym.items()   if s in closes_by_sym}
+            ind_by_sym    = {s: i for s, i in ind_by_sym.items()     if s in closes_by_sym}
+            sym_list      = [s for s in sym_list                     if s in closes_by_sym]
+
         # 对齐序列长度（取最短）
+        if not closes_by_sym:
+            from experts.specialists.expert1a_trend import BacktestReport
+            return BacktestReport(strategy_id=strategy_id, strategy_name=strategy_name,
+                                  strategy_type=self.cand.get("strategy_type", "trend"))
         n = min(len(v) for v in closes_by_sym.values())
         if n < 30:
             return BacktestReport(

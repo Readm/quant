@@ -137,6 +137,7 @@ class Orchestrator:
         self.debate_manager = DebateManager()
         self.debate_manager.risk_expert = self.risk_expert
         self.fb_history     = FeedbackHistory()
+        self._preloaded_feedback: list = []
         self.round_reports  = []
         self.prev_top_ids   = set()
         self.best_score     = 0.0
@@ -190,7 +191,7 @@ class Orchestrator:
             print(f"\n{'='*68}\n  ▶ 第 {rnd} 轮迭代\n{'='*68}")
 
             need_div = self.evaluator.need_diversify()
-            fb_list  = [fb.to_simple_dict() for fb in self.evaluator.fb_history.entries]
+            fb_list  = self._preloaded_feedback + [fb.to_simple_dict() for fb in self.evaluator.fb_history.entries]
 
             _dedup_rng = random.Random(self.seed + rnd * 7919)
             mp = self._meta_params
@@ -529,24 +530,30 @@ class Orchestrator:
             state = json.loads(self._STATE_PATH.read_text(encoding="utf-8"))
             self._seen_cand_hashes = set(state.get("seen_hashes", []))
             self._best_ever = state.get("best_ever", {})
+            self._preloaded_feedback = state.get("feedback_history", [])
             print(f"[搜索状态] 恢复: {len(self._seen_cand_hashes)} 个已探索 hash，"
-                  f"{len(self._best_ever)} 个最优参数记录")
+                  f"{len(self._best_ever)} 个最优参数记录，"
+                  f"{len(self._preloaded_feedback)} 条历史反馈")
         except Exception as e:
             print(f"[搜索状态] 加载失败，从空状态开始: {e}")
 
     def _save_search_state(self):
         self._STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        current_fb = self.evaluator.fb_history.to_serializable_list()
+        merged_fb = (self._preloaded_feedback + current_fb)[-200:]
         state = {
-            "saved_at":   datetime.now().isoformat(),
-            "seen_hashes": sorted(self._seen_cand_hashes),
-            "best_ever":  self._best_ever,
+            "saved_at":        datetime.now().isoformat(),
+            "seen_hashes":     sorted(self._seen_cand_hashes),
+            "best_ever":       self._best_ever,
+            "feedback_history": merged_fb,
         }
         self._STATE_PATH.write_text(
             json.dumps(state, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         print(f"[搜索状态] 已保存: {len(self._seen_cand_hashes)} 个 hash，"
-              f"{len(self._best_ever)} 个最优参数 → {self._STATE_PATH}")
+              f"{len(self._best_ever)} 个最优参数，"
+              f"{len(merged_fb)} 条反馈历史 → {self._STATE_PATH}")
 
     # ── 多样性约束生成 ─────────────────────
 

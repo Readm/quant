@@ -100,6 +100,7 @@ class StructuredFeedback:
             "unit":          self.adjustment_unit,
             "recommended_regime": self.recommended_regime,
             "position_advice":    self.position_advice,
+            "composite":     self.composite,
         }
 
     @staticmethod
@@ -194,6 +195,10 @@ class FeedbackHistory:
 
     def __init__(self):
         self.entries: List[StructuredFeedback] = []
+
+    def to_serializable_list(self, max_entries: int = 200) -> list:
+        """序列化为可持久化的 dict 列表（跨 run 保存用）。"""
+        return [fb.to_simple_dict() for fb in self.entries[-max_entries:]]
 
     def add(self, fb: StructuredFeedback):
         self.entries.append(fb)
