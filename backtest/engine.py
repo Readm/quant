@@ -544,7 +544,7 @@ class PortfolioBacktester:
         ind_by_sym     = {sd["symbol"]: sd["indicators"] for sd in self.symbols_data}
 
         # 过滤数据不足的标的，防止新股（几 bars）把 min() 拉到 < 30
-        _MIN_BARS = 100
+        _MIN_BARS = 600
         if len(closes_by_sym) > 1:
             closes_by_sym = {s: c for s, c in closes_by_sym.items() if len(c) >= _MIN_BARS}
             data_by_sym   = {s: d for s, d in data_by_sym.items()   if s in closes_by_sym}

@@ -55,7 +55,13 @@ def _backtest_one_cand(args):
         candidate=cand,
         portfolio_params=pp,
     )
-    return bt.run()
+    try:
+        return bt.run()
+    except Exception as e:
+        import traceback as _tb
+        raise type(e)(
+            f"[{cand.get('template_key')} params={cand.get('params')}] {e}"
+        ).with_traceback(_tb.extract_stack()) from e
 
 _N_BT_WORKERS = max(1, (os.cpu_count() or 4))
 
