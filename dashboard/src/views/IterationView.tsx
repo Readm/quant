@@ -543,7 +543,7 @@ function ThreadSelector({
         <div className="flex-1 text-left">
           <div className="text-white font-semibold leading-tight">{active.name}</div>
           <div className="text-xs text-slate-400 leading-tight mt-0.5">
-            {active.symbols.join(' · ')} · {active.total_rounds}轮 · {new Date(active.run_at).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })}
+            {active.symbols.length > 6 ? `${active.symbols.slice(0,3).join(' · ')} … 共${active.symbols.length}只` : active.symbols.join(' · ')} · {active.total_rounds}轮 · {new Date(active.run_at).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })}
           </div>
         </div>
         <ChevronDown size={14} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -560,7 +560,7 @@ function ThreadSelector({
                   <span className={`font-semibold text-sm truncate ${t.id === activeId ? 'text-purple-300' : 'text-white'}`}>{t.name}</span>
                   {t.converged && <CheckCircle size={11} className="text-green-400 shrink-0" />}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">{t.symbols.join(' · ')} · {t.days}天</div>
+                <div className="text-xs text-slate-400 mt-0.5">{t.symbols.length > 6 ? `${t.symbols.slice(0,3).join(' · ')} … 共${t.symbols.length}只` : t.symbols.join(' · ')} · {t.days}天</div>
               </div>
               <div className="text-right shrink-0">
                 <div className="text-xs text-white font-bold">{t.best_score.toFixed(1)}分</div>
@@ -653,7 +653,7 @@ export default function IterationView() {
         <div className="flex items-center gap-3 text-xs text-slate-400 px-4 py-2.5 border-b border-slate-700/30">
           <span className="text-white font-semibold">{log.name}</span>
           <span className="text-slate-600">·</span>
-          <span>{log.symbols.join(' · ')}</span>
+          <span>{log.symbols.length > 6 ? `${log.symbols.slice(0,3).join(' · ')} … 共${log.symbols.length}只` : log.symbols.join(' · ')}</span>
           <span className="text-slate-600">·</span>
           <span>{log.days} 天数据</span>
           <span className="text-slate-600">·</span>
