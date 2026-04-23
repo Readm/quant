@@ -47,12 +47,13 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
         reader = csv.DictReader(f)
         for r in reader:
             rows.append({
-                "date":  r["trade_date"],
-                "open":  float(r["open"]),
-                "high":  float(r["high"]),
-                "low":   float(r["low"]),
-                "close": float(r["close"]),
-                "vol":   float(r["vol"]),
+                "date":    r["trade_date"],
+                "open":    float(r["open"]),
+                "high":    float(r["high"]),
+                "low":     float(r["low"]),
+                "close":   float(r["close"]),
+                "vol":     float(r["vol"]),
+                "pct_chg": float(r["pct_chg"]) if r.get("pct_chg") else 0.0,
             })
     if not rows:
         return None
@@ -84,11 +85,12 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
     return {
         "symbol":     csv_path.stem,
         "dates":      dates,
-        "opens":      [r["open"] for r in rows],
-        "highs":      [r["high"] for r in rows],
-        "lows":       [r["low"]  for r in rows],
+        "opens":      [r["open"]    for r in rows],
+        "highs":      [r["high"]    for r in rows],
+        "lows":       [r["low"]     for r in rows],
         "closes":     closes,
-        "volumes":    [r["vol"]  for r in rows],
+        "volumes":    [r["vol"]     for r in rows],
+        "pct_chgs":   [r["pct_chg"] for r in rows],
         "returns":    returns,
         "indicators": ind,
         "extensions": {},

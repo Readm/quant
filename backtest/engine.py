@@ -542,6 +542,12 @@ class PortfolioBacktester:
                           for sd in self.symbols_data}
         data_by_sym    = {sd["symbol"]: sd["data"]      for sd in self.symbols_data}
         ind_by_sym     = {sd["symbol"]: sd["indicators"] for sd in self.symbols_data}
+        # TODO: 精确的涨跌停判断需要日内择时策略（如竞价阶段判断能否成交）。
+        #       此处用 pct_chg 阈值粗略排除，主板±10%，科创/创业板±20% 暂不区分。
+        pctchg_by_sym  = {sd["symbol"]: sd["data"].get("pct_chgs", [])
+                          for sd in self.symbols_data}
+        _LIMIT_UP   =  9.8   # 涨停阈值（%），当日买入跳过
+        _LIMIT_DOWN = -9.8   # 跌停阈值（%），当日卖出跳过（持仓顺延）
 
         # 过滤数据不足的标的，防止新股（几 bars）把 min() 拉到 < 30
         _MIN_BARS = 600
@@ -582,8 +588,12 @@ class PortfolioBacktester:
                     )
                     for sym in sym_list
                 }
-                # 2. 只选正分标的的 Top-N
+                # 2. 只选正分标的的 Top-N，排除涨停（当日无法买入）
                 positive = {s: sc for s, sc in scores.items() if sc > 0}
+                pchg_t   = {s: (pctchg_by_sym[s][t] if t < len(pctchg_by_sym.get(s, [])) else 0.0)
+                            for s in positive}
+                positive = {s: sc for s, sc in positive.items()
+                            if pchg_t.get(s, 0.0) < _LIMIT_UP}
                 selected = sorted(positive, key=positive.__getitem__,
                                   reverse=True)[:n_stocks]
                 last_selected = selected
@@ -594,16 +604,21 @@ class PortfolioBacktester:
                     closes_by_sym, t, max_pos,
                 )
 
-                # 4. 平旧仓（记录交易）
+                # 4. 平旧仓（记录交易），跌停时无法卖出，顺延持有
                 sell_proceeds = 0.0
+                locked = []   # 跌停锁仓，留到下轮
                 for sym in list(holdings.keys()):
+                    pchg = (pctchg_by_sym[sym][t]
+                            if t < len(pctchg_by_sym.get(sym, [])) else 0.0)
+                    if pchg <= _LIMIT_DOWN:
+                        locked.append(sym)   # 跌停，本轮无法卖出
+                        continue
                     shares = holdings.pop(sym)
                     price  = closes_by_sym[sym][t]
                     gross  = shares * price
                     cost   = gross * SELL_COST
                     net    = gross - cost
                     sell_proceeds += net
-                    trade_ret = (net - initial_cash * 0) / initial_cash  # relative pnl
                     trades.append(net / initial_cash - 1.0 / max(len(sym_list), 1))
                 cash += sell_proceeds
 

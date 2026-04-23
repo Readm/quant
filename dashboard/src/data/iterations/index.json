@@ -1,5 +1,17 @@
 [
   {
+    "id": "A股核心_20260423_2311",
+    "name": "A股核心",
+    "symbols": [
+      "A股全量"
+    ],
+    "run_at": "2026-04-23T23:11:57.528071",
+    "total_rounds": 20,
+    "days": 800,
+    "best_score": 78.1,
+    "converged": false
+  },
+  {
     "id": "A股核心_20260423_0826",
     "name": "A股核心",
     "symbols": [

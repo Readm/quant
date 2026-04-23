@@ -285,7 +285,7 @@ def main():
     last_round = round_logs[-1] if round_logs else {}
     # 全量 universe 时只在 index 存代表性摘要
     index_symbols = (
-        [f"A股核心({len(args.symbols)}只,>{args.min_amount:.0f}万/日)"]
+        ["A股全量"]
         if args.universe == "a_shares"
         else args.symbols
     )
