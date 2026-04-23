@@ -191,11 +191,27 @@ class InstrumentedOrchestrator:
 
 # ── Main ──────────────────────────────────────────────────────────
 
-def _load_a_share_symbols() -> list:
-    """从本地 tushare/daily 目录读取所有 A 股代码。"""
+def _load_a_share_symbols(min_amount_wan: float = 1000.0) -> list:
+    """从本地 tushare/daily 读取所有 A 股，过滤日均成交额 < min_amount_wan 万元的个股。
+    tushare amount 列单位为千元，1000万/day = 100,000 千元。
+    """
+    import csv as _csv
     from pathlib import Path as _P
     files = sorted(_P("data/tushare/daily").glob("*.csv"))
-    return [f.stem for f in files]
+    if min_amount_wan <= 0:
+        return [f.stem for f in files]
+    threshold = min_amount_wan * 100  # 万元 → 千元
+    qualified = []
+    for f in files:
+        with open(f, newline="", encoding="utf-8") as fh:
+            rows = list(_csv.DictReader(fh))
+        if not rows:
+            continue
+        recent = rows[-60:] if len(rows) >= 60 else rows
+        amounts = [float(r.get("amount") or 0) for r in recent if r.get("amount")]
+        if amounts and sum(amounts) / len(amounts) >= threshold:
+            qualified.append(f.stem)
+    return qualified
 
 
 def main():
@@ -203,6 +219,8 @@ def main():
     parser.add_argument("--symbols", nargs="+", default=["SPY", "BTCUSDT"])
     parser.add_argument("--universe", default="",
                         help="'a_shares' 自动加载所有本地 A 股，覆盖 --symbols")
+    parser.add_argument("--min_amount", type=float, default=1000.0,
+                        help="最低日均成交额（万元），用于 --universe a_shares 流动性过滤，默认 1000 万")
     parser.add_argument("--days",    type=int,  default=300)
     parser.add_argument("--rounds",  type=int,  default=20)
     parser.add_argument("--seed",    type=int,  default=2026)
@@ -214,10 +232,11 @@ def main():
     args = parser.parse_args()
 
     if args.universe == "a_shares":
-        args.symbols = _load_a_share_symbols()
+        print(f"[universe] 扫描 A 股流动性（阈值 {args.min_amount:.0f} 万/日）...")
+        args.symbols = _load_a_share_symbols(args.min_amount)
         if not args.name:
-            args.name = "A股全量"
-        print(f"[universe] 加载 {len(args.symbols)} 只 A 股")
+            args.name = "A股核心"
+        print(f"[universe] 过滤后剩余 {len(args.symbols)} 只 A 股")
 
     ts         = datetime.now().strftime("%Y%m%d_%H%M")
     thread_id  = _make_thread_id(args.name, args.symbols, ts)
@@ -266,7 +285,7 @@ def main():
     last_round = round_logs[-1] if round_logs else {}
     # 全量 universe 时只在 index 存代表性摘要
     index_symbols = (
-        [f"A股全量({len(args.symbols)}只)"]
+        [f"A股核心({len(args.symbols)}只,>{args.min_amount:.0f}万/日)"]
         if args.universe == "a_shares"
         else args.symbols
     )
