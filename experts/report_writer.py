@@ -135,7 +135,7 @@ def generate_final_report(round_reports: list, top_n: int, symbols: list) -> dic
                 "ann":    e.annualized_return,
                 "sharpe": e.sharpe_ratio,
                 "dd":     e.max_drawdown_pct,
-                "weight": getattr(e, "weight", 0.0) or 0.0,
+                "weight": float(w) if isinstance((w := getattr(e, "weight", 0.0)), (int, float)) else 0.0,
             }
             for i, e in enumerate(global_top)
         ],
