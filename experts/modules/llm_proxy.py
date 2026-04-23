@@ -132,9 +132,14 @@ def llm_analyze(prompt: str,
         return {"error": str(e)}
 
     # 检查 MiniMax base_resp 错误码
-    base_resp = body.get("base_resp", {})
-    if base_resp.get("status_code", 0) not in (0, None):
-        return {"error": f"MiniMax error {base_resp.get('status_code')}: {base_resp.get('status_msg')}"}
+    base_resp   = body.get("base_resp", {})
+    status_code = base_resp.get("status_code", 0)
+    if status_code not in (0, None):
+        msg = f"MiniMax error {status_code}: {base_resp.get('status_msg')}"
+        # 认证类错误不可重试，直接抛出终止运行
+        if status_code in (2049, 1004, 1000):
+            raise ValueError(msg)
+        return {"error": msg}
 
     # 提取 assistant 消息（支持 chatcompletion_v2 和 OpenAI 两种格式）
     try:
