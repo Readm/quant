@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Component, ReactNode } from 'react'
 import { BarChart3, Database, Brain, Layers, ListOrdered, Circle, Activity, GitBranch } from 'lucide-react'
 import DataSourceView from './views/DataSourceView'
 import BacktestView from './views/BacktestView'
@@ -7,6 +7,22 @@ import FactorView from './views/FactorView'
 import StrategyView from './views/StrategyView'
 import SystemStatusView from './views/SystemStatusView'
 import IterationView from './views/IterationView'
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
+  state = { error: null }
+  static getDerivedStateFromError(e: Error) { return { error: e.message } }
+  render() {
+    if (this.state.error)
+      return (
+        <div className="p-8 text-red-400 space-y-2">
+          <div className="font-bold">渲染错误</div>
+          <pre className="text-xs text-slate-400 bg-slate-800 p-3 rounded overflow-auto">{this.state.error}</pre>
+          <button className="text-xs text-slate-500 underline" onClick={() => this.setState({ error: null })}>重试</button>
+        </div>
+      )
+    return this.props.children
+  }
+}
 
 type ViewKey = 'status' | 'data' | 'backtest' | 'expert' | 'factor' | 'strategy' | 'iteration'
 
@@ -81,7 +97,7 @@ export default function App() {
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
-        <View />
+        <ErrorBoundary><View /></ErrorBoundary>
       </main>
 
       {/* Footer */}

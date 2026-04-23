@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { GitBranch, CheckCircle, XCircle,
          AlertCircle, MessageSquare, ChevronDown, ChevronRight,
          Award, RefreshCw, Layers } from 'lucide-react'
@@ -64,9 +64,9 @@ interface ThreadMeta {
   best_score: number; converged: boolean
 }
 
-// ── Glob all iteration files (Vite bundles at build time) ─────────
-const ALL_ITERATIONS = import.meta.glob('../data/iterations/*.json', { eager: true }) as
-  Record<string, { default: IterationLog }>
+// ── Lazy-load individual iteration files (only load when selected) ──
+const ITERATION_LOADERS = import.meta.glob('../data/iterations/*.json') as
+  Record<string, () => Promise<{ default: IterationLog }>>
 const INDEX_DATA = (() => {
   try {
     const m = import.meta.glob('../data/iterations/index.json', { eager: true }) as any
@@ -576,41 +576,26 @@ function ThreadSelector({
 
 // ── Main View ─────────────────────────────────────────────────────
 export default function IterationView() {
-  // Build thread list from glob + index metadata
-  const threads: ThreadMeta[] = useMemo(() => {
-    if (INDEX_DATA.length > 0) return INDEX_DATA
-    // Fallback: derive from glob keys if index.json is missing
-    return Object.keys(ALL_ITERATIONS)
-      .filter(k => !k.endsWith('index.json'))
-      .map(k => {
-        const log = ALL_ITERATIONS[k].default
-        const best = Math.max(...(log.rounds ?? []).flatMap(r => r.strategies.map(s => s.score)), 0)
-        return {
-          id:           log.thread_id ?? k.split('/').pop()!.replace('.json',''),
-          name:         log.name ?? log.symbols.join(' · '),
-          symbols:      log.symbols,
-          run_at:       log.run_at,
-          total_rounds: log.total_rounds,
-          days:         log.days,
-          best_score:   Math.round(best * 10) / 10,
-          converged:    (log.rounds ?? []).at(-1)?.converged ?? false,
-        }
-      })
-      .sort((a, b) => b.run_at.localeCompare(a.run_at))
-  }, [])
+  const threads: ThreadMeta[] = INDEX_DATA.length > 0 ? INDEX_DATA : []
 
   const [activeThreadId, setActiveThreadId] = useState<string>(threads[0]?.id ?? '')
   const [activeRound,    setActiveRound]    = useState(1)
+  const [log,            setLog]            = useState<IterationLog | null>(null)
+  const [loading,        setLoading]        = useState(false)
 
   // When thread changes, reset to round 1
   function selectThread(id: string) { setActiveThreadId(id); setActiveRound(1) }
 
-  const log: IterationLog | null = useMemo(() => {
-    if (!activeThreadId) return null
-    const entry = Object.entries(ALL_ITERATIONS).find(([k]) =>
+  // Lazy-load iteration JSON when activeThreadId changes
+  useEffect(() => {
+    if (!activeThreadId) return
+    const key = Object.keys(ITERATION_LOADERS).find(k =>
       k.includes(activeThreadId) || k.endsWith(`${activeThreadId}.json`)
     )
-    return entry ? entry[1].default : null
+    if (!key) return
+    setLoading(true)
+    setLog(null)
+    ITERATION_LOADERS[key]().then(m => { setLog(m.default); setLoading(false) })
   }, [activeThreadId])
 
   if (threads.length === 0) return (
@@ -624,7 +609,7 @@ export default function IterationView() {
     </div>
   )
 
-  if (!log) return (
+  if (loading || !log) return (
     <div className="flex items-center gap-2 text-slate-400 p-8">
       <RefreshCw size={18} className="animate-spin"/>加载中...
     </div>
