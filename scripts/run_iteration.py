@@ -194,9 +194,11 @@ class InstrumentedOrchestrator:
 def _load_a_share_symbols(min_amount_wan: float = 1000.0) -> list:
     """从本地 tushare/daily 读取所有 A 股，过滤日均成交额 < min_amount_wan 万元的个股。
     tushare amount 列单位为千元，1000万/day = 100,000 千元。
+    流动性基于训练期（排除最后 OOS_DAYS 天）计算，消除未来函数。
     """
     import csv as _csv
     from pathlib import Path as _P
+    from experts.orchestrator import OOS_DAYS
     files = sorted(_P("data/tushare/daily").glob("*.csv"))
     if min_amount_wan <= 0:
         return [f.stem for f in files]
@@ -205,9 +207,12 @@ def _load_a_share_symbols(min_amount_wan: float = 1000.0) -> list:
     for f in files:
         with open(f, newline="", encoding="utf-8") as fh:
             rows = list(_csv.DictReader(fh))
+        rows.sort(key=lambda r: r.get("trade_date", ""))
         if not rows:
             continue
-        recent = rows[-60:] if len(rows) >= 60 else rows
+        # 排除最后 OOS_DAYS 行（样本外期），仅用训练期数据评估流动性
+        train_rows = rows[:-OOS_DAYS] if len(rows) > OOS_DAYS + 60 else rows[:60]
+        recent = train_rows[-60:] if len(train_rows) >= 60 else train_rows
         amounts = [float(r.get("amount") or 0) for r in recent if r.get("amount")]
         if amounts and sum(amounts) / len(amounts) >= threshold:
             qualified.append(f.stem)
@@ -221,7 +226,8 @@ def main():
                         help="'a_shares' 自动加载所有本地 A 股，覆盖 --symbols")
     parser.add_argument("--min_amount", type=float, default=1000.0,
                         help="最低日均成交额（万元），用于 --universe a_shares 流动性过滤，默认 1000 万")
-    parser.add_argument("--days",    type=int,  default=300)
+    parser.add_argument("--days",    type=int,  default=900,
+                        help="加载历史 K 线数（0=全量）。含 OOS_DAYS=252，训练期≈days-252")
     parser.add_argument("--rounds",  type=int,  default=20)
     parser.add_argument("--seed",    type=int,  default=2026)
     parser.add_argument("--name",    default="",

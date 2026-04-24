@@ -1,5 +1,17 @@
 [
   {
+    "id": "A股核心_WF_20260425_0144",
+    "name": "A股核心_WF",
+    "symbols": [
+      "A股全量"
+    ],
+    "run_at": "2026-04-25T01:44:28.746461",
+    "total_rounds": 17,
+    "days": 900,
+    "best_score": 80.5,
+    "converged": true
+  },
+  {
     "id": "A股核心_20260424_2330",
     "name": "A股核心",
     "symbols": [

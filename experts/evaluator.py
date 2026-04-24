@@ -90,6 +90,9 @@ class EvalResult:
     # ── 模板标识 ─────────────────────
     template_key: str = ""
 
+    # ── 样本外收益 ───────────────────
+    oos_annualized_return: float = 0.0
+
     # ── 结构化反馈 ───────────────────
     structured_feedback: Optional[StructuredFeedback] = None
 
@@ -238,6 +241,7 @@ class Evaluator:
             pbo_score=0.0, pbo_label=pbo_label, pbo_multiplier=pbo_multiplier,
             benchmark_ann_return=round(benchmark_ann, 2), alpha=round(alpha, 2),
             template_key=template_key,
+            oos_annualized_return=getattr(r, "oos_annualized_return", 0.0),
             structured_feedback=sfb,
         )
 

@@ -140,6 +140,7 @@ def load_symbols_data(symbols: list, n_days: int) -> list:
                 "lows":       raw_d.get("lows",       closes),
                 "volumes":    raw_d.get("volumes",    [1e9] * len(closes)),
                 "dates":      raw_d.get("dates",      []),
+                "pct_chgs":   raw_d.get("pct_chgs",   []),
                 "extensions": raw_d.get("extensions", {}),
             },
             "indicators": result[sym]["indicators"],

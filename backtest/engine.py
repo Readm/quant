@@ -513,10 +513,11 @@ class PortfolioBacktester:
         self.pp              = {**DEFAULT_PORTFOLIO_PARAMS, **portfolio_params}
 
     # ── 主入口 ──────────────────────────────────────────────────────
-    def run(self, initial_cash: float = 1_000_000.0):
+    def run(self, initial_cash: float = 1_000_000.0, oos_days: int = 0):
         """
         执行组合回测，返回 BacktestReport。
-        策略名格式："{策略名}[N{n}/R{freq}/{method}]"
+        oos_days > 0 时：IS 区间 = [1, n-oos_days)，OOS 区间 = [n-oos_days, n)。
+        OOS 结果写入 report.oos_annualized_return。
         """
         from experts.specialists.expert1a_trend import BacktestReport
 
@@ -530,26 +531,22 @@ class PortfolioBacktester:
         strategy_id    = self.cand.get("strategy_id", "")
         base_name      = self.cand.get("strategy_name", template_key)
 
-        # 策略名附加组合配置标记
         strategy_name = (
             f"{base_name}"
             f"[N{n_stocks}/R{rebalance_freq}/{weight_method[0].upper()}]"
         )
 
         # ── 准备各标的数据 ───────────────────────────────────────
-        sym_list       = [sd["symbol"]     for sd in self.symbols_data]
-        closes_by_sym  = {sd["symbol"]: [float(c) for c in sd["data"]["closes"]]
-                          for sd in self.symbols_data}
-        data_by_sym    = {sd["symbol"]: sd["data"]      for sd in self.symbols_data}
-        ind_by_sym     = {sd["symbol"]: sd["indicators"] for sd in self.symbols_data}
+        sym_list      = [sd["symbol"] for sd in self.symbols_data]
+        closes_by_sym = {sd["symbol"]: [float(c) for c in sd["data"]["closes"]]
+                         for sd in self.symbols_data}
+        data_by_sym   = {sd["symbol"]: sd["data"]       for sd in self.symbols_data}
+        ind_by_sym    = {sd["symbol"]: sd["indicators"]  for sd in self.symbols_data}
         # TODO: 精确的涨跌停判断需要日内择时策略（如竞价阶段判断能否成交）。
         #       此处用 pct_chg 阈值粗略排除，主板±10%，科创/创业板±20% 暂不区分。
-        pctchg_by_sym  = {sd["symbol"]: sd["data"].get("pct_chgs", [])
-                          for sd in self.symbols_data}
-        _LIMIT_UP   =  9.8   # 涨停阈值（%），当日买入跳过
-        _LIMIT_DOWN = -9.8   # 跌停阈值（%），当日卖出跳过（持仓顺延）
+        pctchg_by_sym = {sd["symbol"]: sd["data"].get("pct_chgs", [])
+                         for sd in self.symbols_data}
 
-        # 过滤数据不足的标的，防止新股（几 bars）把 min() 拉到 < 30
         _MIN_BARS = 600
         if len(closes_by_sym) > 1:
             closes_by_sym = {s: c for s, c in closes_by_sym.items() if len(c) >= _MIN_BARS}
@@ -557,30 +554,53 @@ class PortfolioBacktester:
             ind_by_sym    = {s: i for s, i in ind_by_sym.items()     if s in closes_by_sym}
             sym_list      = [s for s in sym_list                     if s in closes_by_sym]
 
-        # 对齐序列长度（取最短）
         if not closes_by_sym:
-            from experts.specialists.expert1a_trend import BacktestReport
             return BacktestReport(strategy_id=strategy_id, strategy_name=strategy_name,
                                   strategy_type=self.cand.get("strategy_type", "trend"))
         n = min(len(v) for v in closes_by_sym.values())
         if n < 30:
-            return BacktestReport(
-                strategy_id=strategy_id, strategy_name=strategy_name,
-                strategy_type=self.cand.get("strategy_type", "trend"),
-            )
+            return BacktestReport(strategy_id=strategy_id, strategy_name=strategy_name,
+                                  strategy_type=self.cand.get("strategy_type", "trend"))
 
-        # ── 每日模拟 ────────────────────────────────────────────
-        cash: float               = float(initial_cash)
-        holdings: Dict[str, float] = {}   # {symbol: shares}
-        equity: list              = [cash]
-        trades: list              = []    # 每笔平仓的收益率
-        daily_rets: list          = []
-        last_selected: list       = []
+        # IS 区间：[1, train_end)；OOS 区间：[train_end, n)
+        train_end = n - oos_days if (oos_days > 0 and n > oos_days + 200) else n
 
-        for t in range(1, n):
-            # ── 调仓日 ──────────────────────────────────────────
-            if (t - 1) % rebalance_freq == 0:
-                # 1. 打分
+        sim_kw = dict(
+            closes_by_sym=closes_by_sym, data_by_sym=data_by_sym,
+            ind_by_sym=ind_by_sym, pctchg_by_sym=pctchg_by_sym,
+            sym_list=sym_list, params=params, template_key=template_key,
+            n_stocks=n_stocks, rebalance_freq=rebalance_freq,
+            weight_method=weight_method, max_pos=max_pos,
+            initial_cash=initial_cash,
+        )
+
+        equity, trades, daily_rets = self._sim_range(1, train_end, **sim_kw)
+        report = self._build_report(strategy_id, strategy_name, params,
+                                    equity, trades, daily_rets, train_end, initial_cash)
+
+        if oos_days > 0 and train_end < n:
+            _, _, oos_rets = self._sim_range(train_end, n, **sim_kw)
+            if oos_rets:
+                report.oos_annualized_return = round(
+                    sum(oos_rets) / len(oos_rets) * 252 * 100, 2)
+
+        return report
+
+    def _sim_range(self, t_start: int, t_end: int,
+                   closes_by_sym, data_by_sym, ind_by_sym, pctchg_by_sym,
+                   sym_list, params, template_key, n_stocks, rebalance_freq,
+                   weight_method, max_pos, initial_cash):
+        """从 t_start 到 t_end 运行一段模拟，返回 (equity, trades, daily_rets)。"""
+        _LIMIT_UP   =  9.8
+        _LIMIT_DOWN = -9.8
+        cash     = float(initial_cash)
+        holdings: Dict[str, float] = {}
+        equity   = [cash]
+        trades   = []
+        daily_rets = []
+
+        for t in range(t_start, t_end):
+            if (t - t_start) % rebalance_freq == 0:
                 scores = {
                     sym: compute_factor_score(
                         closes_by_sym[sym], data_by_sym[sym],
@@ -588,7 +608,6 @@ class PortfolioBacktester:
                     )
                     for sym in sym_list
                 }
-                # 2. 只选正分标的的 Top-N，排除涨停（当日无法买入）
                 positive = {s: sc for s, sc in scores.items() if sc > 0}
                 pchg_t   = {s: (pctchg_by_sym[s][t] if t < len(pctchg_by_sym.get(s, [])) else 0.0)
                             for s in positive}
@@ -596,34 +615,26 @@ class PortfolioBacktester:
                             if pchg_t.get(s, 0.0) < _LIMIT_UP}
                 selected = sorted(positive, key=positive.__getitem__,
                                   reverse=True)[:n_stocks]
-                last_selected = selected
 
-                # 3. 目标权重
                 target_w = compute_weights(
-                    selected, positive, weight_method,
-                    closes_by_sym, t, max_pos,
+                    selected, positive, weight_method, closes_by_sym, t, max_pos,
                 )
 
-                # 4. 平旧仓（记录交易），跌停时无法卖出，顺延持有
                 sell_proceeds = 0.0
-                locked = []   # 跌停锁仓，留到下轮
                 for sym in list(holdings.keys()):
                     pchg = (pctchg_by_sym[sym][t]
                             if t < len(pctchg_by_sym.get(sym, [])) else 0.0)
                     if pchg <= _LIMIT_DOWN:
-                        locked.append(sym)   # 跌停，本轮无法卖出
                         continue
                     shares = holdings.pop(sym)
                     price  = closes_by_sym[sym][t]
                     gross  = shares * price
-                    cost   = gross * SELL_COST
-                    net    = gross - cost
+                    net    = gross - gross * SELL_COST
                     sell_proceeds += net
                     trades.append(net / initial_cash - 1.0 / max(len(sym_list), 1))
                 cash += sell_proceeds
 
-                # 5. 建新仓
-                total_eq = cash  # 注意：此时 holdings 已清空
+                total_eq = cash
                 for sym in selected:
                     w     = target_w.get(sym, 0.0)
                     alloc = total_eq * w
@@ -635,7 +646,6 @@ class PortfolioBacktester:
                     cash  -= alloc
                     holdings[sym] = shares
 
-            # ── 当日净值 ────────────────────────────────────────
             port_val = cash + sum(
                 holdings[sym] * closes_by_sym[sym][t]
                 for sym in holdings
@@ -645,10 +655,7 @@ class PortfolioBacktester:
             equity.append(port_val)
             daily_rets.append((port_val - prev) / prev if prev > 0 else 0.0)
 
-        return self._build_report(
-            strategy_id, strategy_name, params,
-            equity, trades, daily_rets, n, initial_cash,
-        )
+        return equity, trades, daily_rets
 
     # ── 统计指标 ────────────────────────────────────────────────────
     def _build_report(self, sid, name, params, equity, trades,

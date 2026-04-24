@@ -20,6 +20,7 @@ class BacktestReport:
     win_rate: float = 0.0; profit_factor: float = 0.0
     avg_holding_days: float = 0.0; calmar_ratio: float = 0.0
     sortino_ratio: float = 0.0; daily_returns: list = None
+    oos_annualized_return: float = 0.0  # 样本外年化收益（OOS_DAYS 期间）
     def __post_init__(self):
         if self.tags is None: self.tags = []
         if self.params is None: self.params = {}

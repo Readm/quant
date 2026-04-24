@@ -56,7 +56,7 @@ def _backtest_one_cand(args):
         portfolio_params=pp,
     )
     try:
-        return bt.run()
+        return bt.run(oos_days=OOS_DAYS)
     except Exception as e:
         import traceback as _tb
         raise type(e)(
@@ -68,6 +68,7 @@ _N_BT_WORKERS = max(1, (os.cpu_count() or 4))
 MAX_ROUNDS_DEFAULT   = 20
 TOP_N_DEFAULT       = 4
 HOLDOUT_DAYS        = 30
+OOS_DAYS            = 252   # 样本外验证期（约1年），从每次回测末尾截出
 CORR_THRESHOLD      = 0.75
 
 
@@ -334,11 +335,15 @@ class Orchestrator:
                 holdout_ok = self._holdout_validate(final, symbols_data[0], regime)
                 if holdout_ok:
                     avg_bias = sum(r["bias"] for r in holdout_ok) / len(holdout_ok)
-                    print(f"\n[Holdout] 最近{HOLDOUT_DAYS}天 paper trade：")
+                    print(f"\n[OOS验证] 样本外{OOS_DAYS}天（Walk-Forward）：")
                     for hr in holdout_ok:
-                        flag = "✅" if abs(hr["bias"]) < 20 else "⚠️"
-                        print(f"  {flag} {hr['name']}: 模拟={hr['oospct']:+.1f}% 偏差={hr['bias']:+.1f}%")
-                    print(f"  平均偏差：{avg_bias:+.1f}%（|<10% 为理想）")
+                        ok = hr["oospct"] > 0 and hr["bias"] > -abs(hr["in_pct"]) * 0.8
+                        flag = "✅" if ok else "⚠️"
+                        print(f"  {flag} {hr['name']}: "
+                              f"样本外={hr['oospct']:+.1f}% | 训练内={hr['in_pct']:+.1f}% | "
+                              f"衰减={hr['bias']:+.1f}%")
+                    print(f"  平均OOS年化：{avg_bias + sum(r['in_pct'] for r in holdout_ok)/len(holdout_ok):+.1f}%"
+                          f"  平均衰减：{avg_bias:+.1f}%")
 
             # 元监控快照
             snap = make_snapshot(rnd, t_evals, mr_evals, debate, risk_results, sent, regime)
@@ -980,21 +985,14 @@ class Orchestrator:
     # ── Paper Trade ────────────────────────
 
     def _holdout_validate(self, selected, primary_data, regime):
-        pd0 = primary_data[0] if isinstance(primary_data, list) else primary_data
-        closes = (pd0.get("data", {}) or {}).get("closes", []) if isinstance(pd0, dict) else []
-        n      = len(closes)
-        if n < HOLDOUT_DAYS + 60: return []
-        split_i = n - HOLDOUT_DAYS
-        oos_ret = primary_data.get("returns", [0]*n)
-        if not oos_ret or len(oos_ret) < n: return []
-        oos_ret = oos_ret[split_i:]
+        """读取引擎已计算好的 oos_annualized_return，构造 holdout 报告。"""
         results = []
         for e in selected:
-            ann_oos = (sum(oos_ret)/len(oos_ret)) * 252
-            oos_pct = round(ann_oos*100, 2)
-            bias    = round(oos_pct - getattr(e,"annualized_return",0), 1)
-            results.append({"name":e.strategy_name,"oospct":oos_pct,
-                            "in_pct":getattr(e,"annualized_return",0),"bias":bias})
+            oos_pct = round(getattr(e, "oos_annualized_return", 0.0), 2)
+            in_pct  = round(getattr(e, "annualized_return",     0.0), 2)
+            bias    = round(oos_pct - in_pct, 1)
+            results.append({"name": e.strategy_name, "oospct": oos_pct,
+                            "in_pct": in_pct, "bias": bias})
         return results
 
     # ── 组合构建 ─────────────────────────
