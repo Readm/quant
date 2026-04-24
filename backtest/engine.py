@@ -600,7 +600,9 @@ class PortfolioBacktester:
         daily_rets = []
 
         for t in range(t_start, t_end):
-            if (t - t_start) % rebalance_freq == 0:
+            # 信号在 t 日收盘后生成，次日 (t+1) 开盘/收盘成交，消除同日未来函数
+            if (t - t_start) % rebalance_freq == 0 and t + 1 < t_end:
+                exec_t = t + 1
                 scores = {
                     sym: compute_factor_score(
                         closes_by_sym[sym], data_by_sym[sym],
@@ -609,25 +611,27 @@ class PortfolioBacktester:
                     for sym in sym_list
                 }
                 positive = {s: sc for s, sc in scores.items() if sc > 0}
-                pchg_t   = {s: (pctchg_by_sym[s][t] if t < len(pctchg_by_sym.get(s, [])) else 0.0)
-                            for s in positive}
+                # 涨跌停过滤用成交日 (exec_t)，排除无法买入的涨停板
+                pchg_exec = {s: (pctchg_by_sym[s][exec_t]
+                                 if exec_t < len(pctchg_by_sym.get(s, [])) else 0.0)
+                             for s in positive}
                 positive = {s: sc for s, sc in positive.items()
-                            if pchg_t.get(s, 0.0) < _LIMIT_UP}
+                            if pchg_exec.get(s, 0.0) < _LIMIT_UP}
                 selected = sorted(positive, key=positive.__getitem__,
                                   reverse=True)[:n_stocks]
 
                 target_w = compute_weights(
-                    selected, positive, weight_method, closes_by_sym, t, max_pos,
+                    selected, positive, weight_method, closes_by_sym, exec_t, max_pos,
                 )
 
                 sell_proceeds = 0.0
                 for sym in list(holdings.keys()):
-                    pchg = (pctchg_by_sym[sym][t]
-                            if t < len(pctchg_by_sym.get(sym, [])) else 0.0)
+                    pchg = (pctchg_by_sym[sym][exec_t]
+                            if exec_t < len(pctchg_by_sym.get(sym, [])) else 0.0)
                     if pchg <= _LIMIT_DOWN:
                         continue
                     shares = holdings.pop(sym)
-                    price  = closes_by_sym[sym][t]
+                    price  = closes_by_sym[sym][exec_t]
                     gross  = shares * price
                     net    = gross - gross * SELL_COST
                     sell_proceeds += net
@@ -638,7 +642,7 @@ class PortfolioBacktester:
                 for sym in selected:
                     w     = target_w.get(sym, 0.0)
                     alloc = total_eq * w
-                    price = closes_by_sym[sym][t]
+                    price = closes_by_sym[sym][exec_t]
                     if price <= 0 or alloc <= 0:
                         continue
                     cost   = alloc * BUY_COST

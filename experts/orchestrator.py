@@ -244,16 +244,17 @@ class Orchestrator:
 
             # ── 注入冠军保留（Champion Elitism）──────────────────────
             # 将上一轮的冠军策略注入本轮评估列表，保证不因探索失败而退步
+            # 用 strategy_id（含完整参数 hash）去重，防止同名不同参的变体踢掉真正冠军
             if self._champion_evals and rnd > 1:
-                current_names = {e.strategy_name for e in t_evals + mr_evals}
+                current_ids = {e.strategy_id for e in t_evals + mr_evals}
                 injected = 0
                 for ce in self._champion_evals:
-                    if ce.strategy_name not in current_names:
+                    if ce.strategy_id not in current_ids:
                         if getattr(ce, "strategy_type", "") == "trend":
                             t_evals.append(ce)
                         else:
                             mr_evals.append(ce)
-                        current_names.add(ce.strategy_name)
+                        current_ids.add(ce.strategy_id)
                         injected += 1
                 if injected:
                     print(f"  [冠军保留] 注入 {injected} 个上轮冠军策略")
