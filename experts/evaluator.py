@@ -198,9 +198,17 @@ class Evaluator:
             + alpha_scaled * W_ALPHA
         )
 
-        # v5.3: 模板多样性奖励 — 每轮Top中出现过的模板, 后续轮次打折
+        # v5.3: 模板多样性奖励
         diversity_bonus = self._diversity_bonus(template_key)
         raw_composite += diversity_bonus
+
+        # v5.4: 交易质量奖励 — 交易太少的高分策略统计不可靠
+        if n_trades >= 15:
+            raw_composite += 3.0
+        elif n_trades >= 8:
+            raw_composite += 1.0
+        elif n_trades <= 2:
+            raw_composite -= 2.0   # 仅1-2笔交易, 惩罚
 
         # PBO 折扣
         composite = min(100.0, round(raw_composite * pbo_multiplier, 1))
