@@ -120,14 +120,23 @@ def llm_analyze(prompt: str,
     )
 
     timeout_s = max(5, timeout_ms // 1000)
-    try:
-        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode("utf-8", errors="replace")[:500]
-        raise RuntimeError(f"DeepSeek HTTP {e.code}: {err_body}") from e
-    except Exception as e:
-        raise RuntimeError(f"DeepSeek 请求失败: {e}") from e
+
+    # 网络层重试（仅 No route to host / timeout），API 错误不重试
+    for attempt in range(1, 4):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", errors="replace")[:500]
+            raise RuntimeError(f"DeepSeek HTTP {e.code}: {err_body}") from e
+        except (urllib.error.URLError, OSError, TimeoutError) as e:
+            if attempt == 3:
+                raise RuntimeError(f"DeepSeek 网络失败(3次重试): {e}") from e
+            print(f"  [LLM] 网络重试 {attempt}/3: {e}")
+            time.sleep(3 * attempt)
+        except Exception as e:
+            raise RuntimeError(f"DeepSeek 请求失败: {e}") from e
 
     # 提取 content
     try:

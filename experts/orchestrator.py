@@ -225,9 +225,9 @@ class Orchestrator:
 
             print(f"\n[生成] {len(all_reports)} 个候选策略")
 
-            # Evaluator 评估
-            Evaluator.print_batch_report(self.evaluator.evaluate_batch(all_reports), rnd)
+            # Evaluator 评估 (只调用一次)
             all_evals = self.evaluator.evaluate_batch(all_reports)
+            Evaluator.print_batch_report(all_evals, rnd)
 
             # ── 冠军保留 ──────────────────────────────────────
             if self._champion_evals and rnd > 1:

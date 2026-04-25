@@ -118,6 +118,24 @@ class Evaluator:
         # 动态门槛（元专家可调整）
         self.ACCEPT_THRESHOLD = 45
         self.CONDITIONAL_THRESHOLD = 25
+        # v5.3: 模板多样性追踪 — 鼓励使用不同因子
+        self._template_rounds: dict = {}  # template_key → 最近出现在Top的轮次
+        self._current_round = 0
+
+    def _diversity_bonus(self, template_key: str) -> float:
+        """给长期未进入Top的模板加分，鼓励探索。越久没出现，加分越多。"""
+        if not template_key:
+            return 0.0
+        last_seen = self._template_rounds.get(template_key, -999)
+        gap = self._current_round - last_seen
+        if gap <= 1:
+            return 0.0       # 最近出现过，不加分
+        elif gap <= 3:
+            return 2.0       # 3轮没出现，小加分
+        elif gap <= 6:
+            return 5.0       # 6轮没出现
+        else:
+            return 8.0       # 长期未出现，大加分
 
     # ── 核心评估 ─────────────────────────
 
@@ -179,6 +197,10 @@ class Evaluator:
             + dd_s      * W_DRAWDOWN
             + alpha_scaled * W_ALPHA
         )
+
+        # v5.3: 模板多样性奖励 — 每轮Top中出现过的模板, 后续轮次打折
+        diversity_bonus = self._diversity_bonus(template_key)
+        raw_composite += diversity_bonus
 
         # PBO 折扣
         composite = min(100.0, round(raw_composite * pbo_multiplier, 1))
@@ -251,9 +273,15 @@ class Evaluator:
         )
 
     def evaluate_batch(self, reports: list) -> List[EvalResult]:
-        """批量评估并按综合分降序排列"""
+        """批量评估并按综合分降序排列。每轮递增追踪轮次。"""
+        self._current_round += 1
         results = [self.evaluate(r, template_key=getattr(r, "template_key", "")) for r in reports]
         results.sort(key=lambda x: x.composite, reverse=True)
+        # v5.3: 追踪Top-3使用的模板, 下一轮给未使用模板加分
+        for r in results[:3]:
+            tk = getattr(r, "template_key", "") or ""
+            if tk:
+                self._template_rounds[tk] = self._current_round
         return results
 
     # ══════════════════════════════════════════
