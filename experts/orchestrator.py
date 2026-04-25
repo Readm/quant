@@ -58,10 +58,10 @@ def _backtest_one_cand(args):
     try:
         return bt.run(oos_days=OOS_DAYS)
     except Exception as e:
-        import traceback as _tb
+        import sys as _sys
         raise type(e)(
             f"[{cand.get('template_key')} params={cand.get('params')}] {e}"
-        ).with_traceback(_tb.extract_stack()) from e
+        ).with_traceback(_sys.exc_info()[2]) from e
 
 _N_BT_WORKERS = max(1, (os.cpu_count() or 4))
 

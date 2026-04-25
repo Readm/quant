@@ -153,7 +153,7 @@ def _score_ichimoku_signal(c, data, indicators, params, t):
     kijun  = int(params.get("kijun", 26))
     highs  = data.get("highs", c)
     lows   = data.get("lows",  c)
-    if t < kijun:
+    if t < max(tenkan, kijun):
         return 0.0
     t_line = (max(highs[t - tenkan:t]) + min(lows[t - tenkan:t])) / 2
     k_line = (max(highs[t - kijun:t])  + min(lows[t - kijun:t]))  / 2

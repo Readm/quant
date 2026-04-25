@@ -50,6 +50,8 @@ def _load():
             fn = getattr(module, "compute_score", None)
             if not callable(fn):
                 continue
+            if registry.get(key, {}).get("banned"):
+                continue
 
             GENERATED_FACTORS[key] = fn
 
