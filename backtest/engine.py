@@ -24,8 +24,8 @@ SELL_COST = _TC["sell"]
 # ── 默认组合参数 ────────────────────────────────────────────────────
 DEFAULT_PORTFOLIO_PARAMS = {
     "n_stocks":         2,
-    "rebalance_freq":   20,
-    "weight_method":    "equal",
+    "rebalance_freq":   10,             # v5.3: 20→10, 更频繁调仓
+    "weight_method":    "vol_inverse",  # v5.3: equal→vol_inverse, 低波动高权重
     "max_position_pct": 0.95,
 }
 

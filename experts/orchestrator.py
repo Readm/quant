@@ -822,7 +822,7 @@ class Orchestrator:
     _PORTFOLIO_PARAM_RANGES = {
         "n_stocks":         [2, 3, 5],              # 同时持仓数量（最低2只）
         "rebalance_freq":   [5, 10, 20, 60],         # 调仓间隔（交易日）
-        "weight_method":    ["equal", "score_weighted", "vol_inverse"],
+        "weight_method":    ["vol_inverse", "vol_inverse", "score_weighted", "score_weighted", "equal"],
         "max_position_pct": (0.30, 1.00),            # 单股最大仓位
     }
 
