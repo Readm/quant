@@ -57,6 +57,7 @@ class DebateManager:
                        risk_results, round_num):
         from experts.modules.llm_proxy import llm_analyze
 
+        # v5: 统一处理 — trend_evals 可能包含全部策略, mr_evals 可能为空
         all_evals   = list(trend_evals or []) + list(mr_evals or [])
         regime_name = getattr(market_regime, "name", "UNKNOWN")
         rounds      = []
@@ -78,25 +79,17 @@ class DebateManager:
             prompt = self._strategy_prompt(e, regime_name)
             result = llm_analyze(prompt, task="strategy_verdict",
                                  temperature=0.6, timeout_ms=25000)
-            if "error" in result:
-                print(f"  [辩论] {e.strategy_name} LLM 评审失败: {result['error']}")
-                sv = StrategyVerdict(
-                    strategy_id=e.strategy_id,
-                    strategy_name=e.strategy_name,
-                    composite=e.composite,
-                )
-            else:
-                sv = StrategyVerdict(
-                    strategy_id   = e.strategy_id,
-                    strategy_name = e.strategy_name,
-                    composite     = e.composite,
-                    pros          = list(result.get("pros", [])),
-                    cons          = list(result.get("cons", [])),
-                    verdict       = str(result.get("verdict", "HOLD")),
-                    confidence    = min(1.0, max(0.0, float(result.get("confidence",    0.5)))),
-                    weight_advice = min(0.5, max(0.0, float(result.get("weight_advice", 0.0)))),
-                    analysis      = str(result.get("analysis", "")),
-                )
+            sv = StrategyVerdict(
+                strategy_id   = e.strategy_id,
+                strategy_name = e.strategy_name,
+                composite     = e.composite,
+                pros          = list(result.get("pros", [])),
+                cons          = list(result.get("cons", [])),
+                verdict       = str(result.get("verdict", "HOLD")),
+                confidence    = min(1.0, max(0.0, float(result.get("confidence",    0.5)))),
+                weight_advice = min(0.5, max(0.0, float(result.get("weight_advice", 0.0)))),
+                analysis      = str(result.get("analysis", "")),
+            )
             strategy_verdicts.append(sv)
             rounds.append(DebateRound(
                 speaker  = e.strategy_name,
@@ -111,20 +104,15 @@ class DebateManager:
         camp = llm_analyze(camp_prompt, task="camp_verdict",
                            temperature=0.5, timeout_ms=20000)
 
-        if "error" in camp:
-            print(f"  [辩论] 阵营裁决 LLM 失败: {camp['error']}")
-            winner = "TIE"; tw = 0.5; mw = 0.5
-            reason = "LLM 不可用"; advice = ""
-        else:
-            winner = str(camp.get("winner", "TIE"))
-            tw     = min(1.0, max(0.0, float(camp.get("trend_weight", 0.5))))
-            mw     = min(1.0, max(0.0, float(camp.get("mr_weight",    0.5))))
-            reason = str(camp.get("reason", ""))
-            advice = str(camp.get("advice", ""))
-            total  = tw + mw
-            if total > 0:
-                tw = round(tw / total, 3)
-                mw = round(mw / total, 3)
+        winner = str(camp.get("winner", "TIE"))
+        tw     = min(1.0, max(0.0, float(camp.get("trend_weight", 0.5))))
+        mw     = min(1.0, max(0.0, float(camp.get("mr_weight",    0.5))))
+        reason = str(camp.get("reason", ""))
+        advice = str(camp.get("advice", ""))
+        total  = tw + mw
+        if total > 0:
+            tw = round(tw / total, 3)
+            mw = round(mw / total, 3)
 
         return DebateResult(
             winner            = winner,

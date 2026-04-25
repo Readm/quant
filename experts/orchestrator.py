@@ -1,13 +1,14 @@
 """
-orchestrator.py — 多专家迭代系统 v4.0（全面改进版）
+orchestrator.py — 多专家迭代系统 v5.0（因子组合版）
 =====================================================
 主要改进：
-  ✅ 完全移除合成数据（彻底删除 generate_synthetic）
+  ✅ 合并 TrendExpert + MeanReversionExpert → FactorComboExpert
+  ✅ 28 因子统一竞争，候选支持 1~3 因子组合 (AND/OR/加权)
   ✅ 结构化反馈协议（StructuredFeedback）取代模糊字符串
   ✅ 多样性约束生成（30%随机探索 + 30%反馈优化 + 40% exploitation）
   ✅ 策略相关性校验（ρ>0.75 则降低权重）
   ✅ Paper Trade 验证（holdout 窗口模拟实盘）
-  ✅ 三专家辩论（Trend + MeanReversion + Regime）
+  ✅ LLM 策略评审（两阶段：逐策略评审 + 权重裁决）
 """
 
 import sys, json, math, random, os, time
@@ -17,8 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from experts.modules.blackboard import Blackboard
 from experts.modules.risk_engine import RiskExpert
-from experts.specialists.expert1a_trend import TrendExpert
-from experts.specialists.expert1b_mean_reversion import MeanReversionExpert
+from experts.specialists.factor_combo_expert import FactorComboExpert
 from experts.evaluator import Evaluator
 from experts.meta_monitor import MetaMonitor, RoundSnapshot
 from experts.debate_manager import DebateManager
@@ -138,8 +138,7 @@ class Orchestrator:
         self.top_n      = top_n
         self.bb             = Blackboard()
         self.risk_expert    = RiskExpert()
-        self.trend_expert   = TrendExpert(seed=seed)
-        self.mr_expert      = MeanReversionExpert(seed=seed+1)
+        self.combo_expert   = FactorComboExpert(seed=seed)
         self.evaluator      = Evaluator()
         self.debate_manager = DebateManager()
         self.debate_manager.risk_expert = self.risk_expert
@@ -160,8 +159,7 @@ class Orchestrator:
 
         # ── 元专家动态参数 ──────────────────────────────────
         self._meta_params = {
-            "trend_candidates": 30,
-            "mr_candidates": 25,
+            "combo_candidates": 55,
             "accept_threshold": 45,
             "conditional_threshold": 25,
             "n_stocks_min": 2,
@@ -176,8 +174,8 @@ class Orchestrator:
 
     def run(self):
         print("="*68)
-        print("  多专家协作量化系统 v4.0（纯实盘 + 结构化反馈）")
-        print("  Pipeline(A) + Adversarial(B) + Correlation(C) + Holdout(D)")
+        print("  多专家协作量化系统 v5.0（因子组合 + LLM评审）")
+        print("  FactorComboExpert(55候选) + LLM Debate + Correlation + Holdout")
         print("="*68)
 
         symbols_data = load_symbols_data(self.symbols, self.n_days)
@@ -202,85 +200,67 @@ class Orchestrator:
 
             _dedup_rng = random.Random(self.seed + rnd * 7919)
             mp = self._meta_params
-            t_n = mp["trend_candidates"]
-            mr_n = mp["mr_candidates"]
-            t_cands  = self._dedup_candidates(
-                self._generate_diverse_candidates(self.trend_expert, t_n, fb_list, need_div, "trend", rnd),
+            combo_n = mp["combo_candidates"]
+            all_cands = self._dedup_candidates(
+                self._generate_diverse_candidates(self.combo_expert, combo_n, fb_list, need_div, "combo", rnd),
                 _dedup_rng)
-            mr_cands = self._dedup_candidates(
-                self._generate_diverse_candidates(self.mr_expert, mr_n, fb_list, need_div, "mean_reversion", rnd),
-                _dedup_rng)
-            all_cands = t_cands + mr_cands
 
             _t_bt = time.perf_counter()
-            t_reports  = self._backtest_multi_symbol(self.trend_expert,  t_cands,  symbols_data)
-            mr_reports = self._backtest_multi_symbol(self.mr_expert,     mr_cands, symbols_data)
+            all_reports = self._backtest_multi_symbol(self.combo_expert, all_cands, symbols_data)
             _dt_bt = time.perf_counter() - _t_bt
 
-            # Register completed-backtest hashes (post-evaluation, authoritative)
-            for c in t_cands + mr_cands:
+            # Register completed-backtest hashes
+            for c in all_cands:
                 self._seen_cand_hashes.add(
                     self._cand_hash(c["template_key"], c["params"],
                                     c.get("portfolio_params", {}))
                 )
 
-            for r, c in zip(t_reports, t_cands):
+            for r, c in zip(all_reports, all_cands):
                 r.strategy_id   = c["strategy_id"]
-                r.strategy_type = "trend"
-            for r, c in zip(mr_reports, mr_cands):
-                r.strategy_id   = c["strategy_id"]
-                r.strategy_type = "mean_reversion"
+                r.strategy_type = "combo"
 
             # 注入结构化反馈到候选元数据
-            self._apply_sf_to_candidates(all_cands, t_reports, mr_reports)
+            self._apply_sf_to_candidates(all_cands, all_reports, [])
 
-            print(f"\n[生成] 趋势 {len(t_reports)} 个 + 均值回归 {len(mr_reports)} 个候选")
+            print(f"\n[生成] {len(all_reports)} 个候选策略")
 
-            # Expert2 评估
-            all_reports = t_reports + mr_reports
+            # Evaluator 评估
             Evaluator.print_batch_report(self.evaluator.evaluate_batch(all_reports), rnd)
-            t_evals = self.evaluator.evaluate_batch(t_reports)
-            mr_evals = self.evaluator.evaluate_batch(mr_reports)
+            all_evals = self.evaluator.evaluate_batch(all_reports)
 
-            # ── 注入冠军保留（Champion Elitism）──────────────────────
-            # 将上一轮的冠军策略注入本轮评估列表，保证不因探索失败而退步
-            # 用 strategy_id（含完整参数 hash）去重，防止同名不同参的变体踢掉真正冠军
+            # ── 冠军保留 ──────────────────────────────────────
             if self._champion_evals and rnd > 1:
-                current_ids = {e.strategy_id for e in t_evals + mr_evals}
+                current_ids = {e.strategy_id for e in all_evals}
                 injected = 0
                 for ce in self._champion_evals:
                     if ce.strategy_id not in current_ids:
-                        if getattr(ce, "strategy_type", "") == "trend":
-                            t_evals.append(ce)
-                        else:
-                            mr_evals.append(ce)
+                        all_evals.append(ce)
                         current_ids.add(ce.strategy_id)
                         injected += 1
                 if injected:
                     print(f"  [冠军保留] 注入 {injected} 个上轮冠军策略")
 
-            t_pass = [e for e in t_evals if e.decision != "REJECT"]
-            mr_pass = [e for e in mr_evals if e.decision != "REJECT"]
-            all_pass = t_pass + mr_pass
-            print(f"\n[评估] 通过 {len(all_pass)} 个（趋势{len(t_pass)}+均值回归{len(mr_pass)}）")
+            all_pass = [e for e in all_evals if e.decision != "REJECT"]
+            print(f"\n[评估] 通过 {len(all_pass)} 个")
 
-            # 更新 best-ever 注册表（跨轮次保留最优参数）
-            id_to_cand = {c['strategy_id']: c for c in t_cands + mr_cands}
-            for e in t_evals + mr_evals:
+            # 更新 best-ever 注册表
+            id_to_cand = {c['strategy_id']: c for c in all_cands}
+            for e in all_evals:
                 if e.decision == 'REJECT':
                     continue
                 cand = id_to_cand.get(e.strategy_id, {})
-                tk = cand.get('template_key', '') or e.template_key
+                tk = cand.get('template_key', '') or getattr(e, 'template_key', '')
                 if tk and e.composite > self._best_ever.get(tk, {}).get('score', -999):
                     self._best_ever[tk] = {
-                        'params': dict(e.params),
+                        'params': dict(getattr(e, 'params', {})),
                         'portfolio_params': dict(cand.get('portfolio_params', {})),
                         'score': e.composite,
                     }
 
-            # 更新冠军注册表：保留 top-3 非REJECT策略用于下轮注入
+            # 冠军注册表：保留 top-3 用于下轮注入
             self._champion_evals = sorted(
-                [e for e in t_evals + mr_evals if e.decision != "REJECT"],
+                [e for e in all_evals if e.decision != "REJECT"],
                 key=lambda e: float(e.composite), reverse=True
             )[:3]
 
@@ -288,23 +268,21 @@ class Orchestrator:
                 print("  ⚠️ 无候选通过，跳过本轮"); continue
 
             # TODO: news_sentiment 尚未接入真实搜索 API，暂时跳过
-            # 待实现：接入 SerpAPI / Bing Search API 获取真实新闻后再启用
             sent   = {"sentiment_score": 0.0, "sentiment_label": "NEUTRAL",
                       "confidence": 0.0, "top_stories": [], "market_tips": [],
                       "explanation": "news_sentiment 未启用（TODO）"}
-            regime = None   # 移除 MarketRegimeExpert：策略不依赖实时市场判断
             self.bb.write("News", rnd, "sentiment", sent)
 
-            # 对抗辩论
+            # LLM 策略评审
             _t_debate = time.perf_counter()
-            debate = self.debate_manager.conduct_debate(t_pass, mr_pass, regime, [], rnd)
+            debate = self.debate_manager.conduct_debate(all_pass, [], None, [], rnd)
             _dt_debate = time.perf_counter() - _t_debate
             DebateManager.print_debate(debate, rnd)
 
             # 风险评估
             risk_results = self.risk_expert.analyze_batch([
-                (e.strategy_name, e.params,
-                 e.daily_returns if hasattr(e,"daily_returns") and e.daily_returns else [],
+                (e.strategy_name, getattr(e, 'params', {}),
+                 e.daily_returns if hasattr(e, "daily_returns") and e.daily_returns else [],
                  e.total_trades) for e in all_pass
             ])
             print(f"\n[风险]")
@@ -313,7 +291,7 @@ class Orchestrator:
                 print(f"  [{ico}] {r.strategy_name}: {r.risk_rating} VaR99={r.var_99}%")
 
             # 组合权重
-            portfolio = self._build_portfolio(debate, all_pass, risk_results, regime)
+            portfolio = self._build_portfolio(debate, all_pass, risk_results, None)
 
             # 相关性校验
             corr_map = compute_correlation_matrix(all_pass)
@@ -328,12 +306,12 @@ class Orchestrator:
             print(f"\n[结果] 入选 {len(final)} 个策略：")
             for e in final:
                 w = float(e.weight) if isinstance(e.weight, (int, float)) and e.weight >= 0 else 0.0
-                print(f"  · {e.strategy_name}({e.strategy_type}) 分={float(e.composite):.1f} 权重={w:.1%}")
+                print(f"  · {e.strategy_name} 分={float(e.composite):.1f} 权重={w:.1%}")
 
             # Paper Trade 验证
             holdout_ok = []
             if rnd > 1:
-                holdout_ok = self._holdout_validate(final, symbols_data[0], regime)
+                holdout_ok = self._holdout_validate(final, symbols_data[0], None)
                 if holdout_ok:
                     avg_bias = sum(r["bias"] for r in holdout_ok) / len(holdout_ok)
                     print(f"\n[OOS验证] 样本外{OOS_DAYS}天（Walk-Forward）：")
@@ -347,7 +325,7 @@ class Orchestrator:
                           f"  平均衰减：{avg_bias:+.1f}%")
 
             # 元监控快照
-            snap = make_snapshot(rnd, t_evals, mr_evals, debate, risk_results, sent, regime)
+            snap = make_snapshot(rnd, all_evals, [], debate, risk_results, sent, None)
             self.monitor.record_round(snap)
 
             # 收敛判断：基于 all_pass（不只是 final 前4名），5轮无提升才收敛
@@ -364,41 +342,34 @@ class Orchestrator:
             converged = (self.no_improve >= NO_IMPROVE_THRESHOLD)
 
             # ── LLM 元专家评估（每轮，可覆盖收敛判断）─────────────
-            round_strats = [eval_to_strat_dict(e) for e in t_evals + mr_evals]
+            round_strats = [eval_to_strat_dict(e) for e in all_evals]
             _t_meta = time.perf_counter()
             meta_eval = self.monitor.llm_evaluate_round(round_strats, self.best_score, self.no_improve)
             _dt_meta = time.perf_counter() - _t_meta
-            _meta_ok = meta_eval.get("_llm_available", False)
-            if meta_eval.get("_llm_failed"):
-                print(f"\n[元专家] ❌ LLM失败（3次重试均失败）：{meta_eval.get('key_insight','')}")
-                print(f"[元专家] 本轮收敛判断将完全依赖规则，无LLM干预")
-            elif _meta_ok:
-                print(f"\n[元专家] {meta_eval.get('round_summary','')}")
-                if meta_eval.get("key_insight"):
-                    print(f"[元专家] 关键发现：{meta_eval['key_insight']}")
-                if not meta_eval.get("convergence_is_real", True) and converged:
-                    print(f"[元专家] ⚠️ 判定当前收敛为假象（{meta_eval.get('continue_reason','')}），重置计数器")
-                    converged = False
-                    self.no_improve = 0
+            print(f"\n[元专家] {meta_eval.get('round_summary','')}")
+            if meta_eval.get("key_insight"):
+                print(f"[元专家] 关键发现：{meta_eval['key_insight']}")
+            if not meta_eval.get("convergence_is_real", True) and converged:
+                print(f"[元专家] ⚠️ 判定当前收敛为假象（{meta_eval.get('continue_reason','')}），重置计数器")
+                converged = False
+                self.no_improve = 0
 
             # ── 元专家动态参数规划（为下一轮准备）─────────────
-            self._meta_history["total_candidates"] += len(t_evals) + len(mr_evals)
-            self._meta_history["total_accepted"] += len(t_pass) + len(mr_pass)
-            self._meta_history["total_rejected"] += (len(t_evals) + len(mr_evals)) - (len(t_pass) + len(mr_pass))
+            self._meta_history["total_candidates"] += len(all_evals)
+            self._meta_history["total_accepted"] += len(all_pass)
+            self._meta_history["total_rejected"] += len(all_evals) - len(all_pass)
 
             if rnd < self.max_rounds and not converged:
                 _t_plan = time.perf_counter()
                 round_data = {
                     "round": rnd,
                     "top_score": round(top_score, 1),
-                    "accepted": len(t_pass) + len(mr_pass),
-                    "rejected": (len(t_evals) + len(mr_evals)) - (len(t_pass) + len(mr_pass)),
-                    "total": len(t_evals) + len(mr_evals),
-                    "trend_accepted": len(t_pass),
-                    "mr_accepted": len(mr_pass),
-                    "zero_trade_count": sum(1 for e in t_evals + mr_evals if getattr(e, "total_trades", 0) == 0),
-                    "avg_trades": sum(getattr(e, "total_trades", 0) for e in t_evals + mr_evals) / max(len(t_evals) + len(mr_evals), 1),
-                    "avg_score": round(sum(e.composite for e in t_evals + mr_evals) / max(len(t_evals) + len(mr_evals), 1), 1),
+                    "accepted": len(all_pass),
+                    "rejected": len(all_evals) - len(all_pass),
+                    "total": len(all_evals),
+                    "zero_trade_count": sum(1 for e in all_evals if getattr(e, "total_trades", 0) == 0),
+                    "avg_trades": sum(getattr(e, "total_trades", 0) for e in all_evals) / max(len(all_evals), 1),
+                    "avg_score": round(sum(float(getattr(e, "composite", 0)) for e in all_evals) / max(len(all_evals), 1), 1),
                 }
                 plan = self.monitor.llm_plan_next_round(round_data, {
                     "best_score": self.best_score,
@@ -408,39 +379,33 @@ class Orchestrator:
                 })
                 _dt_plan = time.perf_counter() - _t_plan
 
-                if plan.get("_llm_available"):
-                    new_params = plan.get("next_round_params", {})
-                    old_t = self._meta_params["trend_candidates"]
-                    old_mr = self._meta_params["mr_candidates"]
-                    old_acc = self._meta_params["accept_threshold"]
-                    self._meta_params.update(new_params)
+                new_params = plan.get("next_round_params", {})
+                old_combo = self._meta_params["combo_candidates"]
+                old_acc = self._meta_params["accept_threshold"]
+                self._meta_params.update(new_params)
 
-                    # 同步更新 evaluator 的门槛
-                    self.evaluator.ACCEPT_THRESHOLD = self._meta_params["accept_threshold"]
-                    self.evaluator.CONDITIONAL_THRESHOLD = self._meta_params["conditional_threshold"]
+                # 同步更新 evaluator 的门槛
+                self.evaluator.ACCEPT_THRESHOLD = self._meta_params["accept_threshold"]
+                self.evaluator.CONDITIONAL_THRESHOLD = self._meta_params["conditional_threshold"]
 
-                    # 同步更新 portfolio 搜索空间
-                    self._PORTFOLIO_PARAM_RANGES["n_stocks"] = list(range(
-                        self._meta_params["n_stocks_min"],
-                        self._meta_params["n_stocks_max"] + 1
-                    ))
-                    if "rebalance_options" in new_params:
-                        self._PORTFOLIO_PARAM_RANGES["rebalance_freq"] = new_params["rebalance_options"]
+                # 同步更新 portfolio 搜索空间
+                self._PORTFOLIO_PARAM_RANGES["n_stocks"] = list(range(
+                    self._meta_params["n_stocks_min"],
+                    self._meta_params["n_stocks_max"] + 1
+                ))
+                if "rebalance_options" in new_params:
+                    self._PORTFOLIO_PARAM_RANGES["rebalance_freq"] = new_params["rebalance_options"]
 
-                    changes = []
-                    if old_t != self._meta_params["trend_candidates"]:
-                        changes.append(f"趋势候选 {old_t}→{self._meta_params['trend_candidates']}")
-                    if old_mr != self._meta_params["mr_candidates"]:
-                        changes.append(f"MR候选 {old_mr}→{self._meta_params['mr_candidates']}")
-                    if abs(old_acc - self._meta_params["accept_threshold"]) > 0.1:
-                        changes.append(f"ACCEPT门槛 {old_acc}→{self._meta_params['accept_threshold']}")
-                    if changes:
-                        print(f"\n[元专家-规划] 下轮参数调整: {'；'.join(changes)}")
-                    print(f"[元专家-规划] 理由: {plan.get('reasoning', '')}")
-                    if plan.get("traps_detected"):
-                        print(f"[元专家-规划] 检测陷阱: {', '.join(plan['traps_detected'])}")
-                else:
-                    print(f"\n[元专家-规划] ⚠️ LLM不可用，保持当前参数")
+                changes = []
+                if old_combo != self._meta_params["combo_candidates"]:
+                    changes.append(f"候选数 {old_combo}→{self._meta_params['combo_candidates']}")
+                if abs(old_acc - self._meta_params["accept_threshold"]) > 0.1:
+                    changes.append(f"ACCEPT门槛 {old_acc}→{self._meta_params['accept_threshold']}")
+                if changes:
+                    print(f"\n[元专家-规划] 下轮参数调整: {'；'.join(changes)}")
+                print(f"[元专家-规划] 理由: {plan.get('reasoning', '')}")
+                if plan.get("traps_detected"):
+                    print(f"[元专家-规划] 检测陷阱: {', '.join(plan['traps_detected'])}")
 
                 rp_meta_plan = plan
             else:
@@ -454,10 +419,8 @@ class Orchestrator:
 
             rp = RoundReportFake(rnd)
             rp.meta_evaluation = meta_eval
-            rp.trend_evals   = t_evals
-            rp.mr_evals      = mr_evals
-            rp.trend_reports = t_reports
-            rp.mr_reports    = mr_reports
+            rp.all_evals      = all_evals
+            rp.all_reports    = all_reports
             rp.final_selected = final
             rp.converged     = converged
             rp.debate_result = debate
@@ -510,16 +473,13 @@ class Orchestrator:
             ],
         })
 
-        if arch_review.get("_llm_available"):
-            rating = arch_review.get("overall_rating", "N/A")
-            print(f"\n[架构评审] 总体评级: {rating}")
-            print(f"[架构评审] 优势: {'；'.join(arch_review.get('strengths', [])[:3])}")
-            print(f"[架构评审] 关键问题: {'；'.join(arch_review.get('critical_issues', [])[:3])}")
-            print(f"[架构评审] 下次重点: {arch_review.get('next_iteration_focus', '')}")
-            for prio in arch_review.get("improvement_priorities", [])[:5]:
-                print(f"  [{prio.get('priority','?')}] {prio.get('area','')}: {prio.get('action','')} → {prio.get('impact','')}")
-        else:
-            print("\n[架构评审] ⚠️ LLM不可用，跳过架构评审")
+        rating = arch_review.get("overall_rating", "N/A")
+        print(f"\n[架构评审] 总体评级: {rating}")
+        print(f"[架构评审] 优势: {'；'.join(arch_review.get('strengths', [])[:3])}")
+        print(f"[架构评审] 关键问题: {'；'.join(arch_review.get('critical_issues', [])[:3])}")
+        print(f"[架构评审] 下次重点: {arch_review.get('next_iteration_focus', '')}")
+        for prio in arch_review.get("improvement_priorities", [])[:5]:
+            print(f"  [{prio.get('priority','?')}] {prio.get('area','')}: {prio.get('action','')} → {prio.get('impact','')}")
 
         self._architecture_review = arch_review
 
@@ -599,7 +559,7 @@ class Orchestrator:
         results = []
         for best_report, c in zip(raw, cands):
             if best_report is None:
-                from experts.specialists.expert1a_trend import BacktestReport
+                from experts.specialists.factor_combo_expert import BacktestReport
                 best_report = BacktestReport(
                     strategy_id=c["strategy_id"], strategy_name=c["strategy_name"])
             best_report.strategy_id   = c["strategy_id"]
@@ -673,8 +633,7 @@ class Orchestrator:
         Replace duplicates with a fresh random candidate of the same template type.
         """
         templates_map = {t["key"]: t for t in
-                         getattr(self.trend_expert, "TEMPLATES", []) +
-                         getattr(self.mr_expert,    "TEMPLATES", [])}
+                         getattr(self.combo_expert, "TEMPLATES", [])}
         result = []
         for c in cands:
             pp = c.get("portfolio_params", {})
@@ -933,14 +892,9 @@ class Orchestrator:
             )
             for tpl in GENERATED_TEMPLATES:
                 key   = tpl["key"]
-                stype = tpl.get("type", "trend")
                 entry = {"key": key, "name": tpl["name"], "params": tpl.get("params", {})}
-                if stype == "trend":
-                    if not any(t["key"] == key for t in self.trend_expert.TEMPLATES):
-                        self.trend_expert.TEMPLATES.append(entry)
-                else:
-                    if not any(t["key"] == key for t in self.mr_expert.TEMPLATES):
-                        self.mr_expert.TEMPLATES.append(entry)
+                if not any(t["key"] == key for t in self.combo_expert.TEMPLATES):
+                    self.combo_expert.TEMPLATES.append(entry)
             for key, ranges in GENERATED_PARAM_RANGES.items():
                 if key not in self._PARAM_RANGES:
                     self._PARAM_RANGES[key] = ranges
@@ -976,8 +930,8 @@ class Orchestrator:
             else:              p[pname] = round(p[pname]*((100+mag)/100), 4)
         return p
 
-    def _apply_sf_to_candidates(self, candidates, t_reports, mr_reports):
-        m = {r.strategy_id: r for r in t_reports + mr_reports}
+    def _apply_sf_to_candidates(self, candidates, reports, _unused):
+        m = {r.strategy_id: r for r in (reports or [])}
         for c in candidates:
             r = m.get(c["strategy_id"])
             if r and hasattr(r, "structured_feedback") and r.structured_feedback:
@@ -1000,29 +954,18 @@ class Orchestrator:
 
     def _build_portfolio(self, debate, pass_evals, risk_results, regime):
         risk_map = {r.strategy_name: r.risk_rating for r in risk_results}
-        tw = debate.trend_weight; mw = debate.mr_weight
-        max_pos = (regime.max_position_pct if regime else 0.50)
-        def allocate(items, bw):
-            if not items: return {}
-            total = sum(e.composite for e,_ in items) or 1
-            out = {}
-            for e, risk in items:
-                w = bw*(e.composite/total)
-                if risk=="HIGH":     w*=0.7
-                elif risk=="MEDIUM": w*=0.9
-                out[e.strategy_id] = round(w,4)
-            return out
-        trend_items = [(e,risk_map.get(e.strategy_name,"MEDIUM")) for e in pass_evals if e.strategy_type=="trend"]
-        mr_items    = [(e,risk_map.get(e.strategy_name,"MEDIUM")) for e in pass_evals if e.strategy_type=="mean_reversion"]
-        tw_map = allocate(trend_items, tw)
-        mw_map = allocate(mr_items, mw)
-        all_ids = set(tw_map)|set(mw_map)
-        total_w = sum(tw_map.get(s,0)+mw_map.get(s,0) for s in all_ids) or 1
-        weights = {sid: round((tw_map.get(sid,0)+mw_map.get(sid,0))/total_w*max_pos, 4) for sid in all_ids}
-        result  = {}
+        # v5: 所有策略统一权重，不再区分 trend/mr
+        bw = 1.0
+        max_pos = 0.50
+        total = sum(float(getattr(e, 'composite', 0)) for e in pass_evals) or 1
+        result = {}
         for e in pass_evals:
-            w = weights.get(e.strategy_id, 0.0)
-            e.weight = float(w) if isinstance(w, float) else 0.0
+            risk = risk_map.get(e.strategy_name, "MEDIUM")
+            w = bw * (float(getattr(e, 'composite', 0)) / total)
+            if risk == "HIGH":     w *= 0.7
+            elif risk == "MEDIUM": w *= 0.9
+            w = round(w * max_pos, 4)
+            e.weight = w
             result[e.strategy_id] = e
         return result
 
@@ -1040,8 +983,7 @@ class RoundReportFake:
     def __init__(self, rnd):
         self.round_num=rnd; self.timestamp=datetime.now().strftime("%H:%M:%S")
         self.market_regime=None; self.sentiment=None
-        self.trend_reports=[]; self.mr_reports=[]
-        self.all_reports=[]; self.trend_evals=[]; self.mr_evals=[]
+        self.all_reports=[]; self.all_evals=[]
         self.debate_result=None; self.risk_results=[]
         self.final_selected=[]; self.portfolio_weights={}
         self.converged=False; self.holdout_results=[]; self.meta_evaluation={}
@@ -1057,5 +999,5 @@ if __name__ == "__main__":
     p.add_argument("--seed",type=int,default=2026)
     p.add_argument("--top-n",type=int,default=4)
     args = p.parse_args()
-    print("🔵 多专家系统 v4.0 启动（仅使用实盘数据）")
+    print("🔵 因子组合量化系统 v5.0 启动")
     Orchestrator(args.symbols,args.days,args.seed,args.rounds,args.top_n).run()

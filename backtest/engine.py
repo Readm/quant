@@ -519,7 +519,7 @@ class PortfolioBacktester:
         oos_days > 0 时：IS 区间 = [1, n-oos_days)，OOS 区间 = [n-oos_days, n)。
         OOS 结果写入 report.oos_annualized_return。
         """
-        from experts.specialists.expert1a_trend import BacktestReport
+        from experts.specialists.factor_combo_expert import BacktestReport
 
         pp             = self.pp
         n_stocks       = max(1, int(pp["n_stocks"]))
@@ -664,7 +664,7 @@ class PortfolioBacktester:
     # ── 统计指标 ────────────────────────────────────────────────────
     def _build_report(self, sid, name, params, equity, trades,
                        daily_rets, n, cash):
-        from experts.specialists.expert1a_trend import BacktestReport
+        from experts.specialists.factor_combo_expert import BacktestReport
         final = float(equity[-1])
         tr    = final / cash - 1
         ann   = (final / cash) ** (252 / max(n - 1, 1)) - 1

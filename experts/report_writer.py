@@ -9,30 +9,29 @@ from pathlib import Path
 from experts.meta_monitor import RoundSnapshot
 
 
-def make_snapshot(rnd, t_evals, mr_evals, debate, risk_results, sent, regime) -> RoundSnapshot:
+def make_snapshot(rnd, all_evals, _unused, debate, risk_results, sent, regime) -> RoundSnapshot:
     """将本轮数据整理成 RoundSnapshot，供 MetaMonitor 记录"""
     elim_causes: dict = {}
-    for e in (t_evals or []) + (mr_evals or []):
+    for e in (all_evals or []):
         if e.decision == "REJECT":
-            key = (e.elimination_note or e.reason or "?")[:20]
+            key = (e.elimination_note or getattr(e, 'reason', '') or "?")[:20]
             elim_causes[key] = elim_causes.get(key, 0) + 1
 
     avg_var   = sum(r.var_99 for r in (risk_results or [])) / max(len(risk_results), 1)
-    all_ev    = (t_evals or []) + (mr_evals or [])
+    all_ev    = list(all_evals or [])
     top_score = max([e.composite for e in all_ev], default=0.0)
     avg_score = sum(e.composite for e in all_ev) / max(len(all_ev), 1)
-    t_pass    = [e for e in (t_evals  or []) if e.decision != "REJECT"]
-    mr_pass   = [e for e in (mr_evals or []) if e.decision != "REJECT"]
+    all_pass  = [e for e in (all_evals or []) if e.decision != "REJECT"]
 
     return RoundSnapshot(
         round_num          = rnd,
         top_score          = round(top_score, 1),
         avg_score          = round(avg_score, 1),
         total_candidates   = len(all_ev),
-        accepted_count     = len(t_pass) + len(mr_pass),
-        rejected_count     = len(all_ev) - len(t_pass) - len(mr_pass),
-        trend_count        = len(t_pass),
-        mr_count           = len(mr_pass),
+        accepted_count     = len(all_pass),
+        rejected_count     = len(all_ev) - len(all_pass),
+        trend_count        = len(all_pass),
+        mr_count           = 0,
         debate_winner      = debate.winner if debate else "TIE",
         trend_win_streak   = 0,
         mr_win_streak      = 0,
@@ -50,14 +49,13 @@ def generate_final_report(round_reports: list, top_n: int, symbols: list) -> dic
     """汇总所有轮次，生成最终报告 dict"""
     all_evals = []
     for rp in round_reports:
-        all_evals.extend(getattr(rp, "trend_evals", []))
-        all_evals.extend(getattr(rp, "mr_evals",    []))
+        all_evals.extend(getattr(rp, "all_evals", []))
     all_evals.sort(key=lambda x: x.composite, reverse=True)
 
     # 去重：同一策略名只保留评分最高的
     seen, global_top = set(), []
     for e in all_evals:
-        key = (e.strategy_name, e.strategy_type)
+        key = (e.strategy_name, getattr(e, 'strategy_type', 'combo'))
         if key not in seen:
             seen.add(key)
             global_top.append(e)
@@ -69,8 +67,8 @@ def generate_final_report(round_reports: list, top_n: int, symbols: list) -> dic
     # 收敛方向
     if len(round_reports) >= 2:
         r1  = round_reports[0];  r2 = round_reports[-1]
-        ev1 = getattr(r1, "trend_evals", []) + getattr(r1, "mr_evals", [])
-        ev2 = getattr(r2, "trend_evals", []) + getattr(r2, "mr_evals", [])
+        ev1 = getattr(r1, "all_evals", [])
+        ev2 = getattr(r2, "all_evals", [])
         s1  = max([e.composite for e in ev1], default=0)
         s2  = max([e.composite for e in ev2], default=0)
         delta    = round(s2 - s1, 1)
@@ -91,10 +89,7 @@ def generate_final_report(round_reports: list, top_n: int, symbols: list) -> dic
     # ===== 添加 rounds 字段（每轮详细策略数据）=====
     rounds_data = []
     for rp in round_reports:
-        # 获取本轮所有策略评估
-        t_evals = getattr(rp, "trend_evals", []) or []
-        mr_evals = getattr(rp, "mr_evals", []) or []
-        all_round_evals = list(t_evals) + list(mr_evals)
+        all_round_evals = list(getattr(rp, "all_evals", []) or [])
         
         round_item = {
             "round_num": getattr(rp, "round_num", len(rounds_data) + 1),
@@ -114,6 +109,12 @@ def generate_final_report(round_reports: list, top_n: int, symbols: list) -> dic
                     "sharpe": e.sharpe_ratio,
                     "dd": e.max_drawdown_pct,
                     "decision": e.decision,
+                    "alpha": getattr(e, "alpha", 0.0),
+                    "win_rate": getattr(e, "win_rate", 0.0),
+                    "total_trades": getattr(e, "total_trades", 0),
+                    "sortino": getattr(e, "sortino_score", 0.0),
+                    "calmar": getattr(e, "calmar_score", 0.0),
+                    "ir_score": getattr(e, "ir_score", 0.0),
                 }
                 for e in all_round_evals
             ],

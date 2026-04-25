@@ -1,205 +1,45 @@
 [
   {
-    "id": "A股核心_WF2_20260425_0737",
-    "name": "A股核心_WF2",
+    "id": "因子组合v5_20260426_0133",
+    "name": "因子组合v5_20260426_0133",
     "symbols": [
-      "A股全量"
+      "SPY"
     ],
-    "run_at": "2026-04-25T07:37:13.938689",
-    "total_rounds": 20,
-    "days": 900,
-    "best_score": 80.4,
-    "converged": false
-  },
-  {
-    "id": "A股核心_WF_20260425_0144",
-    "name": "A股核心_WF",
-    "symbols": [
-      "A股全量"
-    ],
-    "run_at": "2026-04-25T01:44:28.746461",
-    "total_rounds": 17,
-    "days": 900,
-    "best_score": 80.5,
-    "converged": true
-  },
-  {
-    "id": "A股核心_20260424_2330",
-    "name": "A股核心",
-    "symbols": [
-      "A股全量"
-    ],
-    "run_at": "2026-04-24T23:30:30.656540",
-    "total_rounds": 20,
-    "days": 800,
-    "best_score": 72.8,
-    "converged": false
-  },
-  {
-    "id": "A股核心_20260423_2311",
-    "name": "A股核心",
-    "symbols": [
-      "A股全量"
-    ],
-    "run_at": "2026-04-23T23:11:57.528071",
-    "total_rounds": 20,
-    "days": 800,
-    "best_score": 78.1,
-    "converged": false
-  },
-  {
-    "id": "A股核心_20260423_0826",
-    "name": "A股核心",
-    "symbols": [
-      "A股核心(2814只,>1000万/日)"
-    ],
-    "run_at": "2026-04-23T08:26:36.083267",
-    "total_rounds": 13,
-    "days": 800,
-    "best_score": 69.7,
-    "converged": true
-  },
-  {
-    "id": "A股全量_0423_20260423_0002",
-    "name": "A股全量_0423",
-    "symbols": [
-      "A股全量(5495只)"
-    ],
-    "run_at": "2026-04-23T00:02:00.894066",
-    "total_rounds": 11,
-    "days": 800,
-    "best_score": 70.5,
-    "converged": true
-  },
-  {
-    "id": "A股全量_0422_20260422_0015",
-    "name": "A股全量_0422",
-    "symbols": [
-      "A股全量(5495只)"
-    ],
-    "run_at": "2026-04-22T00:15:59.264102",
-    "total_rounds": 7,
-    "days": 800,
-    "best_score": 78.8,
-    "converged": true
-  },
-  {
-    "id": "A股全量_0422_20260422_0008",
-    "name": "A股全量_0422",
-    "symbols": [
-      "A股全量(5495只)"
-    ],
-    "run_at": "2026-04-22T00:08:10.034529",
-    "total_rounds": 0,
-    "days": 800,
-    "best_score": 0.0,
-    "converged": false
-  },
-  {
-    "id": "A股迭代_0406_20260406_0015",
-    "name": "A股迭代_0406",
-    "symbols": [
-      "600519.SH",
-      "000001.SH",
-      "600036.SH"
-    ],
-    "run_at": "2026-04-06T00:15:49.335665",
+    "run_at": "2026-04-26 03:35",
     "total_rounds": 5,
     "days": 500,
-    "best_score": 55.9,
+    "best_score": 75.3,
     "converged": false
   },
   {
-    "id": "A股20轮测试_20260404_1334",
-    "name": "A股20轮测试",
+    "id": "因子组合v5_20260426_0315",
+    "name": "因子组合v5_20260426_0315",
     "symbols": [
-      "600519.SH",
-      "000001.SH",
-      "600036.SH"
-    ],
-    "run_at": "2026-04-04T13:34:55.198314",
-    "total_rounds": 10,
-    "days": 500,
-    "best_score": 57.6,
-    "converged": true
-  },
-  {
-    "id": "A股20轮测试_20260404_1333",
-    "name": "A股20轮测试",
-    "symbols": [
-      "600519.SH",
-      "000001.SH",
-      "600036.SH"
-    ],
-    "run_at": "2026-04-04T13:33:31.861509",
-    "total_rounds": 11,
-    "days": 500,
-    "best_score": 58.3,
-    "converged": true
-  },
-  {
-    "id": "test_fix_20260404_1256",
-    "name": "test_fix",
-    "symbols": [
-      "600519.SH"
-    ],
-    "run_at": "2026-04-04T12:56:47.535377",
-    "total_rounds": 1,
-    "days": 120,
-    "best_score": 75.8,
-    "converged": false
-  },
-  {
-    "id": "test_20260404_1254",
-    "name": "test",
-    "symbols": [
-      "600519.SH"
-    ],
-    "run_at": "2026-04-04T12:54:34.860998",
-    "total_rounds": 1,
-    "days": 120,
-    "best_score": 75.4,
-    "converged": false
-  },
-  {
-    "id": "测试迭代_20260404_1245",
-    "name": "测试迭代",
-    "symbols": [
-      "600519.SH"
-    ],
-    "run_at": "2026-04-04T12:45:54.331375",
-    "total_rounds": 2,
-    "days": 500,
-    "best_score": 44.5,
-    "converged": false
-  },
-  {
-    "id": "A股全量市场_20260403_0005",
-    "name": "A股全量市场",
-    "run_at": "2026-04-03 00:05:16",
-    "symbols": [
+      "SPY",
+      "QQQ",
       "AAPL",
       "NVDA",
-      "BTCUSDT",
-      "ETHUSDT"
+      "BTCUSDT"
     ],
+    "run_at": "2026-04-26 03:35",
+    "total_rounds": 20,
     "days": 500,
-    "total_rounds": 6,
-    "best_score": 74.7,
-    "converged": true
+    "best_score": 76.2,
+    "converged": false
   },
   {
-    "id": "000300_600519_600036_20260331_1402",
-    "name": "A股核心",
-    "run_at": "2026-03-31T14:02:47.045709",
+    "id": "因子组合v5_20260426_0333",
+    "name": "因子组合v5_20260426_0333",
     "symbols": [
-      "SH000300",
-      "SH600519",
-      "SH600036"
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
     ],
-    "days": 728,
-    "total_rounds": 2,
-    "best_score": 41.9,
+    "run_at": "2026-04-26 03:35",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 79.0,
     "converged": false
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-06T00:19:55.421279",
+  "generated_at": "2026-04-26T01:49:59.371215",
   "data": {
     "status": "empty",
     "count": 0,
@@ -36,8 +36,8 @@
   },
   "strategies": {
     "status": "ok",
-    "total": 2,
-    "ok": 2,
+    "total": 3,
+    "ok": 3,
     "errors": [],
     "modules": [
       {
@@ -46,6 +46,10 @@
       },
       {
         "name": "expert1b_mean_reversion",
+        "status": "ok"
+      },
+      {
+        "name": "factor_combo_expert",
         "status": "ok"
       }
     ]
@@ -137,6 +141,6 @@
   },
   "config": {
     "status": "ok",
-    "note": "{'__name__': 'config.settings', '__doc__': '\\nconfig/settings.py — 全局配置\\n所有敏感信息通过环境变量或本文件配置\\n', '__package__': 'config', '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x7f0d239c"
+    "note": "{'__name__': 'config.settings', '__doc__': '\\nconfig/settings.py — 全局配置\\n所有敏感信息通过环境变量或本文件配置\\n', '__package__': 'config', '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x7f806260"
   }
 }

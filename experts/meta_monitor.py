@@ -379,32 +379,19 @@ class MetaMonitor:
         prompt = LLM_META_PROMPT.replace("{data_json}", _json.dumps(data, ensure_ascii=False, indent=2))
 
         MAX_RETRIES = 3
-        last_error  = ""
         for attempt in range(1, MAX_RETRIES + 1):
-            result = llm_analyze(
-                prompt, task="meta_evaluate",
-                temperature=0.3, timeout_ms=60000, max_tokens=10240,
-            )
-            if "error" not in result:
+            try:
+                result = llm_analyze(
+                    prompt, task="meta_evaluate",
+                    temperature=0.3, timeout_ms=60000, max_tokens=10240,
+                )
                 result["_llm_available"] = True
                 return result
-            last_error = result["error"]
-            print(f"  [元专家] 第{attempt}次调用失败: {last_error[:120]}"
-                  + ("，重试…" if attempt < MAX_RETRIES else "，已达最大重试次数"))
-
-        # 所有重试耗尽 —— 显式标注失败，不静默降级
-        return {
-            "data_validity":      "UNKNOWN",
-            "invalidity_reasons": [f"[LLM_FAILED×{MAX_RETRIES}] {last_error[:200]}"],
-            "convergence_is_real": True,
-            "should_continue":    False,
-            "continue_reason":    f"元专家 LLM 连续 {MAX_RETRIES} 次失败，本轮收敛判断由规则主导",
-            "round_summary":      f"⚠️ 第{n}轮 · 元专家LLM失败({MAX_RETRIES}次重试)",
-            "key_insight":        f"元专家不可用，错误: {last_error[:100]}",
-            "suggestions":        ["检查 MiniMax API Key 和网络连通性"],
-            "_llm_available":     False,
-            "_llm_failed":        True,   # 区分"未调用"和"调用失败"
-        }
+            except Exception as e:
+                print(f"  [元专家] 第{attempt}次调用失败: {e}"
+                      + ("，重试…" if attempt < MAX_RETRIES else "，已达最大重试次数"))
+                if attempt == MAX_RETRIES:
+                    raise
 
     # ── 元专家：动态规划下一轮参数 ─────────────────────────
 
@@ -459,32 +446,23 @@ class MetaMonitor:
             "_llm_available": False,
         }
 
-        try:
-            result = llm_analyze(prompt, task="plan_next_round",
-                                 temperature=0.3, timeout_ms=60000, max_tokens=2048)
-            if "error" in result:
-                print(f"  [元专家-规划] ❌ LLM失败: {result['error'][:100]}")
-                return defaults
+        result = llm_analyze(prompt, task="plan_next_round",
+                             temperature=0.3, timeout_ms=60000, max_tokens=2048)
 
-            result["_llm_available"] = True
+        result["_llm_available"] = True
 
-            # 解析并验证参数
-            params = result.get("next_round_params", {})
-            params["trend_candidates"] = max(10, min(60, int(params.get("trend_candidates", 30))))
-            params["mr_candidates"] = max(10, min(40, int(params.get("mr_candidates", 25))))
-            params["accept_threshold"] = max(30, min(70, float(params.get("accept_threshold", 45))))
-            params["conditional_threshold"] = max(15, min(45, float(params.get("conditional_threshold", 25))))
-            if params["conditional_threshold"] >= params["accept_threshold"]:
-                params["conditional_threshold"] = params["accept_threshold"] - 10
-            params["n_stocks_min"] = max(2, min(3, int(params.get("n_stocks_min", 2))))
-            params["n_stocks_max"] = max(params["n_stocks_min"], min(5, int(params.get("n_stocks_max", 5))))
+        # 解析并验证参数
+        params = result.get("next_round_params", {})
+        params["combo_candidates"] = max(10, min(80, int(params.get("combo_candidates", 55))))
+        params["accept_threshold"] = max(30, min(70, float(params.get("accept_threshold", 45))))
+        params["conditional_threshold"] = max(15, min(45, float(params.get("conditional_threshold", 25))))
+        if params["conditional_threshold"] >= params["accept_threshold"]:
+            params["conditional_threshold"] = params["accept_threshold"] - 10
+        params["n_stocks_min"] = max(2, min(3, int(params.get("n_stocks_min", 2))))
+        params["n_stocks_max"] = max(params["n_stocks_min"], min(5, int(params.get("n_stocks_max", 5))))
 
-            result["next_round_params"] = params
-            return result
-
-        except Exception as e:
-            print(f"  [元专家-规划] ❌ 异常: {e}")
-            return defaults
+        result["next_round_params"] = params
+        return result
 
     # ── 元专家：架构全局评估 ─────────────────────────────────────
 
@@ -493,34 +471,14 @@ class MetaMonitor:
         from experts.modules.llm_proxy import llm_analyze
         import json as _json
 
-        import json as _json2
         prompt = LLM_ARCH_PROMPT
         prompt = prompt.replace("{architecture}", architecture_desc)
-        prompt = prompt.replace("{iteration_result}", _json2.dumps(iteration_result, ensure_ascii=False, indent=2))
+        prompt = prompt.replace("{iteration_result}", _json.dumps(iteration_result, ensure_ascii=False, indent=2))
 
-        defaults = {
-            "overall_rating": "N/A",
-            "strengths": ["LLM 不可用，无法评估"],
-            "weaknesses": ["MiniMax API 连接失败"],
-            "critical_issues": ["元专家 LLM 不可用"],
-            "improvement_priorities": [],
-            "architecture_suggestions": [],
-            "next_iteration_focus": "修复 LLM 连接",
-            "estimated_improvement": "N/A",
-            "_llm_available": False,
-        }
-
-        try:
-            result = llm_analyze(prompt, task="architecture_review",
-                                 temperature=0.5, timeout_ms=120000, max_tokens=4096)
-            if "error" in result:
-                print(f"  [元专家-架构评审] ❌ LLM失败: {result['error'][:100]}")
-                return defaults
-            result["_llm_available"] = True
-            return result
-        except Exception as e:
-            print(f"  [元专家-架构评审] ❌ 异常: {e}")
-            return defaults
+        result = llm_analyze(prompt, task="architecture_review",
+                             temperature=0.5, timeout_ms=120000, max_tokens=4096)
+        result["_llm_available"] = True
+        return result
 
     # ── 质量趋势分析 ────────────────────────
 
@@ -739,7 +697,8 @@ class MetaMonitor:
         """汇总所有轮次的Top策略"""
         strat_scores: dict = {}
         for rp in rounds:
-            for e in (rp.trend_evals + rp.mr_evals):
+            all_evals = getattr(rp, "all_evals", []) or []
+            for e in all_evals:
                 key = e.strategy_name
                 if key not in strat_scores:
                     strat_scores[key] = {"name": key, "type": e.strategy_type,
