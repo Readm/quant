@@ -102,7 +102,7 @@ class DebateManager:
         camp_prompt = self._camp_prompt(
             trend_evals, mr_evals, strategy_verdicts, regime_name, round_num)
         camp = llm_analyze(camp_prompt, task="camp_verdict",
-                           temperature=0.5, timeout_ms=20000)
+                           temperature=0.5, timeout_ms=30000)
 
         winner = str(camp.get("winner", "TIE"))
         tw     = min(1.0, max(0.0, float(camp.get("trend_weight", 0.5))))
