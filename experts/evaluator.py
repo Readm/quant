@@ -26,12 +26,12 @@ from experts.structured_feedback import (
     FeedbackHistory
 )
 
-# ── 硬过滤门槛 ─────────────────────────────
-MIN_ANNUAL_RETURN = -2.0  # 年化低于此 → REJECT（允许轻微亏损，避免熊市误杀好策略）
-MIN_SHARPE        = 0.05   # 夏普低于此 → REJECT（宽松入场，由综合分排序区分优劣）
-MIN_TRADES        = 3        # 少于此交易次数的策略统计不可靠，直接淘汰
-SOFT_MIN_TRADES   = 8       # 建议最低交易次数（供 meta-expert 参考）
-MAX_DRAWDOWN      = 35.0   # 回撤高于此 → REJECT
+# ── 硬过滤门槛 v5.3: 放宽淘汰,让多样性策略有机会 ──
+MIN_ANNUAL_RETURN = -2.0
+MIN_SHARPE        = 0.05
+MIN_TRADES        = 1        # v5.3: 3→1, 放宽交易次数限制
+SOFT_MIN_TRADES   = 5        # v5.3: 建议最低(供meta-expert参考)
+MAX_DRAWDOWN      = 25.0     # v5.3: 35→25, 收紧风控
 
 # ── PBO 门控阈值 ───────────────────────────
 PBO_HARD_REJECT   = 0.50   # PBO > 此值 → REJECT（v5.1: 从0.45回调）
