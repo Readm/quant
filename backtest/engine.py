@@ -373,6 +373,29 @@ def _score_mean_rev_composite(c, data, indicators, params, t):
     return signal * 20
 
 
+# ── 通用信号代理评分工厂 ──────────────────────────────────────────────
+def _make_signal_score(template_key: str):
+    """返回一个评分函数，调用 generate_signal() 获取信号值。"""
+    from factors.signals import generate_signal, FACTOR_TABLE
+    key_to_fid = {v[0]: k for k, v in FACTOR_TABLE.items()}
+    fid = key_to_fid.get(template_key)
+
+    def _score(closes, data, indicators, params, t):
+        if not fid:
+            return 0.0
+        highs = data.get("highs", closes)
+        lows  = data.get("lows",  closes)
+        vols  = data.get("volumes", [1e9] * len(closes))
+        try:
+            signals = generate_signal(fid, list(closes), list(highs), list(lows), list(vols))
+            if t < len(signals):
+                return float(signals[t]) * 100.0
+        except Exception:
+            pass
+        return 0.0
+    return _score
+
+
 # ── 因子打分注册表 ────────────────────────────────────────────────────
 _SCORE_REGISTRY = {
     "ma_cross":          _score_ma_cross,
@@ -401,6 +424,19 @@ _SCORE_REGISTRY = {
     "vol_price_diverge": _score_vol_price_diverge,
     "multi_signal_combo":_score_multi_signal_combo,
     "mean_rev_composite":_score_mean_rev_composite,
+    # ── v5: 补全缺失因子 ──────────────────────────────────────────
+    "force_index":               _make_signal_score("force_index"),
+    "ppo":                       _make_signal_score("ppo"),
+    "accdist":                   _make_signal_score("accdist"),
+    "accumulation_distribution_signal": _make_signal_score("accumulation_distribution_signal"),
+    "volume_price_trend":        _make_signal_score("volume_price_trend"),
+    "mass_index":                _make_signal_score("mass_index"),
+    "ergodic_oscillator":        _make_signal_score("ergodic_oscillator"),
+    "signal_horizon":            _make_signal_score("signal_horizon"),
+    "ultraspline":               _make_signal_score("ultraspline"),
+    "ultraband_signal":          _make_signal_score("ultraband_signal"),
+    "chanlun_bi":                _make_signal_score("chanlun_bi"),
+    "chanlun_tao":               _make_signal_score("chanlun_tao"),
 }
 
 

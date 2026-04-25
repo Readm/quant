@@ -74,7 +74,23 @@ class FactorComboExpert:
         {"key": "mean_rev_composite","name": "均值回归复合",   "params": {"period": 20, "z_enter": 1.5, "z_exit": 0.5}},
     ]
 
-    TEMPLATES = _TREND + _MR + _INNOVATIVE
+    # v5: 补全因子（动量/量价/波幅/缠论）
+    _EXTENDED = [
+        {"key": "force_index",               "name": "强力指数",       "params": {"period": 13}},
+        {"key": "ppo",                       "name": "PPO信号",        "params": {"fast": 12, "slow": 26, "sig": 9}},
+        {"key": "accdist",                   "name": "A/D累积派发",    "params": {}},
+        {"key": "accumulation_distribution_signal", "name": "A/D背离", "params": {}},
+        {"key": "volume_price_trend",        "name": "VPT量价趋势",    "params": {}},
+        {"key": "mass_index",                "name": "MassIndex梅斯",  "params": {}},
+        {"key": "ergodic_oscillator",        "name": "Ergodic遍历",    "params": {"period": 14}},
+        {"key": "signal_horizon",            "name": "信号水平线",     "params": {"period": 14}},
+        {"key": "ultraspline",               "name": "波幅收缩爆发",   "params": {"period": 20}},
+        {"key": "ultraband_signal",          "name": "UltraBand突破",  "params": {"period": 20}},
+        {"key": "chanlun_bi",                "name": "缠论笔",         "params": {}},
+        {"key": "chanlun_tao",               "name": "缠论套",         "params": {}},
+    ]
+
+    TEMPLATES = _TREND + _MR + _INNOVATIVE + _EXTENDED
 
     # ── 组合模式 ─────────────────────────────────────────────────
     COMBO_MODES = ["single", "and", "or", "weighted"]
