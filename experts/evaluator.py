@@ -128,14 +128,14 @@ class Evaluator:
             return 0.0
         last_seen = self._template_rounds.get(template_key, -999)
         gap = self._current_round - last_seen
-        if gap <= 1:
+        if gap <= 2:
             return 0.0       # 最近出现过，不加分
-        elif gap <= 3:
-            return 2.0       # 3轮没出现，小加分
-        elif gap <= 6:
-            return 5.0       # 6轮没出现
+        elif gap <= 4:
+            return 2.0       # 4轮没出现，小加分
+        elif gap <= 8:
+            return 4.0       # 8轮没出现
         else:
-            return 8.0       # 长期未出现，大加分
+            return 6.0       # 长期未出现，大加分
 
     # ── 核心评估 ─────────────────────────
 
@@ -202,13 +202,17 @@ class Evaluator:
         diversity_bonus = self._diversity_bonus(template_key)
         raw_composite += diversity_bonus
 
-        # v5.4: 交易质量奖励 — 交易太少的高分策略统计不可靠
-        if n_trades >= 15:
-            raw_composite += 3.0
-        elif n_trades >= 8:
-            raw_composite += 1.0
+        # v5.5: 交易可靠性调整 — 阶梯式约束（Iter10: 强化惩罚力度）
+        n_trades_warning = False
+        if n_trades >= 20:
+            raw_composite += 5.0      # 交易充分，高度可信
+        elif n_trades >= 10:
+            raw_composite += 2.0      # 较充分
+        elif n_trades >= 5:
+            raw_composite += 1.0      # 基本可信
         elif n_trades <= 2:
-            raw_composite -= 2.0   # 仅1-2笔交易, 惩罚
+            raw_composite = raw_composite * 0.5   # 1-2笔，统计不可靠，直接打五折
+            n_trades_warning = True
 
         # PBO 折扣
         composite = min(100.0, round(raw_composite * pbo_multiplier, 1))
@@ -217,6 +221,11 @@ class Evaluator:
         if is_rejected:
             decision = "REJECT"
             reason   = elim_note
+        elif n_trades_warning and composite >= self.ACCEPT_THRESHOLD:
+            # Iter10: 1-2笔交易即使评分高也降级为待观察（统计不可靠）
+            decision = "CONDITIONAL"
+            reason   = (f"⚠️ 交易量不足（{n_trades}笔），降为待观察（综合分={composite}，"
+                        f"Sortino={sortino:.2f} Calmar={calmar:.2f}，Alpha={alpha:+.1f}%）")
         elif composite >= self.ACCEPT_THRESHOLD:
             decision = "ACCEPT"
             reason   = (f"✅ 纳入（综合分={composite}，Sortino={sortino:.2f} "

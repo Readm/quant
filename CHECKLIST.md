@@ -2,29 +2,32 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-26 12:04 UTC
+## Last Verification: 2026-04-26 20:50 UTC
 
 ---
 
 ### 1. 架构检查
-- [x] 模块依赖图已生成 (gen_architecture.py, 55节点)
 - [x] 无循环导入
-- [x] 边排序已稳定（JSON 输出不再有噪音 diff）
+- [x] 本次变更范围：evaluator.py（isolated）
 
 ### 2. 数据管线完整性
-- [x] Alpha/score/sharpe 字段链路完整
-- [x] validate_dashboard.py 通过
+- [x] validate_dashboard.py 通过 ✅
+- [x] 新迭代数据已注入 dashboard/src/data/iterations/
+- [x] 评分标准图已同步更新
 
 ### 3. 冒烟测试
-- [x] smoke_test.py 全部通过
-- [x] TypeScript 编译通过 (npx tsc --noEmit)
+- [x] 20轮迭代成功运行（431.5秒）
+- [x] Vite build 通过 ✅
 
-### 4. 代码审查
-- [x] 安全扫描无密钥泄露
+### 4. 代码审查 — Iter10
+- [x] 交易惩罚：≤2笔×0.5（非线性），之前固定-2分压不住1笔策略
+- [x] 1-2笔策略自动降级为CONDITIONAL
+- [x] 多样性奖励上限8.0→6.0
 - [x] 无静默异常捕获 / LLM降级
-- [x] 修 IterationView 静默 loading bug：id 不匹配时显示错误提示而非永远"加载中..."
-- [x] gen_architecture.py 边排序稳定：JSON 输出按 (source, target) 排序
-- [x] DevOps SOP 修正：V1 改用 smoke_test.py，git add 改为按范围提交
+- [x] 审查结论：⚠️ 存疑（3个警告）
+  - TrendExpert连续20轮垄断，多样性指数0.00
+  - OOS衰减最高-14.9%
+  - PBO数据始终为0，门控效果无法验证
 
 ---
 

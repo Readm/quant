@@ -1,47 +1,37 @@
-# 变更计划 — Dashboard 策略迭代图注入
+# 变更计划 — Iter10: 强化交易可靠性约束
 
 ## 需求
-创建策略工程师维护的迭代流程图和评分标准图，Dashboard 加载渲染。
+上一轮（Iter9）RSI 均值回归以 sharpe=1.835 创下新高，但 Top 策略全部只有 1 笔交易。
+1 笔交易的 ann/alpha/sharpe 在统计上是纯噪音，必须修正评分体系来压制这种情况，
+让有真实交易量的策略竞争。
 
-## 影响范围
-- 新建: `dashboard/src/data/strategy/iteration_flow.mmd`
-- 新建: `dashboard/src/data/strategy/scoring_standards.mmd`
-- 新建: `dashboard/src/components/MermaidDiagram.tsx`
-- 修改: `dashboard/src/views/StrategyView.tsx`
-- 修改: `dashboard/package.json`
-- 风险: data_format（新增数据文件 + 组件 + View + 依赖）
-- 涉及角色: 策略工程师（图内容）→ 前端工程师（渲染）→ 代码质量工程师（审）→ DevOps（提交）
+## 风险等级
+isolated（只改 evaluator.py 的评分逻辑，不改数据格式）
+
+## 分析结论
+1. RSI 确实是跨资产的最优策略 — 这是数据事实，不应人为压制
+2. 但 1 笔交易策略的评分完全不可信：ann=26.92% 基于 1 次交易，标准差无穷大
+3. 当前交易质量惩罚 ≤2笔 → −2 分，但 1 笔策略 score=81.5 → −2 后仍有 79.5，压不住
+4. 需要更具区分度的反过拟合机制
 
 ## 修改内容
 
-### Task 1 — 策略工程师：创建 Mermaid 图
-创建 `iteration_flow.mmd` 和 `scoring_standards.mmd`
+### evaluator.py — 交易可靠性惩罚加强
 
-iteration_flow.mmd 内容（从 orchestrator.py v5.0 提取）:
-- 10 步: 候选生成 → 组合回测 → 评估评分 → 冠军保留 → LLM评审 → 风险评估 → 组合优化 → Paper Trade验证 → 元监控 → 元专家规划 → 回到候选生成
-- 每步标注关键参数和产出
+1. **惩罚力度非线性化**：≤2笔 → 直接 ×0.5 倍惩罚而非固定 -2 分
+2. **交易量阶梯奖励**：≥20笔 +5, ≥10笔 +2, ≥5笔 +1, ≤2笔 composite 直接打六折
+3. **ACCEPT 门槛提升**：1 笔交易策略即使硬指标完美，也降级为 CONDITIONAL（毕竟不可靠）
+4. 保留 RSI 模板的多样性奖励——只修正评分方式，不压 RSI
 
-scoring_standards.mmd 内容（从 evaluator.py v5.x 提取）:
-- 评分公式: Sortino 22% + Calmar 18% + IR 18% + DD 18% + Alpha缩放 24%
-- 硬过滤阈值: 年化>-2%, 夏普>0.05, 交易>=1, 回撤<25%
-- PBO门控: 0.50硬拒, 0.30折扣
-- 决策阈值: ACCEPT>=45, CONDITIONAL>=25, <25 REJECT
-- 多样性/交易质量奖励
+### evaluator.py — 多样性奖励微调
+5. 多样性奖励上限从 8.0 → 6.0（避免全部分数被多样性稀释）
+6. 累计 gap=3→2.0 改为 gap=4→2.0（更长的记忆窗口）
 
-### Task 2 — 前端工程师：渲染 Mermaid 图
-1. `npm install mermaid` 到 dashboard/
-2. 新建 `MermaidDiagram.tsx` 组件 — 接收 .mmd 文件路径（用 `import.meta.glob` 加载），渲染 Mermaid 图
-3. 修改 StrategyView.tsx:
-   - 保留策略模板列表区
-   - 替换"Pipeline"区为渲染的 iteration_flow.mmd
-   - 在下方新增区渲染 scoring_standards.mmd
+## 不分派
+本次迭代是策略工程师日常闭环（isolated 风险），不走全团队流水线。
+但事后需量化策略评价师审查。
 
-## 依赖
-- Task 1 → Task 2 无硬依赖（文件路径确定后两者可并行）
-- Task 1 + Task 2 → Code Quality 审查
-
-## 分派
-- 策略工程师: Task 1
-- 前端工程师: Task 2
-- 代码质量工程师: 审查全部改动
-- DevOps: V1-V6 → commit
+## 提交后
+1. 运行 20 轮迭代
+2. 量化策略评价师审查
+3. 提交 git

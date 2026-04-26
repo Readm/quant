@@ -1,48 +1,29 @@
-graph TB
-  subgraph FILTERS["硬性过滤（任一不通过→REJECT）"]
-    F1["年化收益 ≥ -2.0% (MIN_ANNUAL_RETURN)"]
-    F2["夏普比率 ≥ 0.05 (MIN_SHARPE)"]
-    F3["交易次数 ≥ 1 (MIN_TRADES) v5.3: 3→1"]
-    F4["最大回撤 ≤ 25% (MAX_DRAWDOWN) v5.3: 35→25"]
-  end
+graph LR
+    subgraph Composite["综合评分公式"]
+        Sortino["Sortino × 0.22"]
+        Calmar["Calmar × 0.18"]
+        IR["IR × 0.18"]
+        Drawdown["最大回撤 × 0.18"]
+        AlphaScaled["Alpha缩放 × 0.24<br/>= max(0, min(100, α×5))"]
+    end
 
-  subgraph PBO["PBO 过拟合门控"]
-    P1["PBO ≥ 0.50 → ×0.0（直接 REJECT）"]
-    P2["PBO ≥ 0.30 → ×0.85（可疑折扣）"]
-    P3["PBO < 0.30 → ×1.0（可信）"]
-  end
+    Composite --> Sum["= 综合分(0~100)"]
 
-  subgraph SCORE["五维度评分（各 0~100）"]
-    S1["① Sortino 比率 × 0.22"]
-    S2["② Calmar 比率  × 0.18"]
-    S3["③ 信息比率 IR  × 0.18"]
-    S4["④ 最大回撤 DD  × 0.18"]
-    S5["⑤ Alpha 缩放    × 0.24"]
-    S6["Alpha缩放 = max(0, min(100, alpha×5))"]
-    S7["例: alpha=10% → 50分"]
+    Sum --> TradeAdj["交易可靠性调整"]
+    TradeAdj --> |"≥20笔 +5"| A1
+    TradeAdj --> |"≥10笔 +2"| A2
+    TradeAdj --> |"≥5笔 +1"| A3
+    TradeAdj --> |"≤2笔 ×0.5 且降级为CONDITIONAL"| A4
 
-    RAW["原始分 = Sortino×0.22 + Calmar×0.18
-    + IR×0.18 + DD×0.18 + Alpha×0.24
-    + 多样性奖励(0~8) + 交易质量(-2~+3)"]
+    Sum --> PBO["PBO门控"]
+    PBO --> |"≥0.50 硬拒"| Reject
+    PBO --> |"≥0.30 ×0.85"| Discount
 
-    COMP["综合分 = min(100, 原始分 × PBO折扣)"]
-  end
+    Sum --> Decision["决策阈值"]
+    Decision --> |"≥45 ACCEPT"| Accept
+    Decision --> |"≥25 CONDITIONAL"| Wait
+    Decision --> |"<25 REJECT"| Reject
 
-  subgraph DECISION["决策阈值"]
-    D1["ACCEPT      综合分 ≥ 45"]
-    D2["CONDITIONAL 综合分 ≥ 25"]
-    D3["REJECT      综合分 < 25 或硬过滤失败 或 PBO≥0.50"]
-  end
-
-  subgraph BENCH["基准映射"]
-    B1["A股 → SH000300（沪深300）"]
-    B2["美股 → SPY / QQQ"]
-    B3["加密货币 → 自身"]
-  end
-
-  subgraph OUTPUT["输出字段"]
-    O1["composite: 综合分（0~100）"]
-    O2["decision: ACCEPT/CONDITIONAL/REJECT"]
-    O3["alpha: 超额收益（年化%）"]
-    O4["structured_feedback: 弱点诊断+处方"]
-  end
+    style Accept fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Wait fill:#f0f0f0,stroke:#666,stroke-width:1px
+    style Reject fill:#f0f0f0,stroke:#666,stroke-width:1px
