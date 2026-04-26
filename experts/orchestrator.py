@@ -346,9 +346,11 @@ class Orchestrator:
             _t_meta = time.perf_counter()
             meta_eval = self.monitor.llm_evaluate_round(round_strats, self.best_score, self.no_improve)
             _dt_meta = time.perf_counter() - _t_meta
-            print(f"\n[元专家] {meta_eval.get('round_summary','')}")
-            if meta_eval.get("key_insight"):
-                print(f"[元专家] 关键发现：{meta_eval['key_insight']}")
+            summary = meta_eval.get('round_summary','')
+            insight = meta_eval.get('key_insight','')
+            print(f"\n⏺ 第{rnd}轮快照 — {summary}")
+            if insight:
+                print(f"   📌 {insight}")
             if not meta_eval.get("convergence_is_real", True) and converged:
                 print(f"[元专家] ⚠️ 判定当前收敛为假象（{meta_eval.get('continue_reason','')}），重置计数器")
                 converged = False
