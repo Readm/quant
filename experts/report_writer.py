@@ -100,6 +100,7 @@ def generate_final_report(round_reports: list, top_n: int, symbols: list) -> dic
             "debate_winner": getattr(rp, "debate_winner", "TIE"),
             "sentiment_label": getattr(rp, "sentiment_label", "NEUTRAL"),
             "market_regime": getattr(rp, "market_regime", "UNKNOWN"),
+            "meta_evaluation": getattr(rp, "meta_evaluation", None),
             "strategies": [
                 {
                     "name": e.strategy_name,

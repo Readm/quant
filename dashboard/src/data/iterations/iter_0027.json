@@ -1,7 +1,7 @@
 {
   "thread_id": "iter_0027",
   "name": "Iter1:38因子补全",
-  "run_at": "2026-04-26T11:48:56.236681",
+  "run_at": "2026-04-26T12:02:58.994049",
   "symbols": [
     "SPY"
   ],
@@ -12,7 +12,7 @@
       "round": 1,
       "strategies": [
         {
-          "id": "Ichimoku云图[N5/R60/V]_388c",
+          "id": "Ichimoku云图[N5/R60/V]_0a5c",
           "name": "Ichimoku云图[N5/R60/V]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R60/V]",
@@ -34,7 +34,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R5/S]_8473",
+          "id": "ROC多周期[N2/R5/S]_3bf1",
           "name": "ROC多周期[N2/R5/S]",
           "type": "combo",
           "template": "ROC多周期[N2/R5/S]",
@@ -56,7 +56,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R10/E]_5d33",
+          "id": "布林带回归[N1/R10/E]_7abf",
           "name": "布林带回归[N1/R10/E]",
           "type": "combo",
           "template": "布林带回归[N1/R10/E]",
@@ -78,7 +78,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合+均值回归复合[N3/R5/E]_093f",
+          "id": "多信号组合+均值回归复合[N3/R5/E]_37f1",
           "name": "多信号组合+均值回归复合[N3/R5/E]",
           "type": "combo",
           "template": "多信号组合+均值回归复合[N3/R5/E]",
@@ -100,7 +100,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N5/R10/E]_fdfb",
+          "id": "Elder Ray信号[N5/R10/E]_a77a",
           "name": "Elder Ray信号[N5/R10/E]",
           "type": "combo",
           "template": "Elder Ray信号[N5/R10/E]",
@@ -122,7 +122,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N1/R5/S]_8fb5",
+          "id": "RSI均值回归[N1/R5/S]_6cdc",
           "name": "RSI均值回归[N1/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N1/R5/S]",
@@ -144,7 +144,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N2/R10/V]_0d08",
+          "id": "MFI资金流[N2/R10/V]_5251",
           "name": "MFI资金流[N2/R10/V]",
           "type": "combo",
           "template": "MFI资金流[N2/R10/V]",
@@ -166,7 +166,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_d41e",
+          "id": "RSI均值回归[N2/R5/S]_a361",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -188,7 +188,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形+双均线交叉[N2/R10/E]_de87",
+          "id": "KDJ波形+双均线交叉[N2/R10/E]_719d",
           "name": "KDJ波形+双均线交叉[N2/R10/E]",
           "type": "combo",
           "template": "KDJ波形+双均线交叉[N2/R10/E]",
@@ -210,7 +210,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N5/R10/S]_15ef",
+          "id": "KDJ波形[N5/R10/S]_523a",
           "name": "KDJ波形[N5/R10/S]",
           "type": "combo",
           "template": "KDJ波形[N5/R10/S]",
@@ -232,7 +232,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N3/R20/V]_86a9",
+          "id": "成交量异常[N3/R20/V]_8bfe",
           "name": "成交量异常[N3/R20/V]",
           "type": "combo",
           "template": "成交量异常[N3/R20/V]",
@@ -254,7 +254,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R5/V]_92ab",
+          "id": "多信号组合[N5/R5/V]_f606",
           "name": "多信号组合[N5/R5/V]",
           "type": "combo",
           "template": "多信号组合[N5/R5/V]",
@@ -276,7 +276,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N2/R10/E]_8be1",
+          "id": "Elder Ray信号[N2/R10/E]_b0c2",
           "name": "Elder Ray信号[N2/R10/E]",
           "type": "combo",
           "template": "Elder Ray信号[N2/R10/E]",
@@ -298,7 +298,7 @@
           "selected": false
         },
         {
-          "id": "量价背离+OBOS超买超卖[N3/R20/V]_7528",
+          "id": "量价背离+OBOS超买超卖[N3/R20/V]_fd0f",
           "name": "量价背离+OBOS超买超卖[N3/R20/V]",
           "type": "combo",
           "template": "量价背离+OBOS超买超卖[N3/R20/V]",
@@ -320,7 +320,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N4/R60/E]_c1ee",
+          "id": "OBOS超买超卖[N4/R60/E]_a14f",
           "name": "OBOS超买超卖[N4/R60/E]",
           "type": "combo",
           "template": "OBOS超买超卖[N4/R60/E]",
@@ -342,7 +342,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R5/E]_7672",
+          "id": "OBOS超买超卖[N2/R5/E]_ec22",
           "name": "OBOS超买超卖[N2/R5/E]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R5/E]",
@@ -364,7 +364,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N1/R10/E]_756a",
+          "id": "MFI资金流[N1/R10/E]_f90f",
           "name": "MFI资金流[N1/R10/E]",
           "type": "combo",
           "template": "MFI资金流[N1/R10/E]",
@@ -386,7 +386,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合+主力资金流[N3/R20/E]_ac4f",
+          "id": "多信号组合+主力资金流[N3/R20/E]_c28d",
           "name": "多信号组合+主力资金流[N3/R20/E]",
           "type": "combo",
           "template": "多信号组合+主力资金流[N3/R20/E]",
@@ -408,7 +408,7 @@
           "selected": false
         },
         {
-          "id": "量价背离+布林带回归[N4/R10/S]_e616",
+          "id": "量价背离+布林带回归[N4/R10/S]_6788",
           "name": "量价背离+布林带回归[N4/R10/S]",
           "type": "combo",
           "template": "量价背离+布林带回归[N4/R10/S]",
@@ -430,7 +430,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R20/E]_eb59",
+          "id": "多信号组合[N3/R20/E]_df4c",
           "name": "多信号组合[N3/R20/E]",
           "type": "combo",
           "template": "多信号组合[N3/R20/E]",
@@ -452,7 +452,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N4/R10/V]_0763",
+          "id": "量价背离[N4/R10/V]_002c",
           "name": "量价背离[N4/R10/V]",
           "type": "combo",
           "template": "量价背离[N4/R10/V]",
@@ -474,7 +474,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N3/R10/E]_5b13",
+          "id": "成交量异常[N3/R10/E]_0f53",
           "name": "成交量异常[N3/R10/E]",
           "type": "combo",
           "template": "成交量异常[N3/R10/E]",
@@ -496,7 +496,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R5/E]_4786",
+          "id": "Aroon交叉[N2/R5/E]_ee0f",
           "name": "Aroon交叉[N2/R5/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R5/E]",
@@ -518,7 +518,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N1/R5/E]_c130",
+          "id": "RSI均值回归[N1/R5/E]_b0fc",
           "name": "RSI均值回归[N1/R5/E]",
           "type": "combo",
           "template": "RSI均值回归[N1/R5/E]",
@@ -540,7 +540,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R20/E]_936c",
+          "id": "跳空缺口突破[N5/R20/E]_9828",
           "name": "跳空缺口突破[N5/R20/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R20/E]",
@@ -562,7 +562,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N4/R10/V]_0cc6",
+          "id": "烂板反转[N4/R10/V]_e0d7",
           "name": "烂板反转[N4/R10/V]",
           "type": "combo",
           "template": "烂板反转[N4/R10/V]",
@@ -584,7 +584,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能+ADX趋势确认&Aroon交叉[N5/R20/V]_6bf4",
+          "id": "涨停动能+ADX趋势确认&Aroon交叉[N5/R20/V]_9bb6",
           "name": "涨停动能+ADX趋势确认&Aroon交叉[N5/R20/V]",
           "type": "combo",
           "template": "涨停动能+ADX趋势确认&Aroon交叉[N5/R20/V]",
@@ -606,7 +606,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破+Elder Ray信号[N5/R10/E]_f0db",
+          "id": "跳空缺口突破+Elder Ray信号[N5/R10/E]_9583",
           "name": "跳空缺口突破+Elder Ray信号[N5/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破+Elder Ray信号[N5/R10/E]",
@@ -628,7 +628,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N3/R5/V]_4994",
+          "id": "烂板反转[N3/R5/V]_8fc0",
           "name": "烂板反转[N3/R5/V]",
           "type": "combo",
           "template": "烂板反转[N3/R5/V]",
@@ -650,7 +650,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N3/R10/E]_4d74",
+          "id": "跳空缺口突破[N3/R10/E]_3ae1",
           "name": "跳空缺口突破[N3/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破[N3/R10/E]",
@@ -672,7 +672,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R10/V]_6b94",
+          "id": "涨停动能[N5/R10/V]_f9de",
           "name": "涨停动能[N5/R10/V]",
           "type": "combo",
           "template": "涨停动能[N5/R10/V]",
@@ -694,7 +694,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R20/V]_ee3b",
+          "id": "涨停动能[N5/R20/V]_e8e9",
           "name": "涨停动能[N5/R20/V]",
           "type": "combo",
           "template": "涨停动能[N5/R20/V]",
@@ -716,7 +716,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流+RSI均值回归[N5/R60/V]_ab88",
+          "id": "主力资金流+RSI均值回归[N5/R60/V]_49bf",
           "name": "主力资金流+RSI均值回归[N5/R60/V]",
           "type": "combo",
           "template": "主力资金流+RSI均值回归[N5/R60/V]",
@@ -738,7 +738,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N3/R5/V]_c30e",
+          "id": "涨停动能[N3/R5/V]_ea3b",
           "name": "涨停动能[N3/R5/V]",
           "type": "combo",
           "template": "涨停动能[N3/R5/V]",
@@ -760,7 +760,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/E]_0300",
+          "id": "ADX趋势确认[N5/R60/E]_d099",
           "name": "ADX趋势确认[N5/R60/E]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/E]",
@@ -782,7 +782,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N2/R20/V]_4fb1",
+          "id": "KST动量[N2/R20/V]_9f6e",
           "name": "KST动量[N2/R20/V]",
           "type": "combo",
           "template": "KST动量[N2/R20/V]",
@@ -804,7 +804,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R20/V]_473a",
+          "id": "Donchian突破[N2/R20/V]_d312",
           "name": "Donchian突破[N2/R20/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R20/V]",
@@ -826,7 +826,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉+涨停动能[N3/R60/V]_0e13",
+          "id": "双均线交叉+涨停动能[N3/R60/V]_d225",
           "name": "双均线交叉+涨停动能[N3/R60/V]",
           "type": "combo",
           "template": "双均线交叉+涨停动能[N3/R60/V]",
@@ -848,7 +848,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/E]_f47e",
+          "id": "ADX趋势确认[N5/R60/E]_d4a2",
           "name": "ADX趋势确认[N5/R60/E]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/E]",
@@ -870,7 +870,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数+RVI相对活力[N2/R20/V]_29d9",
+          "id": "TRIX三重指数+RVI相对活力[N2/R20/V]_ecca",
           "name": "TRIX三重指数+RVI相对活力[N2/R20/V]",
           "type": "combo",
           "template": "TRIX三重指数+RVI相对活力[N2/R20/V]",
@@ -892,7 +892,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R10/V]_8937",
+          "id": "MACD趋势[N5/R10/V]_789f",
           "name": "MACD趋势[N5/R10/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R10/V]",
@@ -914,7 +914,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N3/R5/V]_f726",
+          "id": "双均线交叉[N3/R5/V]_7de0",
           "name": "双均线交叉[N3/R5/V]",
           "type": "combo",
           "template": "双均线交叉[N3/R5/V]",
@@ -936,7 +936,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N3/R10/V]_0294",
+          "id": "KST动量[N3/R10/V]_d6af",
           "name": "KST动量[N3/R10/V]",
           "type": "combo",
           "template": "KST动量[N3/R10/V]",
@@ -958,7 +958,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号+ROC多周期[N5/R60/V]_000f",
+          "id": "趋势复合信号+ROC多周期[N5/R60/V]_372c",
           "name": "趋势复合信号+ROC多周期[N5/R60/V]",
           "type": "combo",
           "template": "趋势复合信号+ROC多周期[N5/R60/V]",
@@ -980,7 +980,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N5/R60/V]_5b53",
+          "id": "主力资金流[N5/R60/V]_7234",
           "name": "主力资金流[N5/R60/V]",
           "type": "combo",
           "template": "主力资金流[N5/R60/V]",
@@ -1002,7 +1002,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R20/V]_70d0",
+          "id": "MACD趋势[N5/R20/V]_9e98",
           "name": "MACD趋势[N5/R20/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R20/V]",
@@ -1024,7 +1024,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N3/R60/V]_4349",
+          "id": "动量突破[N3/R60/V]_766c",
           "name": "动量突破[N3/R60/V]",
           "type": "combo",
           "template": "动量突破[N3/R60/V]",
@@ -1046,7 +1046,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N5/R5/V]_0378",
+          "id": "动量突破[N5/R5/V]_dbdd",
           "name": "动量突破[N5/R5/V]",
           "type": "combo",
           "template": "动量突破[N5/R5/V]",
@@ -1068,7 +1068,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N3/R10/V]_79c0",
+          "id": "TRIX三重指数[N3/R10/V]_6bc1",
           "name": "TRIX三重指数[N3/R10/V]",
           "type": "combo",
           "template": "TRIX三重指数[N3/R10/V]",
@@ -1090,7 +1090,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N3/R20/S]_c026",
+          "id": "Ichimoku云图[N3/R20/S]_853d",
           "name": "Ichimoku云图[N3/R20/S]",
           "type": "combo",
           "template": "Ichimoku云图[N3/R20/S]",
@@ -1112,7 +1112,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流+Elder Ray信号[N5/R10/V]_b934",
+          "id": "主力资金流+Elder Ray信号[N5/R10/V]_17e4",
           "name": "主力资金流+Elder Ray信号[N5/R10/V]",
           "type": "combo",
           "template": "主力资金流+Elder Ray信号[N5/R10/V]",
@@ -1134,7 +1134,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N2/R10/V]_4d2c",
+          "id": "双均线交叉[N2/R10/V]_224d",
           "name": "双均线交叉[N2/R10/V]",
           "type": "combo",
           "template": "双均线交叉[N2/R10/V]",
@@ -1156,7 +1156,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R5/V]_0a31",
+          "id": "Donchian突破[N2/R5/V]_0a4d",
           "name": "Donchian突破[N2/R5/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R5/V]",
@@ -1178,7 +1178,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N5/R20/V]_aeda",
+          "id": "趋势复合信号[N5/R20/V]_327d",
           "name": "趋势复合信号[N5/R20/V]",
           "type": "combo",
           "template": "趋势复合信号[N5/R20/V]",
@@ -1200,7 +1200,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N5/R10/V]_8704",
+          "id": "价格动量因子[N5/R10/V]_daf5",
           "name": "价格动量因子[N5/R10/V]",
           "type": "combo",
           "template": "价格动量因子[N5/R10/V]",
@@ -1233,23 +1233,13 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     },
     {
       "round": 2,
       "strategies": [
         {
-          "id": "RSI均值回归[N4/R20/E]_f801",
+          "id": "RSI均值回归[N4/R20/E]_9aa5",
           "name": "RSI均值回归[N4/R20/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R20/E]",
@@ -1271,7 +1261,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N4/R10/E]_d00a",
+          "id": "RSI均值回归[N4/R10/E]_05c0",
           "name": "RSI均值回归[N4/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R10/E]",
@@ -1293,7 +1283,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R60/V]_a1d1",
+          "id": "MACD趋势[N5/R60/V]_bfb7",
           "name": "MACD趋势[N5/R60/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R60/V]",
@@ -1315,7 +1305,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N3/R10/E]_d65f",
+          "id": "Aroon交叉[N3/R10/E]_6f4b",
           "name": "Aroon交叉[N3/R10/E]",
           "type": "combo",
           "template": "Aroon交叉[N3/R10/E]",
@@ -1337,7 +1327,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N3/R5/E]_5392",
+          "id": "Elder Ray信号[N3/R5/E]_d306",
           "name": "Elder Ray信号[N3/R5/E]",
           "type": "combo",
           "template": "Elder Ray信号[N3/R5/E]",
@@ -1359,7 +1349,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R60/S]_6b72",
+          "id": "Aroon交叉[N2/R60/S]_63ea",
           "name": "Aroon交叉[N2/R60/S]",
           "type": "combo",
           "template": "Aroon交叉[N2/R60/S]",
@@ -1381,7 +1371,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N5/R20/S]_e57c",
+          "id": "均值回归复合[N5/R20/S]_3525",
           "name": "均值回归复合[N5/R20/S]",
           "type": "combo",
           "template": "均值回归复合[N5/R20/S]",
@@ -1403,7 +1393,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R5/E]_5311",
+          "id": "多信号组合[N3/R5/E]_f214",
           "name": "多信号组合[N3/R5/E]",
           "type": "combo",
           "template": "多信号组合[N3/R5/E]",
@@ -1425,7 +1415,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N5/R10/E]_68c2",
+          "id": "KDJ波形[N5/R10/E]_8c7b",
           "name": "KDJ波形[N5/R10/E]",
           "type": "combo",
           "template": "KDJ波形[N5/R10/E]",
@@ -1447,7 +1437,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N2/R10/E]_1f78",
+          "id": "布林带回归[N2/R10/E]_f7e6",
           "name": "布林带回归[N2/R10/E]",
           "type": "combo",
           "template": "布林带回归[N2/R10/E]",
@@ -1469,7 +1459,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N3/R20/S]_c2b8",
+          "id": "均值回归复合[N3/R20/S]_a08b",
           "name": "均值回归复合[N3/R20/S]",
           "type": "combo",
           "template": "均值回归复合[N3/R20/S]",
@@ -1491,7 +1481,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R10/V]_3fac",
+          "id": "多信号组合[N3/R10/V]_11e5",
           "name": "多信号组合[N3/R10/V]",
           "type": "combo",
           "template": "多信号组合[N3/R10/V]",
@@ -1513,7 +1503,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N1/R20/V]_b55d",
+          "id": "MFI资金流[N1/R20/V]_b259",
           "name": "MFI资金流[N1/R20/V]",
           "type": "combo",
           "template": "MFI资金流[N1/R20/V]",
@@ -1535,7 +1525,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R60/S]_25b0",
+          "id": "ROC多周期[N2/R60/S]_4da1",
           "name": "ROC多周期[N2/R60/S]",
           "type": "combo",
           "template": "ROC多周期[N2/R60/S]",
@@ -1557,7 +1547,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R60/E]_843d",
+          "id": "RVI相对活力[N2/R60/E]_f1b1",
           "name": "RVI相对活力[N2/R60/E]",
           "type": "combo",
           "template": "RVI相对活力[N2/R60/E]",
@@ -1579,7 +1569,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N2/R5/S]_8408",
+          "id": "布林带回归[N2/R5/S]_a8bf",
           "name": "布林带回归[N2/R5/S]",
           "type": "combo",
           "template": "布林带回归[N2/R5/S]",
@@ -1601,7 +1591,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R5/V]_b66f",
+          "id": "量价背离[N5/R5/V]_1ad9",
           "name": "量价背离[N5/R5/V]",
           "type": "combo",
           "template": "量价背离[N5/R5/V]",
@@ -1623,7 +1613,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N3/R60/V]_a4b8",
+          "id": "成交量异常[N3/R60/V]_f30e",
           "name": "成交量异常[N3/R60/V]",
           "type": "combo",
           "template": "成交量异常[N3/R60/V]",
@@ -1645,7 +1635,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N1/R60/S]_610c",
+          "id": "OBOS超买超卖[N1/R60/S]_54e7",
           "name": "OBOS超买超卖[N1/R60/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N1/R60/S]",
@@ -1667,7 +1657,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N1/R20/S]_04dd",
+          "id": "OBOS超买超卖[N1/R20/S]_c981",
           "name": "OBOS超买超卖[N1/R20/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N1/R20/S]",
@@ -1689,7 +1679,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N3/R20/V]_f5be",
+          "id": "KDJ波形[N3/R20/V]_becf",
           "name": "KDJ波形[N3/R20/V]",
           "type": "combo",
           "template": "KDJ波形[N3/R20/V]",
@@ -1711,7 +1701,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R5/V]_f55a",
+          "id": "量价背离[N5/R5/V]_6e8f",
           "name": "量价背离[N5/R5/V]",
           "type": "combo",
           "template": "量价背离[N5/R5/V]",
@@ -1733,7 +1723,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N3/R60/V]_011c",
+          "id": "情绪-价格动量交互因子[N3/R60/V]_cd22",
           "name": "情绪-价格动量交互因子[N3/R60/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N3/R60/V]",
@@ -1755,7 +1745,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N3/R20/V]_95be",
+          "id": "ROC多周期[N3/R20/V]_653c",
           "name": "ROC多周期[N3/R20/V]",
           "type": "combo",
           "template": "ROC多周期[N3/R20/V]",
@@ -1777,7 +1767,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N2/R20/S]_c785",
+          "id": "Elder Ray信号[N2/R20/S]_5891",
           "name": "Elder Ray信号[N2/R20/S]",
           "type": "combo",
           "template": "Elder Ray信号[N2/R20/S]",
@@ -1799,7 +1789,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N4/R5/S]_a8b6",
+          "id": "MFI资金流[N4/R5/S]_3e15",
           "name": "MFI资金流[N4/R5/S]",
           "type": "combo",
           "template": "MFI资金流[N4/R5/S]",
@@ -1821,7 +1811,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R5/E]_5a17",
+          "id": "RVI相对活力[N2/R5/E]_0d45",
           "name": "RVI相对活力[N2/R5/E]",
           "type": "combo",
           "template": "RVI相对活力[N2/R5/E]",
@@ -1843,7 +1833,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N4/R5/S]_d61f",
+          "id": "烂板反转[N4/R5/S]_8ab5",
           "name": "烂板反转[N4/R5/S]",
           "type": "combo",
           "template": "烂板反转[N4/R5/S]",
@@ -1865,7 +1855,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N3/R20/V]_e38c",
+          "id": "双均线交叉[N3/R20/V]_8dd0",
           "name": "双均线交叉[N3/R20/V]",
           "type": "combo",
           "template": "双均线交叉[N3/R20/V]",
@@ -1887,7 +1877,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N3/R10/V]_4911",
+          "id": "烂板反转[N3/R10/V]_3c4f",
           "name": "烂板反转[N3/R10/V]",
           "type": "combo",
           "template": "烂板反转[N3/R10/V]",
@@ -1909,7 +1899,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N2/R60/S]_25df",
+          "id": "Ichimoku云图[N2/R60/S]_4560",
           "name": "Ichimoku云图[N2/R60/S]",
           "type": "combo",
           "template": "Ichimoku云图[N2/R60/S]",
@@ -1931,7 +1921,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R10/E]_76a3",
+          "id": "跳空缺口突破[N5/R10/E]_c577",
           "name": "跳空缺口突破[N5/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R10/E]",
@@ -1953,7 +1943,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R10/E]_76a3",
+          "id": "跳空缺口突破[N5/R10/E]_c577",
           "name": "跳空缺口突破[N5/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R10/E]",
@@ -1975,7 +1965,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R10/V]_6b94",
+          "id": "涨停动能[N5/R10/V]_f9de",
           "name": "涨停动能[N5/R10/V]",
           "type": "combo",
           "template": "涨停动能[N5/R10/V]",
@@ -1997,7 +1987,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R20/V]_ee3b",
+          "id": "涨停动能[N5/R20/V]_e8e9",
           "name": "涨停动能[N5/R20/V]",
           "type": "combo",
           "template": "涨停动能[N5/R20/V]",
@@ -2019,7 +2009,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N3/R60/V]_99ae",
+          "id": "Donchian突破[N3/R60/V]_3ab0",
           "name": "Donchian突破[N3/R60/V]",
           "type": "combo",
           "template": "Donchian突破[N3/R60/V]",
@@ -2041,7 +2031,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N2/R60/V]_3edd",
+          "id": "价格动量因子[N2/R60/V]_2458",
           "name": "价格动量因子[N2/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N2/R60/V]",
@@ -2063,7 +2053,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N3/R60/V]_b338",
+          "id": "TRIX三重指数[N3/R60/V]_87d2",
           "name": "TRIX三重指数[N3/R60/V]",
           "type": "combo",
           "template": "TRIX三重指数[N3/R60/V]",
@@ -2085,7 +2075,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/V]_3f4d",
+          "id": "ADX趋势确认[N5/R60/V]_e458",
           "name": "ADX趋势确认[N5/R60/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/V]",
@@ -2107,7 +2097,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N2/R60/V]_8fb5",
+          "id": "ADX趋势确认[N2/R60/V]_d0c4",
           "name": "ADX趋势确认[N2/R60/V]",
           "type": "combo",
           "template": "ADX趋势确认[N2/R60/V]",
@@ -2129,7 +2119,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N3/R20/V]_5aa2",
+          "id": "KST动量[N3/R20/V]_60fa",
           "name": "KST动量[N3/R20/V]",
           "type": "combo",
           "template": "KST动量[N3/R20/V]",
@@ -2151,7 +2141,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N5/R5/V]_f2d7",
+          "id": "KST动量[N5/R5/V]_baa4",
           "name": "KST动量[N5/R5/V]",
           "type": "combo",
           "template": "KST动量[N5/R5/V]",
@@ -2173,7 +2163,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N5/R20/V]_474c",
+          "id": "价格动量因子[N5/R20/V]_587b",
           "name": "价格动量因子[N5/R20/V]",
           "type": "combo",
           "template": "价格动量因子[N5/R20/V]",
@@ -2195,7 +2185,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N5/R10/S]_15ac",
+          "id": "情绪-价格动量交互因子[N5/R10/S]_55ad",
           "name": "情绪-价格动量交互因子[N5/R10/S]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N5/R10/S]",
@@ -2217,7 +2207,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N3/R5/V]_f79e",
+          "id": "动量突破[N3/R5/V]_c768",
           "name": "动量突破[N3/R5/V]",
           "type": "combo",
           "template": "动量突破[N3/R5/V]",
@@ -2239,7 +2229,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N5/R10/S]_cfb1",
+          "id": "主力资金流[N5/R10/S]_f1d6",
           "name": "主力资金流[N5/R10/S]",
           "type": "combo",
           "template": "主力资金流[N5/R10/S]",
@@ -2261,7 +2251,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N4/R5/V]_b878",
+          "id": "主力资金流[N4/R5/V]_6462",
           "name": "主力资金流[N4/R5/V]",
           "type": "combo",
           "template": "主力资金流[N4/R5/V]",
@@ -2283,7 +2273,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N5/R20/V]_8a21",
+          "id": "动量突破[N5/R20/V]_bf0a",
           "name": "动量突破[N5/R20/V]",
           "type": "combo",
           "template": "动量突破[N5/R20/V]",
@@ -2305,7 +2295,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N5/R20/V]_c9da",
+          "id": "TRIX三重指数[N5/R20/V]_c27f",
           "name": "TRIX三重指数[N5/R20/V]",
           "type": "combo",
           "template": "TRIX三重指数[N5/R20/V]",
@@ -2327,7 +2317,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N3/R10/V]_6ec9",
+          "id": "Ichimoku云图[N3/R10/V]_2a50",
           "name": "Ichimoku云图[N3/R10/V]",
           "type": "combo",
           "template": "Ichimoku云图[N3/R10/V]",
@@ -2349,7 +2339,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N2/R5/E]_57bf",
+          "id": "成交量异常[N2/R5/E]_c727",
           "name": "成交量异常[N2/R5/E]",
           "type": "combo",
           "template": "成交量异常[N2/R5/E]",
@@ -2371,7 +2361,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N5/R5/V]_875d",
+          "id": "双均线交叉[N5/R5/V]_7a90",
           "name": "双均线交叉[N5/R5/V]",
           "type": "combo",
           "template": "双均线交叉[N5/R5/V]",
@@ -2393,7 +2383,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R10/V]_9441",
+          "id": "Donchian突破[N2/R10/V]_64c1",
           "name": "Donchian突破[N2/R10/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R10/V]",
@@ -2415,7 +2405,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N5/R20/V]_a24d",
+          "id": "趋势复合信号[N5/R20/V]_aebd",
           "name": "趋势复合信号[N5/R20/V]",
           "type": "combo",
           "template": "趋势复合信号[N5/R20/V]",
@@ -2437,7 +2427,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N2/R5/V]_a5e0",
+          "id": "MACD趋势[N2/R5/V]_ad6e",
           "name": "MACD趋势[N2/R5/V]",
           "type": "combo",
           "template": "MACD趋势[N2/R5/V]",
@@ -2459,7 +2449,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R5/S]_8473",
+          "id": "ROC多周期[N2/R5/S]_3bf1",
           "name": "ROC多周期[N2/R5/S]",
           "type": "combo",
           "template": "ROC多周期[N2/R5/S]",
@@ -2481,7 +2471,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R10/E]_5d33",
+          "id": "布林带回归[N1/R10/E]_7abf",
           "name": "布林带回归[N1/R10/E]",
           "type": "combo",
           "template": "布林带回归[N1/R10/E]",
@@ -2503,7 +2493,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合+均值回归复合[N3/R5/E]_093f",
+          "id": "多信号组合+均值回归复合[N3/R5/E]_37f1",
           "name": "多信号组合+均值回归复合[N3/R5/E]",
           "type": "combo",
           "template": "多信号组合+均值回归复合[N3/R5/E]",
@@ -2536,23 +2526,13 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     },
     {
       "round": 3,
       "strategies": [
         {
-          "id": "RSI均值回归[N2/R5/S]_612f",
+          "id": "RSI均值回归[N2/R5/S]_6a4e",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -2574,7 +2554,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N3/R5/E]_47da",
+          "id": "RVI相对活力[N3/R5/E]_16c5",
           "name": "RVI相对活力[N3/R5/E]",
           "type": "combo",
           "template": "RVI相对活力[N3/R5/E]",
@@ -2596,7 +2576,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N2/R5/S]_26d3",
+          "id": "Elder Ray信号[N2/R5/S]_4146",
           "name": "Elder Ray信号[N2/R5/S]",
           "type": "combo",
           "template": "Elder Ray信号[N2/R5/S]",
@@ -2618,7 +2598,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R10/E]_1ffc",
+          "id": "多信号组合[N3/R10/E]_982a",
           "name": "多信号组合[N3/R10/E]",
           "type": "combo",
           "template": "多信号组合[N3/R10/E]",
@@ -2640,7 +2620,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N2/R20/V]_8a55",
+          "id": "MFI资金流[N2/R20/V]_d155",
           "name": "MFI资金流[N2/R20/V]",
           "type": "combo",
           "template": "MFI资金流[N2/R20/V]",
@@ -2662,7 +2642,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N3/R5/S]_0b0a",
+          "id": "KDJ波形[N3/R5/S]_dcfb",
           "name": "KDJ波形[N3/R5/S]",
           "type": "combo",
           "template": "KDJ波形[N3/R5/S]",
@@ -2684,7 +2664,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N2/R20/S]_b3b4",
+          "id": "均值回归复合[N2/R20/S]_24bb",
           "name": "均值回归复合[N2/R20/S]",
           "type": "combo",
           "template": "均值回归复合[N2/R20/S]",
@@ -2706,7 +2686,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R5/E]_c8ad",
+          "id": "布林带回归[N1/R5/E]_4028",
           "name": "布林带回归[N1/R5/E]",
           "type": "combo",
           "template": "布林带回归[N1/R5/E]",
@@ -2728,7 +2708,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N3/R10/E]_bba3",
+          "id": "KDJ波形[N3/R10/E]_40a7",
           "name": "KDJ波形[N3/R10/E]",
           "type": "combo",
           "template": "KDJ波形[N3/R10/E]",
@@ -2750,7 +2730,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R5/E]_0e60",
+          "id": "RVI相对活力[N2/R5/E]_205e",
           "name": "RVI相对活力[N2/R5/E]",
           "type": "combo",
           "template": "RVI相对活力[N2/R5/E]",
@@ -2772,7 +2752,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N3/R60/E]_aa70",
+          "id": "Elder Ray信号[N3/R60/E]_2ef0",
           "name": "Elder Ray信号[N3/R60/E]",
           "type": "combo",
           "template": "Elder Ray信号[N3/R60/E]",
@@ -2794,7 +2774,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R5/E]_3a04",
+          "id": "Aroon交叉[N2/R5/E]_2bd5",
           "name": "Aroon交叉[N2/R5/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R5/E]",
@@ -2816,7 +2796,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N2/R60/E]_66ba",
+          "id": "MFI资金流[N2/R60/E]_8e2f",
           "name": "MFI资金流[N2/R60/E]",
           "type": "combo",
           "template": "MFI资金流[N2/R60/E]",
@@ -2838,7 +2818,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N2/R60/S]_5c63",
+          "id": "均值回归复合[N2/R60/S]_a1d3",
           "name": "均值回归复合[N2/R60/S]",
           "type": "combo",
           "template": "均值回归复合[N2/R60/S]",
@@ -2860,7 +2840,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N5/R20/V]_b0f9",
+          "id": "成交量异常[N5/R20/V]_7f37",
           "name": "成交量异常[N5/R20/V]",
           "type": "combo",
           "template": "成交量异常[N5/R20/V]",
@@ -2882,7 +2862,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R5/E]_3e01",
+          "id": "布林带回归[N1/R5/E]_7825",
           "name": "布林带回归[N1/R5/E]",
           "type": "combo",
           "template": "布林带回归[N1/R5/E]",
@@ -2904,7 +2884,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R10/V]_6935",
+          "id": "ROC多周期[N2/R10/V]_4ea7",
           "name": "ROC多周期[N2/R10/V]",
           "type": "combo",
           "template": "ROC多周期[N2/R10/V]",
@@ -2926,7 +2906,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R20/S]_9ea2",
+          "id": "多信号组合[N5/R20/S]_ea91",
           "name": "多信号组合[N5/R20/S]",
           "type": "combo",
           "template": "多信号组合[N5/R20/S]",
@@ -2948,7 +2928,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N5/R20/E]_165c",
+          "id": "成交量异常[N5/R20/E]_6b5b",
           "name": "成交量异常[N5/R20/E]",
           "type": "combo",
           "template": "成交量异常[N5/R20/E]",
@@ -2970,7 +2950,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R5/E]_9a00",
+          "id": "量价背离[N5/R5/E]_cd58",
           "name": "量价背离[N5/R5/E]",
           "type": "combo",
           "template": "量价背离[N5/R5/E]",
@@ -2992,7 +2972,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R5/E]_cb7d",
+          "id": "Aroon交叉[N2/R5/E]_ee46",
           "name": "Aroon交叉[N2/R5/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R5/E]",
@@ -3014,7 +2994,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_9d78",
+          "id": "RSI均值回归[N2/R5/S]_1689",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -3036,7 +3016,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R60/S]_de4d",
+          "id": "OBOS超买超卖[N2/R60/S]_b22e",
           "name": "OBOS超买超卖[N2/R60/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R60/S]",
@@ -3058,7 +3038,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N5/R20/V]_2d1e",
+          "id": "ROC多周期[N5/R20/V]_f47b",
           "name": "ROC多周期[N5/R20/V]",
           "type": "combo",
           "template": "ROC多周期[N5/R20/V]",
@@ -3080,7 +3060,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N5/R60/V]_6db1",
+          "id": "情绪-价格动量交互因子[N5/R60/V]_dcca",
           "name": "情绪-价格动量交互因子[N5/R60/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N5/R60/V]",
@@ -3102,7 +3082,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R5/V]_7e3e",
+          "id": "量价背离[N5/R5/V]_ef92",
           "name": "量价背离[N5/R5/V]",
           "type": "combo",
           "template": "量价背离[N5/R5/V]",
@@ -3124,7 +3104,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R5/E]_54f0",
+          "id": "OBOS超买超卖[N2/R5/E]_701b",
           "name": "OBOS超买超卖[N2/R5/E]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R5/E]",
@@ -3146,7 +3126,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N2/R10/V]_6595",
+          "id": "跳空缺口突破[N2/R10/V]_d5a0",
           "name": "跳空缺口突破[N2/R10/V]",
           "type": "combo",
           "template": "跳空缺口突破[N2/R10/V]",
@@ -3168,7 +3148,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R20/E]_936c",
+          "id": "跳空缺口突破[N5/R20/E]_9828",
           "name": "跳空缺口突破[N5/R20/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R20/E]",
@@ -3190,7 +3170,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N3/R60/S]_db15",
+          "id": "烂板反转[N3/R60/S]_669f",
           "name": "烂板反转[N3/R60/S]",
           "type": "combo",
           "template": "烂板反转[N3/R60/S]",
@@ -3212,7 +3192,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N5/R5/E]_ecbc",
+          "id": "烂板反转[N5/R5/E]_dff3",
           "name": "烂板反转[N5/R5/E]",
           "type": "combo",
           "template": "烂板反转[N5/R5/E]",
@@ -3234,7 +3214,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N3/R20/V]_e75d",
+          "id": "涨停动能[N3/R20/V]_c8c8",
           "name": "涨停动能[N3/R20/V]",
           "type": "combo",
           "template": "涨停动能[N3/R20/V]",
@@ -3256,7 +3236,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N3/R60/E]_3a04",
+          "id": "涨停动能[N3/R60/E]_5393",
           "name": "涨停动能[N3/R60/E]",
           "type": "combo",
           "template": "涨停动能[N3/R60/E]",
@@ -3278,7 +3258,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R60/V]_4aea",
+          "id": "Donchian突破[N2/R60/V]_ccde",
           "name": "Donchian突破[N2/R60/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R60/V]",
@@ -3300,7 +3280,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N2/R60/V]_d300",
+          "id": "价格动量因子[N2/R60/V]_a46b",
           "name": "价格动量因子[N2/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N2/R60/V]",
@@ -3322,7 +3302,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N3/R60/V]_8f0a",
+          "id": "Donchian突破[N3/R60/V]_22fe",
           "name": "Donchian突破[N3/R60/V]",
           "type": "combo",
           "template": "Donchian突破[N3/R60/V]",
@@ -3344,7 +3324,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N5/R20/V]_118e",
+          "id": "Ichimoku云图[N5/R20/V]_6284",
           "name": "Ichimoku云图[N5/R20/V]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R20/V]",
@@ -3366,7 +3346,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N5/R60/V]_3e35",
+          "id": "TRIX三重指数[N5/R60/V]_f6a0",
           "name": "TRIX三重指数[N5/R60/V]",
           "type": "combo",
           "template": "TRIX三重指数[N5/R60/V]",
@@ -3388,7 +3368,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N5/R20/V]_77b5",
+          "id": "双均线交叉[N5/R20/V]_13ce",
           "name": "双均线交叉[N5/R20/V]",
           "type": "combo",
           "template": "双均线交叉[N5/R20/V]",
@@ -3410,7 +3390,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/V]_2387",
+          "id": "ADX趋势确认[N5/R60/V]_4465",
           "name": "ADX趋势确认[N5/R60/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/V]",
@@ -3432,7 +3412,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N3/R60/V]_7bd5",
+          "id": "动量突破[N3/R60/V]_e823",
           "name": "动量突破[N3/R60/V]",
           "type": "combo",
           "template": "动量突破[N3/R60/V]",
@@ -3454,7 +3434,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N3/R60/V]_8aa9",
+          "id": "主力资金流[N3/R60/V]_5bf4",
           "name": "主力资金流[N3/R60/V]",
           "type": "combo",
           "template": "主力资金流[N3/R60/V]",
@@ -3476,7 +3456,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N3/R20/E]_35d9",
+          "id": "趋势复合信号[N3/R20/E]_170e",
           "name": "趋势复合信号[N3/R20/E]",
           "type": "combo",
           "template": "趋势复合信号[N3/R20/E]",
@@ -3498,7 +3478,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N2/R5/V]_f28a",
+          "id": "TRIX三重指数[N2/R5/V]_05dd",
           "name": "TRIX三重指数[N2/R5/V]",
           "type": "combo",
           "template": "TRIX三重指数[N2/R5/V]",
@@ -3520,7 +3500,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N5/R5/V]_2e49",
+          "id": "Ichimoku云图[N5/R5/V]_bb70",
           "name": "Ichimoku云图[N5/R5/V]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R5/V]",
@@ -3542,7 +3522,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N2/R5/V]_db0b",
+          "id": "价格动量因子[N2/R5/V]_63fc",
           "name": "价格动量因子[N2/R5/V]",
           "type": "combo",
           "template": "价格动量因子[N2/R5/V]",
@@ -3564,7 +3544,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R10/S]_a49f",
+          "id": "情绪-价格动量交互因子[N2/R10/S]_9cff",
           "name": "情绪-价格动量交互因子[N2/R10/S]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R10/S]",
@@ -3586,7 +3566,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N2/R5/V]_18df",
+          "id": "动量突破[N2/R5/V]_960d",
           "name": "动量突破[N2/R5/V]",
           "type": "combo",
           "template": "动量突破[N2/R5/V]",
@@ -3608,7 +3588,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N3/R10/V]_a590",
+          "id": "ADX趋势确认[N3/R10/V]_def3",
           "name": "ADX趋势确认[N3/R10/V]",
           "type": "combo",
           "template": "ADX趋势确认[N3/R10/V]",
@@ -3630,7 +3610,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N2/R60/V]_46ed",
+          "id": "KST动量[N2/R60/V]_fcc9",
           "name": "KST动量[N2/R60/V]",
           "type": "combo",
           "template": "KST动量[N2/R60/V]",
@@ -3652,7 +3632,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N3/R10/V]_0850",
+          "id": "趋势复合信号[N3/R10/V]_79d3",
           "name": "趋势复合信号[N3/R10/V]",
           "type": "combo",
           "template": "趋势复合信号[N3/R10/V]",
@@ -3674,7 +3654,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N3/R10/V]_8cd5",
+          "id": "KST动量[N3/R10/V]_b61d",
           "name": "KST动量[N3/R10/V]",
           "type": "combo",
           "template": "KST动量[N3/R10/V]",
@@ -3696,7 +3676,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R20/S]_a83c",
+          "id": "MACD趋势[N5/R20/S]_3930",
           "name": "MACD趋势[N5/R20/S]",
           "type": "combo",
           "template": "MACD趋势[N5/R20/S]",
@@ -3718,7 +3698,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N3/R20/V]_4660",
+          "id": "双均线交叉[N3/R20/V]_375f",
           "name": "双均线交叉[N3/R20/V]",
           "type": "combo",
           "template": "双均线交叉[N3/R20/V]",
@@ -3740,7 +3720,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R5/V]_dfb5",
+          "id": "MACD趋势[N5/R5/V]_2617",
           "name": "MACD趋势[N5/R5/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R5/V]",
@@ -3762,7 +3742,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N4/R10/E]_d00a",
+          "id": "RSI均值回归[N4/R10/E]_05c0",
           "name": "RSI均值回归[N4/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R10/E]",
@@ -3784,7 +3764,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N3/R10/E]_d65f",
+          "id": "Aroon交叉[N3/R10/E]_6f4b",
           "name": "Aroon交叉[N3/R10/E]",
           "type": "combo",
           "template": "Aroon交叉[N3/R10/E]",
@@ -3806,7 +3786,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N3/R5/E]_5392",
+          "id": "Elder Ray信号[N3/R5/E]_d306",
           "name": "Elder Ray信号[N3/R5/E]",
           "type": "combo",
           "template": "Elder Ray信号[N3/R5/E]",
@@ -3839,23 +3819,13 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     },
     {
       "round": 4,
       "strategies": [
         {
-          "id": "MFI资金流[N1/R10/V]_19f7",
+          "id": "MFI资金流[N1/R10/V]_2481",
           "name": "MFI资金流[N1/R10/V]",
           "type": "combo",
           "template": "MFI资金流[N1/R10/V]",
@@ -3877,7 +3847,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N1/R20/S]_8c42",
+          "id": "OBOS超买超卖[N1/R20/S]_6742",
           "name": "OBOS超买超卖[N1/R20/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N1/R20/S]",
@@ -3899,7 +3869,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R10/E]_4f83",
+          "id": "Aroon交叉[N2/R10/E]_3bc3",
           "name": "Aroon交叉[N2/R10/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R10/E]",
@@ -3921,7 +3891,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N3/R20/E]_84b7",
+          "id": "均值回归复合[N3/R20/E]_68b9",
           "name": "均值回归复合[N3/R20/E]",
           "type": "combo",
           "template": "均值回归复合[N3/R20/E]",
@@ -3943,7 +3913,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N3/R20/E]_14c6",
+          "id": "RVI相对活力[N3/R20/E]_5944",
           "name": "RVI相对活力[N3/R20/E]",
           "type": "combo",
           "template": "RVI相对活力[N3/R20/E]",
@@ -3965,7 +3935,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N2/R20/V]_1224",
+          "id": "MFI资金流[N2/R20/V]_bfe3",
           "name": "MFI资金流[N2/R20/V]",
           "type": "combo",
           "template": "MFI资金流[N2/R20/V]",
@@ -3987,7 +3957,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R60/V]_cd36",
+          "id": "OBOS超买超卖[N2/R60/V]_fc8a",
           "name": "OBOS超买超卖[N2/R60/V]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R60/V]",
@@ -4009,7 +3979,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R5/E]_ddbc",
+          "id": "布林带回归[N1/R5/E]_8961",
           "name": "布林带回归[N1/R5/E]",
           "type": "combo",
           "template": "布林带回归[N1/R5/E]",
@@ -4031,7 +4001,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N3/R10/S]_84dc",
+          "id": "ROC多周期[N3/R10/S]_e9b4",
           "name": "ROC多周期[N3/R10/S]",
           "type": "combo",
           "template": "ROC多周期[N3/R10/S]",
@@ -4053,7 +4023,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N2/R10/S]_a877",
+          "id": "KDJ波形[N2/R10/S]_5561",
           "name": "KDJ波形[N2/R10/S]",
           "type": "combo",
           "template": "KDJ波形[N2/R10/S]",
@@ -4075,7 +4045,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R5/E]_e105",
+          "id": "多信号组合[N3/R5/E]_9a90",
           "name": "多信号组合[N3/R5/E]",
           "type": "combo",
           "template": "多信号组合[N3/R5/E]",
@@ -4097,7 +4067,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R5/E]_37a5",
+          "id": "Aroon交叉[N2/R5/E]_817e",
           "name": "Aroon交叉[N2/R5/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R5/E]",
@@ -4119,7 +4089,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N3/R10/E]_620d",
+          "id": "量价背离[N3/R10/E]_b7e3",
           "name": "量价背离[N3/R10/E]",
           "type": "combo",
           "template": "量价背离[N3/R10/E]",
@@ -4141,7 +4111,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N3/R10/E]_8d2c",
+          "id": "KDJ波形[N3/R10/E]_8da6",
           "name": "KDJ波形[N3/R10/E]",
           "type": "combo",
           "template": "KDJ波形[N3/R10/E]",
@@ -4163,7 +4133,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N3/R60/S]_aa6e",
+          "id": "ROC多周期[N3/R60/S]_af05",
           "name": "ROC多周期[N3/R60/S]",
           "type": "combo",
           "template": "ROC多周期[N3/R60/S]",
@@ -4185,7 +4155,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N3/R60/S]_1228",
+          "id": "均值回归复合[N3/R60/S]_7282",
           "name": "均值回归复合[N3/R60/S]",
           "type": "combo",
           "template": "均值回归复合[N3/R60/S]",
@@ -4207,7 +4177,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R10/E]_bd46",
+          "id": "多信号组合[N3/R10/E]_6be4",
           "name": "多信号组合[N3/R10/E]",
           "type": "combo",
           "template": "多信号组合[N3/R10/E]",
@@ -4229,7 +4199,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N3/R60/S]_2761",
+          "id": "Elder Ray信号[N3/R60/S]_8cc2",
           "name": "Elder Ray信号[N3/R60/S]",
           "type": "combo",
           "template": "Elder Ray信号[N3/R60/S]",
@@ -4251,7 +4221,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N2/R20/E]_6a9c",
+          "id": "成交量异常[N2/R20/E]_291f",
           "name": "成交量异常[N2/R20/E]",
           "type": "combo",
           "template": "成交量异常[N2/R20/E]",
@@ -4273,7 +4243,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N5/R20/V]_c4f9",
+          "id": "成交量异常[N5/R20/V]_1725",
           "name": "成交量异常[N5/R20/V]",
           "type": "combo",
           "template": "成交量异常[N5/R20/V]",
@@ -4295,7 +4265,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N5/R20/E]_8ec7",
+          "id": "Elder Ray信号[N5/R20/E]_2032",
           "name": "Elder Ray信号[N5/R20/E]",
           "type": "combo",
           "template": "Elder Ray信号[N5/R20/E]",
@@ -4317,7 +4287,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R20/V]_98b2",
+          "id": "情绪-价格动量交互因子[N2/R20/V]_49c9",
           "name": "情绪-价格动量交互因子[N2/R20/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R20/V]",
@@ -4339,7 +4309,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N4/R10/V]_078b",
+          "id": "量价背离[N4/R10/V]_f881",
           "name": "量价背离[N4/R10/V]",
           "type": "combo",
           "template": "量价背离[N4/R10/V]",
@@ -4361,7 +4331,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_8430",
+          "id": "RSI均值回归[N2/R5/S]_4360",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -4383,7 +4353,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N3/R5/S]_61ff",
+          "id": "RSI均值回归[N3/R5/S]_99f7",
           "name": "RSI均值回归[N3/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N3/R5/S]",
@@ -4405,7 +4375,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N3/R5/E]_a43c",
+          "id": "RVI相对活力[N3/R5/E]_cf7a",
           "name": "RVI相对活力[N3/R5/E]",
           "type": "combo",
           "template": "RVI相对活力[N3/R5/E]",
@@ -4427,7 +4397,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N3/R5/V]_4994",
+          "id": "烂板反转[N3/R5/V]_8fc0",
           "name": "烂板反转[N3/R5/V]",
           "type": "combo",
           "template": "烂板反转[N3/R5/V]",
@@ -4449,7 +4419,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R60/V]_04f9",
+          "id": "涨停动能[N5/R60/V]_34c8",
           "name": "涨停动能[N5/R60/V]",
           "type": "combo",
           "template": "涨停动能[N5/R60/V]",
@@ -4471,7 +4441,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N2/R60/V]_a2d4",
+          "id": "Ichimoku云图[N2/R60/V]_cf5d",
           "name": "Ichimoku云图[N2/R60/V]",
           "type": "combo",
           "template": "Ichimoku云图[N2/R60/V]",
@@ -4493,7 +4463,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N3/R60/S]_959a",
+          "id": "Ichimoku云图[N3/R60/S]_8abb",
           "name": "Ichimoku云图[N3/R60/S]",
           "type": "combo",
           "template": "Ichimoku云图[N3/R60/S]",
@@ -4515,7 +4485,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R20/V]_eeed",
+          "id": "跳空缺口突破[N5/R20/V]_c142",
           "name": "跳空缺口突破[N5/R20/V]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R20/V]",
@@ -4537,7 +4507,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R10/E]_76a3",
+          "id": "跳空缺口突破[N5/R10/E]_c577",
           "name": "跳空缺口突破[N5/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R10/E]",
@@ -4559,7 +4529,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N3/R5/S]_5ffc",
+          "id": "烂板反转[N3/R5/S]_0933",
           "name": "烂板反转[N3/R5/S]",
           "type": "combo",
           "template": "烂板反转[N3/R5/S]",
@@ -4581,7 +4551,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N4/R60/S]_78a3",
+          "id": "涨停动能[N4/R60/S]_0471",
           "name": "涨停动能[N4/R60/S]",
           "type": "combo",
           "template": "涨停动能[N4/R60/S]",
@@ -4603,7 +4573,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N2/R60/E]_f7b9",
+          "id": "布林带回归[N2/R60/E]_dd8c",
           "name": "布林带回归[N2/R60/E]",
           "type": "combo",
           "template": "布林带回归[N2/R60/E]",
@@ -4625,7 +4595,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N4/R60/V]_7ac6",
+          "id": "主力资金流[N4/R60/V]_82d0",
           "name": "主力资金流[N4/R60/V]",
           "type": "combo",
           "template": "主力资金流[N4/R60/V]",
@@ -4647,7 +4617,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R10/V]_492f",
+          "id": "MACD趋势[N5/R10/V]_be0c",
           "name": "MACD趋势[N5/R10/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R10/V]",
@@ -4669,7 +4639,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/V]_e8da",
+          "id": "ADX趋势确认[N5/R60/V]_6970",
           "name": "ADX趋势确认[N5/R60/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/V]",
@@ -4691,7 +4661,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N3/R20/V]_1280",
+          "id": "ADX趋势确认[N3/R20/V]_c2d3",
           "name": "ADX趋势确认[N3/R20/V]",
           "type": "combo",
           "template": "ADX趋势确认[N3/R20/V]",
@@ -4713,7 +4683,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R20/V]_992d",
+          "id": "Donchian突破[N2/R20/V]_9164",
           "name": "Donchian突破[N2/R20/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R20/V]",
@@ -4735,7 +4705,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N4/R60/V]_181a",
+          "id": "主力资金流[N4/R60/V]_ceb3",
           "name": "主力资金流[N4/R60/V]",
           "type": "combo",
           "template": "主力资金流[N4/R60/V]",
@@ -4757,7 +4727,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N3/R20/V]_dc8c",
+          "id": "Donchian突破[N3/R20/V]_6da6",
           "name": "Donchian突破[N3/R20/V]",
           "type": "combo",
           "template": "Donchian突破[N3/R20/V]",
@@ -4779,7 +4749,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N5/R5/V]_4160",
+          "id": "动量突破[N5/R5/V]_3e0c",
           "name": "动量突破[N5/R5/V]",
           "type": "combo",
           "template": "动量突破[N5/R5/V]",
@@ -4801,7 +4771,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N5/R20/V]_9e79",
+          "id": "KST动量[N5/R20/V]_d915",
           "name": "KST动量[N5/R20/V]",
           "type": "combo",
           "template": "KST动量[N5/R20/V]",
@@ -4823,7 +4793,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N3/R60/V]_f0c8",
+          "id": "价格动量因子[N3/R60/V]_2575",
           "name": "价格动量因子[N3/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N3/R60/V]",
@@ -4845,7 +4815,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N5/R60/V]_e399",
+          "id": "动量突破[N5/R60/V]_b7b2",
           "name": "动量突破[N5/R60/V]",
           "type": "combo",
           "template": "动量突破[N5/R60/V]",
@@ -4867,7 +4837,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N2/R20/V]_4ab2",
+          "id": "TRIX三重指数[N2/R20/V]_c1b0",
           "name": "TRIX三重指数[N2/R20/V]",
           "type": "combo",
           "template": "TRIX三重指数[N2/R20/V]",
@@ -4889,7 +4859,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N3/R10/V]_e262",
+          "id": "双均线交叉[N3/R10/V]_ca41",
           "name": "双均线交叉[N3/R10/V]",
           "type": "combo",
           "template": "双均线交叉[N3/R10/V]",
@@ -4911,7 +4881,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N5/R20/V]_d9c9",
+          "id": "趋势复合信号[N5/R20/V]_bf27",
           "name": "趋势复合信号[N5/R20/V]",
           "type": "combo",
           "template": "趋势复合信号[N5/R20/V]",
@@ -4933,7 +4903,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N3/R10/V]_d50d",
+          "id": "情绪-价格动量交互因子[N3/R10/V]_48e9",
           "name": "情绪-价格动量交互因子[N3/R10/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N3/R10/V]",
@@ -4955,7 +4925,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N3/R10/S]_2ece",
+          "id": "MACD趋势[N3/R10/S]_92f7",
           "name": "MACD趋势[N3/R10/S]",
           "type": "combo",
           "template": "MACD趋势[N3/R10/S]",
@@ -4977,7 +4947,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N2/R20/V]_473e",
+          "id": "双均线交叉[N2/R20/V]_2c23",
           "name": "双均线交叉[N2/R20/V]",
           "type": "combo",
           "template": "双均线交叉[N2/R20/V]",
@@ -4999,7 +4969,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N3/R5/V]_f17c",
+          "id": "价格动量因子[N3/R5/V]_651b",
           "name": "价格动量因子[N3/R5/V]",
           "type": "combo",
           "template": "价格动量因子[N3/R5/V]",
@@ -5021,7 +4991,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N3/R10/V]_23fd",
+          "id": "趋势复合信号[N3/R10/V]_6278",
           "name": "趋势复合信号[N3/R10/V]",
           "type": "combo",
           "template": "趋势复合信号[N3/R10/V]",
@@ -5043,7 +5013,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N3/R5/V]_0439",
+          "id": "KST动量[N3/R5/V]_3a73",
           "name": "KST动量[N3/R5/V]",
           "type": "combo",
           "template": "KST动量[N3/R5/V]",
@@ -5065,7 +5035,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_612f",
+          "id": "RSI均值回归[N2/R5/S]_6a4e",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -5087,7 +5057,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N4/R10/E]_d00a",
+          "id": "RSI均值回归[N4/R10/E]_05c0",
           "name": "RSI均值回归[N4/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R10/E]",
@@ -5109,7 +5079,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N3/R5/E]_47da",
+          "id": "RVI相对活力[N3/R5/E]_16c5",
           "name": "RVI相对活力[N3/R5/E]",
           "type": "combo",
           "template": "RVI相对活力[N3/R5/E]",
@@ -5142,23 +5112,13 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     },
     {
       "round": 5,
       "strategies": [
         {
-          "id": "OBOS超买超卖[N2/R10/S]_0b86",
+          "id": "OBOS超买超卖[N2/R10/S]_383c",
           "name": "OBOS超买超卖[N2/R10/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R10/S]",
@@ -5180,7 +5140,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N5/R10/S]_ed25",
+          "id": "Aroon交叉[N5/R10/S]_f180",
           "name": "Aroon交叉[N5/R10/S]",
           "type": "combo",
           "template": "Aroon交叉[N5/R10/S]",
@@ -5202,7 +5162,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N5/R60/E]_0a5d",
+          "id": "RSI均值回归[N5/R60/E]_b402",
           "name": "RSI均值回归[N5/R60/E]",
           "type": "combo",
           "template": "RSI均值回归[N5/R60/E]",
@@ -5224,7 +5184,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R5/E]_1eef",
+          "id": "OBOS超买超卖[N2/R5/E]_e714",
           "name": "OBOS超买超卖[N2/R5/E]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R5/E]",
@@ -5246,7 +5206,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N3/R10/E]_e088",
+          "id": "RVI相对活力[N3/R10/E]_5351",
           "name": "RVI相对活力[N3/R10/E]",
           "type": "combo",
           "template": "RVI相对活力[N3/R10/E]",
@@ -5268,7 +5228,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R10/E]_87b7",
+          "id": "多信号组合[N5/R10/E]_38e9",
           "name": "多信号组合[N5/R10/E]",
           "type": "combo",
           "template": "多信号组合[N5/R10/E]",
@@ -5290,7 +5250,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N3/R20/S]_d53a",
+          "id": "均值回归复合[N3/R20/S]_80b9",
           "name": "均值回归复合[N3/R20/S]",
           "type": "combo",
           "template": "均值回归复合[N3/R20/S]",
@@ -5312,7 +5272,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N5/R5/E]_eb79",
+          "id": "Elder Ray信号[N5/R5/E]_df4d",
           "name": "Elder Ray信号[N5/R5/E]",
           "type": "combo",
           "template": "Elder Ray信号[N5/R5/E]",
@@ -5334,7 +5294,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R5/V]_6e2b",
+          "id": "ROC多周期[N2/R5/V]_f5c0",
           "name": "ROC多周期[N2/R5/V]",
           "type": "combo",
           "template": "ROC多周期[N2/R5/V]",
@@ -5356,7 +5316,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N3/R5/E]_fdcc",
+          "id": "KDJ波形[N3/R5/E]_ab99",
           "name": "KDJ波形[N3/R5/E]",
           "type": "combo",
           "template": "KDJ波形[N3/R5/E]",
@@ -5378,7 +5338,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N2/R5/E]_898b",
+          "id": "KDJ波形[N2/R5/E]_7830",
           "name": "KDJ波形[N2/R5/E]",
           "type": "combo",
           "template": "KDJ波形[N2/R5/E]",
@@ -5400,7 +5360,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R5/E]_e31b",
+          "id": "多信号组合[N5/R5/E]_9f40",
           "name": "多信号组合[N5/R5/E]",
           "type": "combo",
           "template": "多信号组合[N5/R5/E]",
@@ -5422,7 +5382,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R10/E]_aba5",
+          "id": "ROC多周期[N2/R10/E]_4d2b",
           "name": "ROC多周期[N2/R10/E]",
           "type": "combo",
           "template": "ROC多周期[N2/R10/E]",
@@ -5444,7 +5404,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N5/R10/S]_94ef",
+          "id": "均值回归复合[N5/R10/S]_c1a1",
           "name": "均值回归复合[N5/R10/S]",
           "type": "combo",
           "template": "均值回归复合[N5/R10/S]",
@@ -5466,7 +5426,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_b837",
+          "id": "RSI均值回归[N2/R5/S]_6c7d",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -5488,7 +5448,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R20/E]_f036",
+          "id": "布林带回归[N1/R20/E]_ce06",
           "name": "布林带回归[N1/R20/E]",
           "type": "combo",
           "template": "布林带回归[N1/R20/E]",
@@ -5510,7 +5470,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N2/R5/E]_e843",
+          "id": "布林带回归[N2/R5/E]_fc0a",
           "name": "布林带回归[N2/R5/E]",
           "type": "combo",
           "template": "布林带回归[N2/R5/E]",
@@ -5532,7 +5492,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N4/R10/V]_0b31",
+          "id": "量价背离[N4/R10/V]_8a27",
           "name": "量价背离[N4/R10/V]",
           "type": "combo",
           "template": "量价背离[N4/R10/V]",
@@ -5554,7 +5514,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N4/R60/S]_5950",
+          "id": "MFI资金流[N4/R60/S]_803b",
           "name": "MFI资金流[N4/R60/S]",
           "type": "combo",
           "template": "MFI资金流[N4/R60/S]",
@@ -5576,7 +5536,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R5/E]_214b",
+          "id": "Aroon交叉[N2/R5/E]_99f5",
           "name": "Aroon交叉[N2/R5/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R5/E]",
@@ -5598,7 +5558,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N4/R5/V]_7da1",
+          "id": "量价背离[N4/R5/V]_cce3",
           "name": "量价背离[N4/R5/V]",
           "type": "combo",
           "template": "量价背离[N4/R5/V]",
@@ -5620,7 +5580,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N1/R60/V]_edab",
+          "id": "MFI资金流[N1/R60/V]_e2ef",
           "name": "MFI资金流[N1/R60/V]",
           "type": "combo",
           "template": "MFI资金流[N1/R60/V]",
@@ -5642,7 +5602,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N5/R60/V]_5347",
+          "id": "成交量异常[N5/R60/V]_5e48",
           "name": "成交量异常[N5/R60/V]",
           "type": "combo",
           "template": "成交量异常[N5/R60/V]",
@@ -5664,7 +5624,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R60/V]_64b1",
+          "id": "情绪-价格动量交互因子[N2/R60/V]_6de6",
           "name": "情绪-价格动量交互因子[N2/R60/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R60/V]",
@@ -5686,7 +5646,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N3/R20/E]_ba5b",
+          "id": "Elder Ray信号[N3/R20/E]_409d",
           "name": "Elder Ray信号[N3/R20/E]",
           "type": "combo",
           "template": "Elder Ray信号[N3/R20/E]",
@@ -5708,7 +5668,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N5/R20/V]_dfcc",
+          "id": "情绪-价格动量交互因子[N5/R20/V]_8e1c",
           "name": "情绪-价格动量交互因子[N5/R20/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N5/R20/V]",
@@ -5730,7 +5690,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N5/R20/E]_6ecb",
+          "id": "烂板反转[N5/R20/E]_fe2a",
           "name": "烂板反转[N5/R20/E]",
           "type": "combo",
           "template": "烂板反转[N5/R20/E]",
@@ -5752,7 +5712,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N4/R5/V]_bb25",
+          "id": "烂板反转[N4/R5/V]_1753",
           "name": "烂板反转[N4/R5/V]",
           "type": "combo",
           "template": "烂板反转[N4/R5/V]",
@@ -5774,7 +5734,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R60/S]_944a",
+          "id": "跳空缺口突破[N5/R60/S]_e4c4",
           "name": "跳空缺口突破[N5/R60/S]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R60/S]",
@@ -5796,7 +5756,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N4/R20/V]_c932",
+          "id": "涨停动能[N4/R20/V]_0959",
           "name": "涨停动能[N4/R20/V]",
           "type": "combo",
           "template": "涨停动能[N4/R20/V]",
@@ -5818,7 +5778,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R10/E]_17bf",
+          "id": "跳空缺口突破[N5/R10/E]_a4d4",
           "name": "跳空缺口突破[N5/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R10/E]",
@@ -5840,7 +5800,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R20/V]_4478",
+          "id": "涨停动能[N5/R20/V]_b473",
           "name": "涨停动能[N5/R20/V]",
           "type": "combo",
           "template": "涨停动能[N5/R20/V]",
@@ -5862,7 +5822,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N3/R60/E]_92d2",
+          "id": "MACD趋势[N3/R60/E]_d008",
           "name": "MACD趋势[N3/R60/E]",
           "type": "combo",
           "template": "MACD趋势[N3/R60/E]",
@@ -5884,7 +5844,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N5/R20/V]_4fab",
+          "id": "Ichimoku云图[N5/R20/V]_7e33",
           "name": "Ichimoku云图[N5/R20/V]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R20/V]",
@@ -5906,7 +5866,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N5/R20/V]_118e",
+          "id": "Ichimoku云图[N5/R20/V]_6284",
           "name": "Ichimoku云图[N5/R20/V]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R20/V]",
@@ -5928,7 +5888,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N3/R10/V]_e765",
+          "id": "价格动量因子[N3/R10/V]_4f60",
           "name": "价格动量因子[N3/R10/V]",
           "type": "combo",
           "template": "价格动量因子[N3/R10/V]",
@@ -5950,7 +5910,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N3/R60/V]_d9a1",
+          "id": "Donchian突破[N3/R60/V]_3273",
           "name": "Donchian突破[N3/R60/V]",
           "type": "combo",
           "template": "Donchian突破[N3/R60/V]",
@@ -5972,7 +5932,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/V]_3f4d",
+          "id": "ADX趋势确认[N5/R60/V]_e458",
           "name": "ADX趋势确认[N5/R60/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/V]",
@@ -5994,7 +5954,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N2/R60/V]_c7ed",
+          "id": "动量突破[N2/R60/V]_304d",
           "name": "动量突破[N2/R60/V]",
           "type": "combo",
           "template": "动量突破[N2/R60/V]",
@@ -6016,7 +5976,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N2/R20/V]_42f5",
+          "id": "双均线交叉[N2/R20/V]_f4be",
           "name": "双均线交叉[N2/R20/V]",
           "type": "combo",
           "template": "双均线交叉[N2/R20/V]",
@@ -6038,7 +5998,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R5/V]_ca3e",
+          "id": "RVI相对活力[N2/R5/V]_427f",
           "name": "RVI相对活力[N2/R5/V]",
           "type": "combo",
           "template": "RVI相对活力[N2/R5/V]",
@@ -6060,7 +6020,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R20/V]_7029",
+          "id": "ADX趋势确认[N5/R20/V]_2315",
           "name": "ADX趋势确认[N5/R20/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R20/V]",
@@ -6082,7 +6042,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N5/R60/V]_d5b4",
+          "id": "主力资金流[N5/R60/V]_812c",
           "name": "主力资金流[N5/R60/V]",
           "type": "combo",
           "template": "主力资金流[N5/R60/V]",
@@ -6104,7 +6064,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N3/R5/V]_3d11",
+          "id": "TRIX三重指数[N3/R5/V]_abea",
           "name": "TRIX三重指数[N3/R5/V]",
           "type": "combo",
           "template": "TRIX三重指数[N3/R5/V]",
@@ -6126,7 +6086,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N2/R60/V]_c6ac",
+          "id": "TRIX三重指数[N2/R60/V]_9990",
           "name": "TRIX三重指数[N2/R60/V]",
           "type": "combo",
           "template": "TRIX三重指数[N2/R60/V]",
@@ -6148,7 +6108,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N3/R60/V]_8163",
+          "id": "双均线交叉[N3/R60/V]_4a06",
           "name": "双均线交叉[N3/R60/V]",
           "type": "combo",
           "template": "双均线交叉[N3/R60/V]",
@@ -6170,7 +6130,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N3/R10/E]_0d68",
+          "id": "趋势复合信号[N3/R10/E]_d035",
           "name": "趋势复合信号[N3/R10/E]",
           "type": "combo",
           "template": "趋势复合信号[N3/R10/E]",
@@ -6192,7 +6152,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N3/R5/V]_877b",
+          "id": "KST动量[N3/R5/V]_9aff",
           "name": "KST动量[N3/R5/V]",
           "type": "combo",
           "template": "KST动量[N3/R5/V]",
@@ -6214,7 +6174,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N2/R60/V]_d34d",
+          "id": "价格动量因子[N2/R60/V]_0589",
           "name": "价格动量因子[N2/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N2/R60/V]",
@@ -6236,7 +6196,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R10/V]_5c4f",
+          "id": "MACD趋势[N5/R10/V]_5155",
           "name": "MACD趋势[N5/R10/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R10/V]",
@@ -6258,7 +6218,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N3/R20/E]_8220",
+          "id": "主力资金流[N3/R20/E]_49a4",
           "name": "主力资金流[N3/R20/E]",
           "type": "combo",
           "template": "主力资金流[N3/R20/E]",
@@ -6280,7 +6240,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R5/V]_3210",
+          "id": "Donchian突破[N2/R5/V]_8e55",
           "name": "Donchian突破[N2/R5/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R5/V]",
@@ -6302,7 +6262,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N3/R5/V]_74fa",
+          "id": "动量突破[N3/R5/V]_722f",
           "name": "动量突破[N3/R5/V]",
           "type": "combo",
           "template": "动量突破[N3/R5/V]",
@@ -6324,7 +6284,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N2/R5/E]_a388",
+          "id": "成交量异常[N2/R5/E]_b165",
           "name": "成交量异常[N2/R5/E]",
           "type": "combo",
           "template": "成交量异常[N2/R5/E]",
@@ -6346,7 +6306,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N3/R20/V]_3c1b",
+          "id": "趋势复合信号[N3/R20/V]_f20b",
           "name": "趋势复合信号[N3/R20/V]",
           "type": "combo",
           "template": "趋势复合信号[N3/R20/V]",
@@ -6368,7 +6328,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_612f",
+          "id": "RSI均值回归[N2/R5/S]_6a4e",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -6390,7 +6350,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N4/R10/E]_d00a",
+          "id": "RSI均值回归[N4/R10/E]_05c0",
           "name": "RSI均值回归[N4/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R10/E]",
@@ -6412,7 +6372,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N1/R10/V]_19f7",
+          "id": "MFI资金流[N1/R10/V]_2481",
           "name": "MFI资金流[N1/R10/V]",
           "type": "combo",
           "template": "MFI资金流[N1/R10/V]",
@@ -6445,23 +6405,13 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     },
     {
       "round": 6,
       "strategies": [
         {
-          "id": "OBOS超买超卖[N2/R20/S]_0c06",
+          "id": "OBOS超买超卖[N2/R20/S]_99c8",
           "name": "OBOS超买超卖[N2/R20/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R20/S]",
@@ -6483,7 +6433,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N4/R10/V]_17d8",
+          "id": "OBOS超买超卖[N4/R10/V]_594f",
           "name": "OBOS超买超卖[N4/R10/V]",
           "type": "combo",
           "template": "OBOS超买超卖[N4/R10/V]",
@@ -6505,7 +6455,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N1/R10/V]_d25a",
+          "id": "MFI资金流[N1/R10/V]_f620",
           "name": "MFI资金流[N1/R10/V]",
           "type": "combo",
           "template": "MFI资金流[N1/R10/V]",
@@ -6527,7 +6477,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R5/S]_7389",
+          "id": "ROC多周期[N2/R5/S]_b891",
           "name": "ROC多周期[N2/R5/S]",
           "type": "combo",
           "template": "ROC多周期[N2/R5/S]",
@@ -6549,7 +6499,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N2/R20/S]_fbf7",
+          "id": "均值回归复合[N2/R20/S]_879b",
           "name": "均值回归复合[N2/R20/S]",
           "type": "combo",
           "template": "均值回归复合[N2/R20/S]",
@@ -6571,7 +6521,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R10/E]_c1c5",
+          "id": "RSI均值回归[N2/R10/E]_350a",
           "name": "RSI均值回归[N2/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N2/R10/E]",
@@ -6593,7 +6543,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N3/R5/S]_c1f9",
+          "id": "RSI均值回归[N3/R5/S]_811a",
           "name": "RSI均值回归[N3/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N3/R5/S]",
@@ -6615,7 +6565,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N2/R5/E]_eb41",
+          "id": "布林带回归[N2/R5/E]_ffe9",
           "name": "布林带回归[N2/R5/E]",
           "type": "combo",
           "template": "布林带回归[N2/R5/E]",
@@ -6637,7 +6587,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N2/R5/E]_f39f",
+          "id": "布林带回归[N2/R5/E]_baa1",
           "name": "布林带回归[N2/R5/E]",
           "type": "combo",
           "template": "布林带回归[N2/R5/E]",
@@ -6659,7 +6609,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N3/R5/V]_3c35",
+          "id": "Aroon交叉[N3/R5/V]_0744",
           "name": "Aroon交叉[N3/R5/V]",
           "type": "combo",
           "template": "Aroon交叉[N3/R5/V]",
@@ -6681,7 +6631,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N2/R5/V]_026e",
+          "id": "ROC多周期[N2/R5/V]_5e3f",
           "name": "ROC多周期[N2/R5/V]",
           "type": "combo",
           "template": "ROC多周期[N2/R5/V]",
@@ -6703,7 +6653,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R5/E]_8395",
+          "id": "Aroon交叉[N2/R5/E]_754a",
           "name": "Aroon交叉[N2/R5/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R5/E]",
@@ -6725,7 +6675,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R5/E]_39a8",
+          "id": "多信号组合[N5/R5/E]_b62e",
           "name": "多信号组合[N5/R5/E]",
           "type": "combo",
           "template": "多信号组合[N5/R5/E]",
@@ -6747,7 +6697,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R5/E]_5275",
+          "id": "多信号组合[N5/R5/E]_ce1d",
           "name": "多信号组合[N5/R5/E]",
           "type": "combo",
           "template": "多信号组合[N5/R5/E]",
@@ -6769,7 +6719,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R5/E]_86d7",
+          "id": "RVI相对活力[N2/R5/E]_3aa3",
           "name": "RVI相对活力[N2/R5/E]",
           "type": "combo",
           "template": "RVI相对活力[N2/R5/E]",
@@ -6791,7 +6741,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N2/R60/S]_367e",
+          "id": "均值回归复合[N2/R60/S]_af40",
           "name": "均值回归复合[N2/R60/S]",
           "type": "combo",
           "template": "均值回归复合[N2/R60/S]",
@@ -6813,7 +6763,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N3/R20/V]_86a9",
+          "id": "成交量异常[N3/R20/V]_8bfe",
           "name": "成交量异常[N3/R20/V]",
           "type": "combo",
           "template": "成交量异常[N3/R20/V]",
@@ -6835,7 +6785,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N2/R10/S]_dc42",
+          "id": "Elder Ray信号[N2/R10/S]_c3c0",
           "name": "Elder Ray信号[N2/R10/S]",
           "type": "combo",
           "template": "Elder Ray信号[N2/R10/S]",
@@ -6857,7 +6807,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R60/E]_95a7",
+          "id": "量价背离[N5/R60/E]_afd6",
           "name": "量价背离[N5/R60/E]",
           "type": "combo",
           "template": "量价背离[N5/R60/E]",
@@ -6879,7 +6829,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N3/R20/E]_f95f",
+          "id": "Elder Ray信号[N3/R20/E]_a68a",
           "name": "Elder Ray信号[N3/R20/E]",
           "type": "combo",
           "template": "Elder Ray信号[N3/R20/E]",
@@ -6901,7 +6851,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R60/V]_5364",
+          "id": "情绪-价格动量交互因子[N2/R60/V]_4fcb",
           "name": "情绪-价格动量交互因子[N2/R60/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R60/V]",
@@ -6923,7 +6873,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N5/R20/E]_129c",
+          "id": "主力资金流[N5/R20/E]_1bf3",
           "name": "主力资金流[N5/R20/E]",
           "type": "combo",
           "template": "主力资金流[N5/R20/E]",
@@ -6945,7 +6895,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N2/R10/V]_a8ac",
+          "id": "MFI资金流[N2/R10/V]_d33c",
           "name": "MFI资金流[N2/R10/V]",
           "type": "combo",
           "template": "MFI资金流[N2/R10/V]",
@@ -6967,7 +6917,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N3/R20/E]_0892",
+          "id": "KDJ波形[N3/R20/E]_e82b",
           "name": "KDJ波形[N3/R20/E]",
           "type": "combo",
           "template": "KDJ波形[N3/R20/E]",
@@ -6989,7 +6939,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N2/R20/S]_aeb9",
+          "id": "KDJ波形[N2/R20/S]_faa2",
           "name": "KDJ波形[N2/R20/S]",
           "type": "combo",
           "template": "KDJ波形[N2/R20/S]",
@@ -7011,7 +6961,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N3/R10/E]_a1a6",
+          "id": "RVI相对活力[N3/R10/E]_bc62",
           "name": "RVI相对活力[N3/R10/E]",
           "type": "combo",
           "template": "RVI相对活力[N3/R10/E]",
@@ -7033,7 +6983,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R10/V]_9de1",
+          "id": "量价背离[N5/R10/V]_d5c0",
           "name": "量价背离[N5/R10/V]",
           "type": "combo",
           "template": "量价背离[N5/R10/V]",
@@ -7055,7 +7005,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R60/V]_04f9",
+          "id": "涨停动能[N5/R60/V]_34c8",
           "name": "涨停动能[N5/R60/V]",
           "type": "combo",
           "template": "涨停动能[N5/R60/V]",
@@ -7077,7 +7027,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R20/E]_936c",
+          "id": "跳空缺口突破[N5/R20/E]_9828",
           "name": "跳空缺口突破[N5/R20/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R20/E]",
@@ -7099,7 +7049,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R10/E]_76a3",
+          "id": "跳空缺口突破[N5/R10/E]_c577",
           "name": "跳空缺口突破[N5/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R10/E]",
@@ -7121,7 +7071,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N5/R60/S]_ede3",
+          "id": "烂板反转[N5/R60/S]_9772",
           "name": "烂板反转[N5/R60/S]",
           "type": "combo",
           "template": "烂板反转[N5/R60/S]",
@@ -7143,7 +7093,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N3/R5/V]_4994",
+          "id": "烂板反转[N3/R5/V]_8fc0",
           "name": "烂板反转[N3/R5/V]",
           "type": "combo",
           "template": "烂板反转[N3/R5/V]",
@@ -7165,7 +7115,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R20/V]_4478",
+          "id": "涨停动能[N5/R20/V]_b473",
           "name": "涨停动能[N5/R20/V]",
           "type": "combo",
           "template": "涨停动能[N5/R20/V]",
@@ -7187,7 +7137,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N3/R60/V]_f0f4",
+          "id": "Ichimoku云图[N3/R60/V]_656b",
           "name": "Ichimoku云图[N3/R60/V]",
           "type": "combo",
           "template": "Ichimoku云图[N3/R60/V]",
@@ -7209,7 +7159,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R20/V]_78eb",
+          "id": "Donchian突破[N2/R20/V]_2f30",
           "name": "Donchian突破[N2/R20/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R20/V]",
@@ -7231,7 +7181,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N5/R20/V]_41b3",
+          "id": "Ichimoku云图[N5/R20/V]_d593",
           "name": "Ichimoku云图[N5/R20/V]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R20/V]",
@@ -7253,7 +7203,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N5/R20/V]_af6d",
+          "id": "KST动量[N5/R20/V]_8c85",
           "name": "KST动量[N5/R20/V]",
           "type": "combo",
           "template": "KST动量[N5/R20/V]",
@@ -7275,7 +7225,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R60/V]_4f65",
+          "id": "情绪-价格动量交互因子[N2/R60/V]_08e8",
           "name": "情绪-价格动量交互因子[N2/R60/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R60/V]",
@@ -7297,7 +7247,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R5/V]_f2a5",
+          "id": "Donchian突破[N2/R5/V]_7ee2",
           "name": "Donchian突破[N2/R5/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R5/V]",
@@ -7319,7 +7269,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R20/V]_73a3",
+          "id": "ADX趋势确认[N5/R20/V]_9a51",
           "name": "ADX趋势确认[N5/R20/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R20/V]",
@@ -7341,7 +7291,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N2/R20/V]_fa02",
+          "id": "双均线交叉[N2/R20/V]_8927",
           "name": "双均线交叉[N2/R20/V]",
           "type": "combo",
           "template": "双均线交叉[N2/R20/V]",
@@ -7363,7 +7313,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N5/R20/V]_0e78",
+          "id": "动量突破[N5/R20/V]_2d8c",
           "name": "动量突破[N5/R20/V]",
           "type": "combo",
           "template": "动量突破[N5/R20/V]",
@@ -7385,7 +7335,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N2/R60/V]_eb4b",
+          "id": "双均线交叉[N2/R60/V]_263c",
           "name": "双均线交叉[N2/R60/V]",
           "type": "combo",
           "template": "双均线交叉[N2/R60/V]",
@@ -7407,7 +7357,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N3/R10/V]_e3d3",
+          "id": "KST动量[N3/R10/V]_e245",
           "name": "KST动量[N3/R10/V]",
           "type": "combo",
           "template": "KST动量[N3/R10/V]",
@@ -7429,7 +7379,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N4/R20/V]_40d2",
+          "id": "主力资金流[N4/R20/V]_0ac8",
           "name": "主力资金流[N4/R20/V]",
           "type": "combo",
           "template": "主力资金流[N4/R20/V]",
@@ -7451,7 +7401,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N2/R5/E]_3b11",
+          "id": "成交量异常[N2/R5/E]_6e28",
           "name": "成交量异常[N2/R5/E]",
           "type": "combo",
           "template": "成交量异常[N2/R5/E]",
@@ -7473,7 +7423,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N3/R10/V]_c484",
+          "id": "ADX趋势确认[N3/R10/V]_dd56",
           "name": "ADX趋势确认[N3/R10/V]",
           "type": "combo",
           "template": "ADX趋势确认[N3/R10/V]",
@@ -7495,7 +7445,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N2/R20/S]_ff60",
+          "id": "趋势复合信号[N2/R20/S]_2ea3",
           "name": "趋势复合信号[N2/R20/S]",
           "type": "combo",
           "template": "趋势复合信号[N2/R20/S]",
@@ -7517,7 +7467,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N3/R60/V]_dd3c",
+          "id": "价格动量因子[N3/R60/V]_4ab9",
           "name": "价格动量因子[N3/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N3/R60/V]",
@@ -7539,7 +7489,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R60/V]_abe4",
+          "id": "MACD趋势[N5/R60/V]_911b",
           "name": "MACD趋势[N5/R60/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R60/V]",
@@ -7561,7 +7511,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N5/R10/V]_4faf",
+          "id": "TRIX三重指数[N5/R10/V]_95d2",
           "name": "TRIX三重指数[N5/R10/V]",
           "type": "combo",
           "template": "TRIX三重指数[N5/R10/V]",
@@ -7583,7 +7533,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N3/R10/V]_f844",
+          "id": "TRIX三重指数[N3/R10/V]_d0ba",
           "name": "TRIX三重指数[N3/R10/V]",
           "type": "combo",
           "template": "TRIX三重指数[N3/R10/V]",
@@ -7605,7 +7555,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N5/R10/V]_4ab8",
+          "id": "动量突破[N5/R10/V]_9c56",
           "name": "动量突破[N5/R10/V]",
           "type": "combo",
           "template": "动量突破[N5/R10/V]",
@@ -7627,7 +7577,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N3/R5/V]_5079",
+          "id": "MACD趋势[N3/R5/V]_e7b7",
           "name": "MACD趋势[N3/R5/V]",
           "type": "combo",
           "template": "MACD趋势[N3/R5/V]",
@@ -7649,7 +7599,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N3/R5/V]_6b7d",
+          "id": "价格动量因子[N3/R5/V]_d311",
           "name": "价格动量因子[N3/R5/V]",
           "type": "combo",
           "template": "价格动量因子[N3/R5/V]",
@@ -7671,7 +7621,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_612f",
+          "id": "RSI均值回归[N2/R5/S]_6a4e",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -7693,7 +7643,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N4/R10/E]_d00a",
+          "id": "RSI均值回归[N4/R10/E]_05c0",
           "name": "RSI均值回归[N4/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R10/E]",
@@ -7715,7 +7665,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R10/S]_0b86",
+          "id": "OBOS超买超卖[N2/R10/S]_383c",
           "name": "OBOS超买超卖[N2/R10/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R10/S]",
@@ -7748,23 +7698,13 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     },
     {
       "round": 7,
       "strategies": [
         {
-          "id": "RSI均值回归[N2/R10/S]_9d44",
+          "id": "RSI均值回归[N2/R10/S]_b670",
           "name": "RSI均值回归[N2/R10/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R10/S]",
@@ -7786,7 +7726,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_d634",
+          "id": "RSI均值回归[N2/R5/S]_faef",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -7808,7 +7748,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R20/E]_5904",
+          "id": "OBOS超买超卖[N2/R20/E]_d8e7",
           "name": "OBOS超买超卖[N2/R20/E]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R20/E]",
@@ -7830,7 +7770,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N1/R20/V]_ca31",
+          "id": "MFI资金流[N1/R20/V]_915a",
           "name": "MFI资金流[N1/R20/V]",
           "type": "combo",
           "template": "MFI资金流[N1/R20/V]",
@@ -7852,7 +7792,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N3/R5/E]_d807",
+          "id": "Aroon交叉[N3/R5/E]_169b",
           "name": "Aroon交叉[N3/R5/E]",
           "type": "combo",
           "template": "Aroon交叉[N3/R5/E]",
@@ -7874,7 +7814,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N3/R20/E]_f0a6",
+          "id": "均值回归复合[N3/R20/E]_6af9",
           "name": "均值回归复合[N3/R20/E]",
           "type": "combo",
           "template": "均值回归复合[N3/R20/E]",
@@ -7896,7 +7836,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R5/V]_6faf",
+          "id": "布林带回归[N1/R5/V]_8c5b",
           "name": "布林带回归[N1/R5/V]",
           "type": "combo",
           "template": "布林带回归[N1/R5/V]",
@@ -7918,7 +7858,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N4/R5/S]_8b55",
+          "id": "布林带回归[N4/R5/S]_a48d",
           "name": "布林带回归[N4/R5/S]",
           "type": "combo",
           "template": "布林带回归[N4/R5/S]",
@@ -7940,7 +7880,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N3/R10/S]_2d79",
+          "id": "ROC多周期[N3/R10/S]_071f",
           "name": "ROC多周期[N3/R10/S]",
           "type": "combo",
           "template": "ROC多周期[N3/R10/S]",
@@ -7962,7 +7902,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R10/E]_a323",
+          "id": "多信号组合[N3/R10/E]_b815",
           "name": "多信号组合[N3/R10/E]",
           "type": "combo",
           "template": "多信号组合[N3/R10/E]",
@@ -7984,7 +7924,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N5/R10/V]_d42a",
+          "id": "Elder Ray信号[N5/R10/V]_0d17",
           "name": "Elder Ray信号[N5/R10/V]",
           "type": "combo",
           "template": "Elder Ray信号[N5/R10/V]",
@@ -8006,7 +7946,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N3/R10/S]_d64d",
+          "id": "ROC多周期[N3/R10/S]_55a6",
           "name": "ROC多周期[N3/R10/S]",
           "type": "combo",
           "template": "ROC多周期[N3/R10/S]",
@@ -8028,7 +7968,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N2/R60/S]_1f53",
+          "id": "Elder Ray信号[N2/R60/S]_01ab",
           "name": "Elder Ray信号[N2/R60/S]",
           "type": "combo",
           "template": "Elder Ray信号[N2/R60/S]",
@@ -8050,7 +7990,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R5/E]_6ea7",
+          "id": "多信号组合[N5/R5/E]_83aa",
           "name": "多信号组合[N5/R5/E]",
           "type": "combo",
           "template": "多信号组合[N5/R5/E]",
@@ -8072,7 +8012,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N2/R60/S]_6216",
+          "id": "KDJ波形[N2/R60/S]_b6eb",
           "name": "KDJ波形[N2/R60/S]",
           "type": "combo",
           "template": "KDJ波形[N2/R60/S]",
@@ -8094,7 +8034,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N2/R60/V]_b10b",
+          "id": "MFI资金流[N2/R60/V]_fd0e",
           "name": "MFI资金流[N2/R60/V]",
           "type": "combo",
           "template": "MFI资金流[N2/R60/V]",
@@ -8116,7 +8056,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N2/R60/S]_7515",
+          "id": "均值回归复合[N2/R60/S]_6627",
           "name": "均值回归复合[N2/R60/S]",
           "type": "combo",
           "template": "均值回归复合[N2/R60/S]",
@@ -8138,7 +8078,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N5/R60/V]_157f",
+          "id": "成交量异常[N5/R60/V]_5493",
           "name": "成交量异常[N5/R60/V]",
           "type": "combo",
           "template": "成交量异常[N5/R60/V]",
@@ -8160,7 +8100,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N3/R60/E]_bfbf",
+          "id": "量价背离[N3/R60/E]_be64",
           "name": "量价背离[N3/R60/E]",
           "type": "combo",
           "template": "量价背离[N3/R60/E]",
@@ -8182,7 +8122,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N2/R60/S]_75f5",
+          "id": "成交量异常[N2/R60/S]_e133",
           "name": "成交量异常[N2/R60/S]",
           "type": "combo",
           "template": "成交量异常[N2/R60/S]",
@@ -8204,7 +8144,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N5/R60/V]_7ff1",
+          "id": "情绪-价格动量交互因子[N5/R60/V]_8739",
           "name": "情绪-价格动量交互因子[N5/R60/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N5/R60/V]",
@@ -8226,7 +8166,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R5/E]_27cb",
+          "id": "RVI相对活力[N2/R5/E]_9164",
           "name": "RVI相对活力[N2/R5/E]",
           "type": "combo",
           "template": "RVI相对活力[N2/R5/E]",
@@ -8248,7 +8188,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R20/S]_bdab",
+          "id": "RVI相对活力[N2/R20/S]_7195",
           "name": "RVI相对活力[N2/R20/S]",
           "type": "combo",
           "template": "RVI相对活力[N2/R20/S]",
@@ -8270,7 +8210,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R10/V]_2687",
+          "id": "量价背离[N5/R10/V]_9cd3",
           "name": "量价背离[N5/R10/V]",
           "type": "combo",
           "template": "量价背离[N5/R10/V]",
@@ -8292,7 +8232,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N3/R20/V]_c138",
+          "id": "KDJ波形[N3/R20/V]_fcf2",
           "name": "KDJ波形[N3/R20/V]",
           "type": "combo",
           "template": "KDJ波形[N3/R20/V]",
@@ -8314,7 +8254,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N5/R20/V]_b05c",
+          "id": "Aroon交叉[N5/R20/V]_d035",
           "name": "Aroon交叉[N5/R20/V]",
           "type": "combo",
           "template": "Aroon交叉[N5/R20/V]",
@@ -8336,7 +8276,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N4/R20/E]_6d46",
+          "id": "OBOS超买超卖[N4/R20/E]_8c62",
           "name": "OBOS超买超卖[N4/R20/E]",
           "type": "combo",
           "template": "OBOS超买超卖[N4/R20/E]",
@@ -8358,7 +8298,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N2/R10/E]_ff04",
+          "id": "跳空缺口突破[N2/R10/E]_87c7",
           "name": "跳空缺口突破[N2/R10/E]",
           "type": "combo",
           "template": "跳空缺口突破[N2/R10/E]",
@@ -8380,7 +8320,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N4/R60/V]_4dfa",
+          "id": "烂板反转[N4/R60/V]_3f90",
           "name": "烂板反转[N4/R60/V]",
           "type": "combo",
           "template": "烂板反转[N4/R60/V]",
@@ -8402,7 +8342,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N5/R60/E]_6db9",
+          "id": "Ichimoku云图[N5/R60/E]_929c",
           "name": "Ichimoku云图[N5/R60/E]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R60/E]",
@@ -8424,7 +8364,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N3/R60/V]_b4a4",
+          "id": "Ichimoku云图[N3/R60/V]_07c6",
           "name": "Ichimoku云图[N3/R60/V]",
           "type": "combo",
           "template": "Ichimoku云图[N3/R60/V]",
@@ -8446,7 +8386,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R20/E]_936c",
+          "id": "跳空缺口突破[N5/R20/E]_9828",
           "name": "跳空缺口突破[N5/R20/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R20/E]",
@@ -8468,7 +8408,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N4/R20/S]_c16c",
+          "id": "烂板反转[N4/R20/S]_0ede",
           "name": "烂板反转[N4/R20/S]",
           "type": "combo",
           "template": "烂板反转[N4/R20/S]",
@@ -8490,7 +8430,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R60/V]_04f9",
+          "id": "涨停动能[N5/R60/V]_34c8",
           "name": "涨停动能[N5/R60/V]",
           "type": "combo",
           "template": "涨停动能[N5/R60/V]",
@@ -8512,7 +8452,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R60/V]_04f9",
+          "id": "涨停动能[N5/R60/V]_34c8",
           "name": "涨停动能[N5/R60/V]",
           "type": "combo",
           "template": "涨停动能[N5/R60/V]",
@@ -8534,7 +8474,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N3/R60/S]_4cc8",
+          "id": "趋势复合信号[N3/R60/S]_8511",
           "name": "趋势复合信号[N3/R60/S]",
           "type": "combo",
           "template": "趋势复合信号[N3/R60/S]",
@@ -8556,7 +8496,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N5/R10/V]_9a5f",
+          "id": "MACD趋势[N5/R10/V]_7168",
           "name": "MACD趋势[N5/R10/V]",
           "type": "combo",
           "template": "MACD趋势[N5/R10/V]",
@@ -8578,7 +8518,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R5/S]_996b",
+          "id": "情绪-价格动量交互因子[N2/R5/S]_24e5",
           "name": "情绪-价格动量交互因子[N2/R5/S]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R5/S]",
@@ -8600,7 +8540,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N2/R10/V]_64be",
+          "id": "TRIX三重指数[N2/R10/V]_9eb0",
           "name": "TRIX三重指数[N2/R10/V]",
           "type": "combo",
           "template": "TRIX三重指数[N2/R10/V]",
@@ -8622,7 +8562,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/V]_fd9f",
+          "id": "ADX趋势确认[N5/R60/V]_39e8",
           "name": "ADX趋势确认[N5/R60/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/V]",
@@ -8644,7 +8584,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R60/V]_4b6f",
+          "id": "ADX趋势确认[N5/R60/V]_42ed",
           "name": "ADX趋势确认[N5/R60/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R60/V]",
@@ -8666,7 +8606,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N2/R20/V]_426b",
+          "id": "TRIX三重指数[N2/R20/V]_de13",
           "name": "TRIX三重指数[N2/R20/V]",
           "type": "combo",
           "template": "TRIX三重指数[N2/R20/V]",
@@ -8688,7 +8628,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N5/R60/V]_e6ec",
+          "id": "价格动量因子[N5/R60/V]_e009",
           "name": "价格动量因子[N5/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N5/R60/V]",
@@ -8710,7 +8650,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N5/R20/V]_f58e",
+          "id": "KST动量[N5/R20/V]_39ec",
           "name": "KST动量[N5/R20/V]",
           "type": "combo",
           "template": "KST动量[N5/R20/V]",
@@ -8732,7 +8672,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N3/R10/V]_c723",
+          "id": "KST动量[N3/R10/V]_93a5",
           "name": "KST动量[N3/R10/V]",
           "type": "combo",
           "template": "KST动量[N3/R10/V]",
@@ -8754,7 +8694,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N5/R5/V]_413f",
+          "id": "价格动量因子[N5/R5/V]_26a1",
           "name": "价格动量因子[N5/R5/V]",
           "type": "combo",
           "template": "价格动量因子[N5/R5/V]",
@@ -8776,7 +8716,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N3/R5/V]_41d5",
+          "id": "趋势复合信号[N3/R5/V]_dcfe",
           "name": "趋势复合信号[N3/R5/V]",
           "type": "combo",
           "template": "趋势复合信号[N3/R5/V]",
@@ -8798,7 +8738,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N5/R5/V]_ff61",
+          "id": "双均线交叉[N5/R5/V]_b054",
           "name": "双均线交叉[N5/R5/V]",
           "type": "combo",
           "template": "双均线交叉[N5/R5/V]",
@@ -8820,7 +8760,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N5/R10/E]_e98b",
+          "id": "主力资金流[N5/R10/E]_04b0",
           "name": "主力资金流[N5/R10/E]",
           "type": "combo",
           "template": "主力资金流[N5/R10/E]",
@@ -8842,7 +8782,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N3/R5/V]_cd10",
+          "id": "Donchian突破[N3/R5/V]_c11a",
           "name": "Donchian突破[N3/R5/V]",
           "type": "combo",
           "template": "Donchian突破[N3/R5/V]",
@@ -8864,7 +8804,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N3/R60/V]_41d2",
+          "id": "动量突破[N3/R60/V]_a194",
           "name": "动量突破[N3/R60/V]",
           "type": "combo",
           "template": "动量突破[N3/R60/V]",
@@ -8886,7 +8826,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N3/R5/V]_f49b",
+          "id": "双均线交叉[N3/R5/V]_ae4f",
           "name": "双均线交叉[N3/R5/V]",
           "type": "combo",
           "template": "双均线交叉[N3/R5/V]",
@@ -8908,7 +8848,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N3/R10/V]_55f9",
+          "id": "Donchian突破[N3/R10/V]_0ede",
           "name": "Donchian突破[N3/R10/V]",
           "type": "combo",
           "template": "Donchian突破[N3/R10/V]",
@@ -8930,7 +8870,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N3/R5/S]_03ce",
+          "id": "MACD趋势[N3/R5/S]_9106",
           "name": "MACD趋势[N3/R5/S]",
           "type": "combo",
           "template": "MACD趋势[N3/R5/S]",
@@ -8952,7 +8892,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N5/R20/E]_4356",
+          "id": "主力资金流[N5/R20/E]_09e2",
           "name": "主力资金流[N5/R20/E]",
           "type": "combo",
           "template": "主力资金流[N5/R20/E]",
@@ -8974,7 +8914,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_612f",
+          "id": "RSI均值回归[N2/R5/S]_6a4e",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -8996,7 +8936,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N4/R10/E]_d00a",
+          "id": "RSI均值回归[N4/R10/E]_05c0",
           "name": "RSI均值回归[N4/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R10/E]",
@@ -9018,7 +8958,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R10/S]_0b86",
+          "id": "OBOS超买超卖[N2/R10/S]_383c",
           "name": "OBOS超买超卖[N2/R10/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R10/S]",
@@ -9051,23 +8991,13 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     },
     {
       "round": 8,
       "strategies": [
         {
-          "id": "RSI均值回归[N5/R20/S]_d904",
+          "id": "RSI均值回归[N5/R20/S]_b598",
           "name": "RSI均值回归[N5/R20/S]",
           "type": "combo",
           "template": "RSI均值回归[N5/R20/S]",
@@ -9089,7 +9019,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R60/S]_2c72",
+          "id": "OBOS超买超卖[N2/R60/S]_4374",
           "name": "OBOS超买超卖[N2/R60/S]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R60/S]",
@@ -9111,7 +9041,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N3/R5/S]_1569",
+          "id": "RSI均值回归[N3/R5/S]_0766",
           "name": "RSI均值回归[N3/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N3/R5/S]",
@@ -9133,7 +9063,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N5/R5/V]_0dc9",
+          "id": "Elder Ray信号[N5/R5/V]_66f2",
           "name": "Elder Ray信号[N5/R5/V]",
           "type": "combo",
           "template": "Elder Ray信号[N5/R5/V]",
@@ -9155,7 +9085,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N5/R5/V]_25b0",
+          "id": "ROC多周期[N5/R5/V]_2656",
           "name": "ROC多周期[N5/R5/V]",
           "type": "combo",
           "template": "ROC多周期[N5/R5/V]",
@@ -9177,7 +9107,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N2/R10/E]_a491",
+          "id": "Aroon交叉[N2/R10/E]_0a88",
           "name": "Aroon交叉[N2/R10/E]",
           "type": "combo",
           "template": "Aroon交叉[N2/R10/E]",
@@ -9199,7 +9129,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N5/R5/E]_818f",
+          "id": "多信号组合[N5/R5/E]_2871",
           "name": "多信号组合[N5/R5/E]",
           "type": "combo",
           "template": "多信号组合[N5/R5/E]",
@@ -9221,7 +9151,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N1/R20/S]_77c1",
+          "id": "布林带回归[N1/R20/S]_ca99",
           "name": "布林带回归[N1/R20/S]",
           "type": "combo",
           "template": "布林带回归[N1/R20/S]",
@@ -9243,7 +9173,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N2/R10/E]_0f65",
+          "id": "KDJ波形[N2/R10/E]_75cc",
           "name": "KDJ波形[N2/R10/E]",
           "type": "combo",
           "template": "KDJ波形[N2/R10/E]",
@@ -9265,7 +9195,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N2/R60/S]_6b12",
+          "id": "均值回归复合[N2/R60/S]_2bb7",
           "name": "均值回归复合[N2/R60/S]",
           "type": "combo",
           "template": "均值回归复合[N2/R60/S]",
@@ -9287,7 +9217,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N2/R10/V]_5717",
+          "id": "MFI资金流[N2/R10/V]_52f8",
           "name": "MFI资金流[N2/R10/V]",
           "type": "combo",
           "template": "MFI资金流[N2/R10/V]",
@@ -9309,7 +9239,7 @@
           "selected": false
         },
         {
-          "id": "ROC多周期[N3/R60/E]_2771",
+          "id": "ROC多周期[N3/R60/E]_dd78",
           "name": "ROC多周期[N3/R60/E]",
           "type": "combo",
           "template": "ROC多周期[N3/R60/E]",
@@ -9331,7 +9261,7 @@
           "selected": false
         },
         {
-          "id": "Elder Ray信号[N3/R60/S]_a44c",
+          "id": "Elder Ray信号[N3/R60/S]_6a6c",
           "name": "Elder Ray信号[N3/R60/S]",
           "type": "combo",
           "template": "Elder Ray信号[N3/R60/S]",
@@ -9353,7 +9283,7 @@
           "selected": false
         },
         {
-          "id": "均值回归复合[N2/R60/S]_8845",
+          "id": "均值回归复合[N2/R60/S]_f812",
           "name": "均值回归复合[N2/R60/S]",
           "type": "combo",
           "template": "均值回归复合[N2/R60/S]",
@@ -9375,7 +9305,7 @@
           "selected": false
         },
         {
-          "id": "多信号组合[N3/R20/S]_e916",
+          "id": "多信号组合[N3/R20/S]_ac8a",
           "name": "多信号组合[N3/R20/S]",
           "type": "combo",
           "template": "多信号组合[N3/R20/S]",
@@ -9397,7 +9327,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N5/R60/V]_5347",
+          "id": "成交量异常[N5/R60/V]_5e48",
           "name": "成交量异常[N5/R60/V]",
           "type": "combo",
           "template": "成交量异常[N5/R60/V]",
@@ -9419,7 +9349,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N2/R10/E]_de08",
+          "id": "RVI相对活力[N2/R10/E]_7ff6",
           "name": "RVI相对活力[N2/R10/E]",
           "type": "combo",
           "template": "RVI相对活力[N2/R10/E]",
@@ -9441,7 +9371,7 @@
           "selected": false
         },
         {
-          "id": "OBOS超买超卖[N2/R20/E]_588e",
+          "id": "OBOS超买超卖[N2/R20/E]_1601",
           "name": "OBOS超买超卖[N2/R20/E]",
           "type": "combo",
           "template": "OBOS超买超卖[N2/R20/E]",
@@ -9463,7 +9393,7 @@
           "selected": false
         },
         {
-          "id": "MFI资金流[N1/R20/S]_9932",
+          "id": "MFI资金流[N1/R20/S]_766f",
           "name": "MFI资金流[N1/R20/S]",
           "type": "combo",
           "template": "MFI资金流[N1/R20/S]",
@@ -9485,7 +9415,7 @@
           "selected": false
         },
         {
-          "id": "Aroon交叉[N5/R60/E]_ee78",
+          "id": "Aroon交叉[N5/R60/E]_9378",
           "name": "Aroon交叉[N5/R60/E]",
           "type": "combo",
           "template": "Aroon交叉[N5/R60/E]",
@@ -9507,7 +9437,7 @@
           "selected": false
         },
         {
-          "id": "成交量异常[N3/R20/S]_a165",
+          "id": "成交量异常[N3/R20/S]_0f4f",
           "name": "成交量异常[N3/R20/S]",
           "type": "combo",
           "template": "成交量异常[N3/R20/S]",
@@ -9529,7 +9459,7 @@
           "selected": false
         },
         {
-          "id": "KDJ波形[N2/R20/E]_225e",
+          "id": "KDJ波形[N2/R20/E]_39da",
           "name": "KDJ波形[N2/R20/E]",
           "type": "combo",
           "template": "KDJ波形[N2/R20/E]",
@@ -9551,7 +9481,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R5/V]_85d5",
+          "id": "量价背离[N5/R5/V]_4e39",
           "name": "量价背离[N5/R5/V]",
           "type": "combo",
           "template": "量价背离[N5/R5/V]",
@@ -9573,7 +9503,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R60/V]_c068",
+          "id": "情绪-价格动量交互因子[N2/R60/V]_fb88",
           "name": "情绪-价格动量交互因子[N2/R60/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R60/V]",
@@ -9595,7 +9525,7 @@
           "selected": false
         },
         {
-          "id": "RVI相对活力[N5/R20/E]_e000",
+          "id": "RVI相对活力[N5/R20/E]_9ade",
           "name": "RVI相对活力[N5/R20/E]",
           "type": "combo",
           "template": "RVI相对活力[N5/R20/E]",
@@ -9617,7 +9547,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R60/E]_cf47",
+          "id": "跳空缺口突破[N5/R60/E]_6c56",
           "name": "跳空缺口突破[N5/R60/E]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R60/E]",
@@ -9639,7 +9569,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N4/R10/V]_0741",
+          "id": "涨停动能[N4/R10/V]_701d",
           "name": "涨停动能[N4/R10/V]",
           "type": "combo",
           "template": "涨停动能[N4/R10/V]",
@@ -9661,7 +9591,7 @@
           "selected": false
         },
         {
-          "id": "涨停动能[N5/R60/V]_04f9",
+          "id": "涨停动能[N5/R60/V]_34c8",
           "name": "涨停动能[N5/R60/V]",
           "type": "combo",
           "template": "涨停动能[N5/R60/V]",
@@ -9683,7 +9613,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N3/R60/V]_b4a4",
+          "id": "Ichimoku云图[N3/R60/V]_07c6",
           "name": "Ichimoku云图[N3/R60/V]",
           "type": "combo",
           "template": "Ichimoku云图[N3/R60/V]",
@@ -9705,7 +9635,7 @@
           "selected": false
         },
         {
-          "id": "Ichimoku云图[N5/R60/V]_00da",
+          "id": "Ichimoku云图[N5/R60/V]_d35e",
           "name": "Ichimoku云图[N5/R60/V]",
           "type": "combo",
           "template": "Ichimoku云图[N5/R60/V]",
@@ -9727,7 +9657,7 @@
           "selected": false
         },
         {
-          "id": "跳空缺口突破[N5/R20/V]_eeed",
+          "id": "跳空缺口突破[N5/R20/V]_c142",
           "name": "跳空缺口突破[N5/R20/V]",
           "type": "combo",
           "template": "跳空缺口突破[N5/R20/V]",
@@ -9749,7 +9679,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N3/R20/E]_8473",
+          "id": "烂板反转[N3/R20/E]_e397",
           "name": "烂板反转[N3/R20/E]",
           "type": "combo",
           "template": "烂板反转[N3/R20/E]",
@@ -9771,7 +9701,7 @@
           "selected": false
         },
         {
-          "id": "烂板反转[N5/R20/V]_6430",
+          "id": "烂板反转[N5/R20/V]_8738",
           "name": "烂板反转[N5/R20/V]",
           "type": "combo",
           "template": "烂板反转[N5/R20/V]",
@@ -9793,7 +9723,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N3/R20/V]_e207",
+          "id": "动量突破[N3/R20/V]_bb09",
           "name": "动量突破[N3/R20/V]",
           "type": "combo",
           "template": "动量突破[N3/R20/V]",
@@ -9815,7 +9745,7 @@
           "selected": false
         },
         {
-          "id": "布林带回归[N4/R60/E]_66d5",
+          "id": "布林带回归[N4/R60/E]_5f8e",
           "name": "布林带回归[N4/R60/E]",
           "type": "combo",
           "template": "布林带回归[N4/R60/E]",
@@ -9837,7 +9767,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N2/R60/V]_f06d",
+          "id": "KST动量[N2/R60/V]_1d04",
           "name": "KST动量[N2/R60/V]",
           "type": "combo",
           "template": "KST动量[N2/R60/V]",
@@ -9859,7 +9789,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N3/R60/V]_fa8c",
+          "id": "价格动量因子[N3/R60/V]_0920",
           "name": "价格动量因子[N3/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N3/R60/V]",
@@ -9881,7 +9811,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N5/R20/V]_f1ce",
+          "id": "双均线交叉[N5/R20/V]_cec2",
           "name": "双均线交叉[N5/R20/V]",
           "type": "combo",
           "template": "双均线交叉[N5/R20/V]",
@@ -9903,7 +9833,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N3/R60/S]_8348",
+          "id": "MACD趋势[N3/R60/S]_9eae",
           "name": "MACD趋势[N3/R60/S]",
           "type": "combo",
           "template": "MACD趋势[N3/R60/S]",
@@ -9925,7 +9855,7 @@
           "selected": false
         },
         {
-          "id": "量价背离[N5/R5/V]_0311",
+          "id": "量价背离[N5/R5/V]_9c37",
           "name": "量价背离[N5/R5/V]",
           "type": "combo",
           "template": "量价背离[N5/R5/V]",
@@ -9947,7 +9877,7 @@
           "selected": false
         },
         {
-          "id": "双均线交叉[N3/R10/V]_a35b",
+          "id": "双均线交叉[N3/R10/V]_b611",
           "name": "双均线交叉[N3/R10/V]",
           "type": "combo",
           "template": "双均线交叉[N3/R10/V]",
@@ -9969,7 +9899,7 @@
           "selected": false
         },
         {
-          "id": "情绪-价格动量交互因子[N2/R20/V]_73fe",
+          "id": "情绪-价格动量交互因子[N2/R20/V]_f564",
           "name": "情绪-价格动量交互因子[N2/R20/V]",
           "type": "combo",
           "template": "情绪-价格动量交互因子[N2/R20/V]",
@@ -9991,7 +9921,7 @@
           "selected": false
         },
         {
-          "id": "动量突破[N5/R20/V]_e53f",
+          "id": "动量突破[N5/R20/V]_0349",
           "name": "动量突破[N5/R20/V]",
           "type": "combo",
           "template": "动量突破[N5/R20/V]",
@@ -10013,7 +9943,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N5/R10/E]_78f6",
+          "id": "主力资金流[N5/R10/E]_45ae",
           "name": "主力资金流[N5/R10/E]",
           "type": "combo",
           "template": "主力资金流[N5/R10/E]",
@@ -10035,7 +9965,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N2/R10/V]_6251",
+          "id": "Donchian突破[N2/R10/V]_af9d",
           "name": "Donchian突破[N2/R10/V]",
           "type": "combo",
           "template": "Donchian突破[N2/R10/V]",
@@ -10057,7 +9987,7 @@
           "selected": false
         },
         {
-          "id": "TRIX三重指数[N3/R5/V]_19fa",
+          "id": "TRIX三重指数[N3/R5/V]_bce7",
           "name": "TRIX三重指数[N3/R5/V]",
           "type": "combo",
           "template": "TRIX三重指数[N3/R5/V]",
@@ -10079,7 +10009,7 @@
           "selected": false
         },
         {
-          "id": "KST动量[N2/R60/V]_9c09",
+          "id": "KST动量[N2/R60/V]_7cde",
           "name": "KST动量[N2/R60/V]",
           "type": "combo",
           "template": "KST动量[N2/R60/V]",
@@ -10101,7 +10031,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R20/V]_10d4",
+          "id": "ADX趋势确认[N5/R20/V]_1ebb",
           "name": "ADX趋势确认[N5/R20/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R20/V]",
@@ -10123,7 +10053,7 @@
           "selected": false
         },
         {
-          "id": "价格动量因子[N3/R60/V]_70d8",
+          "id": "价格动量因子[N3/R60/V]_4f82",
           "name": "价格动量因子[N3/R60/V]",
           "type": "combo",
           "template": "价格动量因子[N3/R60/V]",
@@ -10145,7 +10075,7 @@
           "selected": false
         },
         {
-          "id": "主力资金流[N3/R60/E]_537c",
+          "id": "主力资金流[N3/R60/E]_53c5",
           "name": "主力资金流[N3/R60/E]",
           "type": "combo",
           "template": "主力资金流[N3/R60/E]",
@@ -10167,7 +10097,7 @@
           "selected": false
         },
         {
-          "id": "MACD趋势[N2/R60/E]_763d",
+          "id": "MACD趋势[N2/R60/E]_ba15",
           "name": "MACD趋势[N2/R60/E]",
           "type": "combo",
           "template": "MACD趋势[N2/R60/E]",
@@ -10189,7 +10119,7 @@
           "selected": false
         },
         {
-          "id": "ADX趋势确认[N5/R10/V]_7d5c",
+          "id": "ADX趋势确认[N5/R10/V]_f714",
           "name": "ADX趋势确认[N5/R10/V]",
           "type": "combo",
           "template": "ADX趋势确认[N5/R10/V]",
@@ -10211,7 +10141,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N2/R5/V]_79a6",
+          "id": "趋势复合信号[N2/R5/V]_d27f",
           "name": "趋势复合信号[N2/R5/V]",
           "type": "combo",
           "template": "趋势复合信号[N2/R5/V]",
@@ -10233,7 +10163,7 @@
           "selected": false
         },
         {
-          "id": "Donchian突破[N5/R10/V]_e0e6",
+          "id": "Donchian突破[N5/R10/V]_a609",
           "name": "Donchian突破[N5/R10/V]",
           "type": "combo",
           "template": "Donchian突破[N5/R10/V]",
@@ -10255,7 +10185,7 @@
           "selected": false
         },
         {
-          "id": "趋势复合信号[N5/R10/V]_fb16",
+          "id": "趋势复合信号[N5/R10/V]_d923",
           "name": "趋势复合信号[N5/R10/V]",
           "type": "combo",
           "template": "趋势复合信号[N5/R10/V]",
@@ -10277,7 +10207,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R5/S]_612f",
+          "id": "RSI均值回归[N2/R5/S]_6a4e",
           "name": "RSI均值回归[N2/R5/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R5/S]",
@@ -10299,7 +10229,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N2/R10/S]_9d44",
+          "id": "RSI均值回归[N2/R10/S]_b670",
           "name": "RSI均值回归[N2/R10/S]",
           "type": "combo",
           "template": "RSI均值回归[N2/R10/S]",
@@ -10321,7 +10251,7 @@
           "selected": false
         },
         {
-          "id": "RSI均值回归[N4/R10/E]_d00a",
+          "id": "RSI均值回归[N4/R10/E]_05c0",
           "name": "RSI均值回归[N4/R10/E]",
           "type": "combo",
           "template": "RSI均值回归[N4/R10/E]",
@@ -10354,17 +10284,7 @@
       "holdout": [],
       "selected": [],
       "converged": false,
-      "meta_evaluation": {
-        "data_validity": "MEDIUM",
-        "invalidity_reasons": [],
-        "convergence_is_real": true,
-        "should_continue": false,
-        "continue_reason": "",
-        "round_summary": "",
-        "key_insight": "",
-        "suggestions": [],
-        "_llm_available": false
-      }
+      "meta_evaluation": null
     }
   ],
   "global_top": [
