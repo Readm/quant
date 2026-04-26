@@ -203,5 +203,17 @@
     "days": 500,
     "best_score": 74.5,
     "converged": false
+  },
+  {
+    "id": "multi_expert_v4_20260426_2227",
+    "name": "A股全量7轮: OBOS 92.4",
+    "symbols": [
+      "A股全量(~5500只)"
+    ],
+    "run_at": "04-26 22:27",
+    "total_rounds": 7,
+    "days": 800,
+    "best_score": 92.4,
+    "converged": true
   }
 ]
