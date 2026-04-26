@@ -1,5 +1,5 @@
 import { useState, Component, ReactNode } from 'react'
-import { BarChart3, Database, Brain, Layers, ListOrdered, Circle, Activity, GitBranch } from 'lucide-react'
+import { BarChart3, Database, Brain, Layers, ListOrdered, Circle, Activity, GitBranch, GitMerge } from 'lucide-react'
 import DataSourceView from './views/DataSourceView'
 import BacktestView from './views/BacktestView'
 import ExpertView from './views/ExpertView'
@@ -7,6 +7,7 @@ import FactorView from './views/FactorView'
 import StrategyView from './views/StrategyView'
 import SystemStatusView from './views/SystemStatusView'
 import IterationView from './views/IterationView'
+import ArchitectureView from './views/ArchitectureView'
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null }
@@ -24,10 +25,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
   }
 }
 
-type ViewKey = 'status' | 'data' | 'backtest' | 'expert' | 'factor' | 'strategy' | 'iteration'
+type ViewKey = 'status' | 'data' | 'backtest' | 'expert' | 'factor' | 'strategy' | 'iteration' | 'architecture'
 
 const NAV = [
   { key: 'iteration' as ViewKey, label: '迭代过程', Icon: GitBranch,   color: '#a855f7' },
+  { key: 'architecture' as ViewKey, label: '系统架构', Icon: GitMerge,   color: '#f59e0b' },
   { key: 'status'    as ViewKey, label: '系统状态', Icon: Activity,    color: '#94a3b8' },
   { key: 'data'      as ViewKey, label: '数据来源', Icon: Database,    color: '#22d3ee' },
   { key: 'backtest'  as ViewKey, label: '回测框架', Icon: BarChart3,   color: '#6366f1' },
@@ -44,6 +46,7 @@ const VIEWS: Record<ViewKey, React.ComponentType> = {
   factor:    FactorView,
   strategy:  StrategyView,
   iteration: IterationView,
+  architecture: ArchitectureView,
 }
 
 export default function App() {
