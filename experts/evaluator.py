@@ -243,24 +243,7 @@ class Evaluator:
             raw_composite = raw_composite * 0.5   # 1-2笔，统计不可靠，直接打五折
             n_trades_warning = True
 
-        # v5.6: OOS 衰减惩罚（Iter11: 回应评价师）
-        oos_ann = getattr(r, "oos_annualized_return", None)
-        if oos_ann is not None and oos_ann < ann_ret and ann_ret > 0:
-            oos_decay = (ann_ret - oos_ann) / abs(ann_ret) if abs(ann_ret) > 1e-6 else 0.0
-            if oos_decay > 1.0:
-                # 样本外亏损或衰减超过100%
-                raw_composite *= 0.60
-            elif oos_decay > 0.5:
-                # 衰减超过50%
-                raw_composite *= 0.80
-        else:
-            oos_decay = 0.0
-
-        # v5.6: 反垄断加分（Iter11）
-        monopoly_bonus = self._monopoly_suppression(stype, sname)
-        raw_composite += monopoly_bonus
-
-        # PBO 折扣
+        # ── PBO 折扣 ──────────────────────
         composite = min(100.0, round(raw_composite * pbo_multiplier, 1))
 
         # ── 4. 决策 ────────────────────────────

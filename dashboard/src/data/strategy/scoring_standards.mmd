@@ -15,10 +15,6 @@ graph LR
     TradeAdj --> |"≥5笔 +1"| A3
     TradeAdj --> |"≤2笔 ×0.5 且降级CONDITIONAL"| A4
 
-    Sum --> OOS["OOS衰减检查 ✨Iter11"]
-    OOS --> |"衰减>50% ×0.80"| O1
-    OOS --> |"衰减>100% ×0.60"| O2
-
     Sum --> PBO["PBO洗牌检验 ✨Iter11<br/>洗牌日收益300次"]
     PBO --> |"≥50%洗牌胜出 硬拒"| Reject
     PBO --> |"≥30% ×0.85"| Discount
