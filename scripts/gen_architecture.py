@@ -136,12 +136,12 @@ def main():
              'category': cat}
             for node, cat in node_cats.items()
         ],
-        'edges': [
+        'edges': sorted([
             {'source': src.replace('.', '_').replace('/', '_'),
              'target': tgt.replace('.', '_').replace('/', '_')}
             for src, targets in edges.items()
             for tgt in targets
-        ]
+        ], key=lambda e: (e['source'], e['target']))
     }
     (out_dir / 'deps.json').write_text(json.dumps(json_data, ensure_ascii=False, indent=2))
     print(f'JSON data: {out_dir / "deps.json"} ({len(json_data["nodes"])} nodes)')

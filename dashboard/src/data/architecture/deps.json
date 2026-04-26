@@ -342,19 +342,19 @@
     },
     {
       "source": "backtest_engine",
-      "target": "factors_signals"
-    },
-    {
-      "source": "backtest_engine",
       "target": "experts_specialists_factor_combo_expert"
     },
     {
-      "source": "backtest_indicators",
-      "target": "factors_base_operators"
+      "source": "backtest_engine",
+      "target": "factors_signals"
     },
     {
       "source": "backtest_indicators",
       "target": "experts_modules_data_fetcher"
+    },
+    {
+      "source": "backtest_indicators",
+      "target": "factors_base_operators"
     },
     {
       "source": "backtest_local_data",
@@ -362,11 +362,11 @@
     },
     {
       "source": "experts_data_loader",
-      "target": "backtest_local_data"
+      "target": "backtest_indicators"
     },
     {
       "source": "experts_data_loader",
-      "target": "backtest_indicators"
+      "target": "backtest_local_data"
     },
     {
       "source": "experts_data_loader",
@@ -378,11 +378,11 @@
     },
     {
       "source": "experts_evaluator",
-      "target": "experts_structured_feedback"
+      "target": "experts_modules_pbo_analysis"
     },
     {
       "source": "experts_evaluator",
-      "target": "experts_modules_pbo_analysis"
+      "target": "experts_structured_feedback"
     },
     {
       "source": "experts_meta_monitor",
@@ -398,6 +398,14 @@
     },
     {
       "source": "experts_orchestrator",
+      "target": "backtest_engine"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_data_loader"
+    },
+    {
+      "source": "experts_orchestrator",
       "target": "experts_debate_manager"
     },
     {
@@ -406,15 +414,15 @@
     },
     {
       "source": "experts_orchestrator",
-      "target": "experts_report_writer"
+      "target": "experts_factor_library"
     },
     {
       "source": "experts_orchestrator",
-      "target": "backtest_engine"
+      "target": "experts_meta_monitor"
     },
     {
       "source": "experts_orchestrator",
-      "target": "experts_structured_feedback"
+      "target": "experts_modules_blackboard"
     },
     {
       "source": "experts_orchestrator",
@@ -422,23 +430,15 @@
     },
     {
       "source": "experts_orchestrator",
+      "target": "experts_report_writer"
+    },
+    {
+      "source": "experts_orchestrator",
       "target": "experts_specialists_factor_combo_expert"
     },
     {
       "source": "experts_orchestrator",
-      "target": "experts_data_loader"
-    },
-    {
-      "source": "experts_orchestrator",
-      "target": "experts_meta_monitor"
-    },
-    {
-      "source": "experts_orchestrator",
-      "target": "experts_factor_library"
-    },
-    {
-      "source": "experts_orchestrator",
-      "target": "experts_modules_blackboard"
+      "target": "experts_structured_feedback"
     },
     {
       "source": "experts_report_writer",
@@ -446,15 +446,11 @@
     },
     {
       "source": "experts_researchers_factor_codegen",
-      "target": "experts_researchers_research_expert"
-    },
-    {
-      "source": "experts_researchers_factor_codegen",
       "target": "experts_modules_llm_proxy"
     },
     {
-      "source": "experts_researchers_research_expert",
-      "target": "experts_researchers_sandbox_evaluator"
+      "source": "experts_researchers_factor_codegen",
+      "target": "experts_researchers_research_expert"
     },
     {
       "source": "experts_researchers_research_expert",
@@ -463,6 +459,10 @@
     {
       "source": "experts_researchers_research_expert",
       "target": "experts_researchers_factor_codegen"
+    },
+    {
+      "source": "experts_researchers_research_expert",
+      "target": "experts_researchers_sandbox_evaluator"
     },
     {
       "source": "experts_specialists_expert1a_trend",
@@ -482,11 +482,11 @@
     },
     {
       "source": "experts_specialists_expert1b_mean_reversion",
-      "target": "factors_momentum"
+      "target": "factors_mean_reversion"
     },
     {
       "source": "experts_specialists_expert1b_mean_reversion",
-      "target": "factors_mean_reversion"
+      "target": "factors_momentum"
     },
     {
       "source": "experts_specialists_factor_combo_expert",
@@ -494,11 +494,11 @@
     },
     {
       "source": "experts_specialists_factor_combo_expert",
-      "target": "factors_momentum"
+      "target": "factors_mean_reversion"
     },
     {
       "source": "experts_specialists_factor_combo_expert",
-      "target": "factors_mean_reversion"
+      "target": "factors_momentum"
     },
     {
       "source": "experts_specialists_factor_combo_expert",
@@ -526,6 +526,10 @@
     },
     {
       "source": "factors_signals",
+      "target": "factors_chanlun"
+    },
+    {
+      "source": "factors_signals",
       "target": "factors_mean_reversion"
     },
     {
@@ -534,15 +538,11 @@
     },
     {
       "source": "factors_signals",
-      "target": "factors_chanlun"
+      "target": "factors_trend"
     },
     {
       "source": "factors_signals",
       "target": "factors_volatility"
-    },
-    {
-      "source": "factors_signals",
-      "target": "factors_trend"
     },
     {
       "source": "factors_signals",
@@ -566,15 +566,15 @@
     },
     {
       "source": "scripts_build_status",
+      "target": "config"
+    },
+    {
+      "source": "scripts_build_status",
       "target": "config_settings"
     },
     {
       "source": "scripts_build_status",
       "target": "factors"
-    },
-    {
-      "source": "scripts_build_status",
-      "target": "config"
     },
     {
       "source": "scripts_build_status",
@@ -594,11 +594,11 @@
     },
     {
       "source": "scripts_run_pipeline",
-      "target": "experts_orchestrator"
+      "target": "backtest_local_data"
     },
     {
       "source": "scripts_run_pipeline",
-      "target": "backtest_local_data"
+      "target": "experts_orchestrator"
     },
     {
       "source": "scripts_run_research",
@@ -606,11 +606,7 @@
     },
     {
       "source": "scripts_smoke_test",
-      "target": "experts_orchestrator"
-    },
-    {
-      "source": "scripts_smoke_test",
-      "target": "experts_modules_llm_proxy"
+      "target": "backtest_engine"
     },
     {
       "source": "scripts_smoke_test",
@@ -618,7 +614,11 @@
     },
     {
       "source": "scripts_smoke_test",
-      "target": "backtest_engine"
+      "target": "experts_modules_llm_proxy"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "experts_orchestrator"
     },
     {
       "source": "scripts_smoke_test",

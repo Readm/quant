@@ -586,6 +586,7 @@ export default function IterationView() {
   const [activeRound,    setActiveRound]    = useState(1)
   const [log,            setLog]            = useState<IterationLog | null>(null)
   const [loading,        setLoading]        = useState(false)
+  const [error,          setError]           = useState<string | null>(null)
 
   // When thread changes, reset to round 1
   function selectThread(id: string) { setActiveThreadId(id); setActiveRound(1) }
@@ -596,10 +597,14 @@ export default function IterationView() {
     const key = Object.keys(ITERATION_LOADERS).find(k =>
       k.includes(activeThreadId) || k.endsWith(`${activeThreadId}.json`)
     )
-    if (!key) return
+    if (!key) {
+      setError(`找不到迭代数据【${activeThreadId}】：index.json 中的 id 与迭代文件名不匹配`)
+      return
+    }
     setLoading(true)
     setLog(null)
-    ITERATION_LOADERS[key]().then(m => { setLog(m.default); setLoading(false) })
+    setError(null)
+    ITERATION_LOADERS[key]().then(m => { setLog(m.default); setLoading(false); setError(null) })
   }, [activeThreadId])
 
   if (threads.length === 0) return (
@@ -610,6 +615,19 @@ export default function IterationView() {
         python3 scripts/run_iteration.py --symbols SH000300 SH600519 --name "A股核心" --rounds 20{'\n'}
         python3 scripts/run_iteration.py --symbols BTCUSDT ETHUSDT --name "加密货币" --rounds 20
       </pre>
+    </div>
+  )
+
+  if (error) return (
+    <div className="p-8 space-y-2">
+      <div className="font-bold flex items-center gap-2 text-red-400">
+        <XCircle size={18}/>数据加载异常
+      </div>
+      <div className="text-sm text-red-300/80">{error}</div>
+      <div className="text-xs text-slate-500 mt-4">
+        检查 <code className="bg-slate-800 px-1 rounded">dashboard/src/data/iterations/index.json</code>{' '}
+        中的 id 是否与文件名匹配
+      </div>
     </div>
   )
 
