@@ -13,11 +13,22 @@ graph LR
     TradeAdj --> |"≥20笔 +5"| A1
     TradeAdj --> |"≥10笔 +2"| A2
     TradeAdj --> |"≥5笔 +1"| A3
-    TradeAdj --> |"≤2笔 ×0.5 且降级为CONDITIONAL"| A4
+    TradeAdj --> |"≤2笔 ×0.5 且降级CONDITIONAL"| A4
 
-    Sum --> PBO["PBO门控"]
-    PBO --> |"≥0.50 硬拒"| Reject
-    PBO --> |"≥0.30 ×0.85"| Discount
+    Sum --> OOS["OOS衰减检查 ✨Iter11"]
+    OOS --> |"衰减>50% ×0.80"| O1
+    OOS --> |"衰减>100% ×0.60"| O2
+
+    Sum --> PBO["PBO洗牌检验 ✨Iter11<br/>洗牌日收益300次"]
+    PBO --> |"≥50%洗牌胜出 硬拒"| Reject
+    PBO --> |"≥30% ×0.85"| Discount
+    PBO --> |"<30% 可信"| Accept
+
+    Sum --> AntiMono["反垄断加分 ✨Iter11<br/>按策略名关键词判断"]
+    AntiMono --> |"Top-3全趋势且当前均值回归 +3"| MR
+
+    Sum --> Diversity["多样性奖励"]
+    Diversity --> |"4轮未出现+2, 8轮+5, 长期+8"| D
 
     Sum --> Decision["决策阈值"]
     Decision --> |"≥45 ACCEPT"| Accept

@@ -121,6 +121,7 @@ class Evaluator:
         # v5.3: 模板多样性追踪 — 鼓励使用不同因子
         self._template_rounds: dict = {}  # template_key → 最近出现在Top的轮次
         self._current_round = 0
+        self._last_top3 = []  # v5.6: 上一轮Top-3类型，用于反垄断
 
     def _diversity_bonus(self, template_key: str) -> float:
         """给长期未进入Top的模板加分，鼓励探索。越久没出现，加分越多。"""
@@ -133,9 +134,37 @@ class Evaluator:
         elif gap <= 4:
             return 2.0       # 4轮没出现，小加分
         elif gap <= 8:
-            return 4.0       # 8轮没出现
+            return 5.0       # 8轮没出现
         else:
-            return 6.0       # 长期未出现，大加分
+            return 8.0       # 长期未出现，大加分
+
+    def _monopoly_suppression(self, template_type: str, strategy_name: str = "") -> float:
+        """
+        v5.6: 反垄断加分（Iter11: 回应评价师）。
+        如果Top-3全部是趋势类策略（对照策略名判断），给均值回归类策略+3分强制干预。
+        """
+        if not template_type:
+            return 0.0
+        # 用策略名判断类型（strategy_type字段全是"combo"）
+        TREND_KW = ["RVI", "ROC", "KDJ", "Elder", "Aroon", "动量", "MACD", "ADX", "Donchian", "TRIX", "Ichimoku", "KST"]
+        MR_KW = ["布林", "RSI", "OBOS", "均值回归", "MFI", "量价背离", "成交量"]
+        def _classify(name: str) -> str:
+            name = name or ""
+            if any(kw in name for kw in TREND_KW):
+                return "trend"
+            if any(kw in name for kw in MR_KW):
+                return "mean_reversion"
+            return "unknown"
+        # 判断当前轮Top-3的分类
+        top3_names = [v.get("name", "") for v in getattr(self, "_last_top3", [])]
+        top3_classes = [_classify(n) for n in top3_names]
+        if len(top3_classes) < 3:
+            return 0.0
+        all_trend = all(c == "trend" for c in top3_classes)
+        is_mr = _classify(strategy_name) == "mean_reversion"
+        if all_trend and is_mr:
+            return 3.0
+        return 0.0
 
     # ── 核心评估 ─────────────────────────
 
@@ -213,6 +242,23 @@ class Evaluator:
         elif n_trades <= 2:
             raw_composite = raw_composite * 0.5   # 1-2笔，统计不可靠，直接打五折
             n_trades_warning = True
+
+        # v5.6: OOS 衰减惩罚（Iter11: 回应评价师）
+        oos_ann = getattr(r, "oos_annualized_return", None)
+        if oos_ann is not None and oos_ann < ann_ret and ann_ret > 0:
+            oos_decay = (ann_ret - oos_ann) / abs(ann_ret) if abs(ann_ret) > 1e-6 else 0.0
+            if oos_decay > 1.0:
+                # 样本外亏损或衰减超过100%
+                raw_composite *= 0.60
+            elif oos_decay > 0.5:
+                # 衰减超过50%
+                raw_composite *= 0.80
+        else:
+            oos_decay = 0.0
+
+        # v5.6: 反垄断加分（Iter11）
+        monopoly_bonus = self._monopoly_suppression(stype, sname)
+        raw_composite += monopoly_bonus
 
         # PBO 折扣
         composite = min(100.0, round(raw_composite * pbo_multiplier, 1))
@@ -299,6 +345,11 @@ class Evaluator:
             tk = getattr(r, "template_key", "") or ""
             if tk:
                 self._template_rounds[tk] = self._current_round
+        # v5.6: 存储Top-3类型用于反垄断加分
+        self._last_top3 = [
+            {"type": r.strategy_type, "name": r.strategy_name, "template_key": getattr(r, "template_key", "") or ""}
+            for r in results[:3]
+        ]
         return results
 
     # ══════════════════════════════════════════
@@ -307,51 +358,62 @@ class Evaluator:
 
     def _pbo_gate(self, report) -> tuple:
         """
-        PBO 门控：返回 (multiplier, label)
-          - 0.0  → 严重过拟合，直接 REJECT
-          - 0.85 → 可疑，打折
-          - 1.0  → 可信，不打折
+        PBO 门控 v2.0 — 收益序列洗牌法（MCS test）。
+        不需要信号函数、参数网格或外部依赖。
+        
+        原理：
+          洗牌策略的日收益序列 N 次（破坏时序相关性），
+          每次计算洗牌后的 Sharpe。
+          PBO = 洗牌 Sharpe 超过实际 Sharpe 的概率。
+        
+          如果超过 30% 的随机洗牌都能打败实际策略 → 策略过拟合。
+        
+        Returns
+        -------
+        (multiplier, label)
+          0.0  → 严重过拟合，直接 REJECT
+          0.85 → 可疑，打折
+          1.0  → 可信，不打折
         """
-        from experts.modules.pbo_analysis import compute_pbo, pbo_score_adjustment
-
-        closes = getattr(report, "daily_returns", None)
-        if closes is None or len(closes) < 120:
-            return 1.0, "数据不足，跳过"
-
-        params = getattr(report, "params", {})
-        s_type = getattr(report, "strategy_type", "trend")
-
-        # 构建参数网格
-        if "period" in params:
-            grid = {
-                "period":   [max(7, params["period"]-3), params["period"], params["period"]+3],
-                "lower":    [25, 30], "upper": [70, 75],
-            }
-        elif "lookback" in params:
-            grid = {
-                "lookback":  [max(10, params.get("lookback",20)-5), params.get("lookback",20), params.get("lookback",20)+5],
-                "threshold": [0.03, 0.05, 0.08],
-            }
-        elif "fast" in params:
-            grid = {
-                "fast": [params["fast"]//2, params["fast"], params["fast"]*2],
-                "slow": [params["slow"]//2, params["slow"], params["slow"]*2],
-            }
+        import math, random
+        
+        daily_rets = getattr(report, "daily_returns", None)
+        if not daily_rets or len(daily_rets) < 60:
+            return 1.0, "数据不足（<60天），跳过"
+        
+        n = len(daily_rets)
+        
+        # 计算实际 Sharpe
+        mean = sum(daily_rets) / n
+        var = sum((r - mean) ** 2 for r in daily_rets) / (n - 1) if n > 1 else 1e-10
+        actual_sharpe = mean / (math.sqrt(var) + 1e-10) * math.sqrt(252)
+        
+        # 如果 Sharpe <= 0，不需要 PBO（反正不赚钱）
+        if actual_sharpe <= 0:
+            return 1.0, f"Sharpe={actual_sharpe:.2f}（负收益，跳过PBO）"
+        
+        # 洗牌 300 次
+        N_SHUFFLE = 300
+        beat_count = 0
+        shuffled = daily_rets[:]
+        for _ in range(N_SHUFFLE):
+            random.shuffle(shuffled)
+            s_mean = sum(shuffled) / n
+            s_var = sum((r - s_mean) ** 2 for r in shuffled) / (n - 1) if n > 1 else 1e-10
+            shuf_sharpe = s_mean / (math.sqrt(s_var) + 1e-10) * math.sqrt(252)
+            if shuf_sharpe >= actual_sharpe:
+                beat_count += 1
+        
+        pbo_val = beat_count / N_SHUFFLE
+        
+        # 评分:
+        # PBO = 0.30 意味着 30% 的随机洗牌都能打败实际策略 → 置信度低
+        if pbo_val >= 0.50:
+            return 0.0, f"PBO洗牌={pbo_val:.0%}（严重过拟合: {beat_count}/{N_SHUFFLE}次洗牌胜出）"
+        elif pbo_val >= 0.30:
+            return 0.85, f"PBO洗牌={pbo_val:.0%}（可疑: {beat_count}/{N_SHUFFLE}次洗牌胜出）"
         else:
-            return 1.0, "未知参数，跳过"
-
-        result = compute_pbo(
-            closes, lambda c, **kw: [0]*len(c),
-            grid, n_windows=6, train_ratio=0.6
-        )
-        pbo_val = result.pbo
-
-        if pbo_val >= 0.6:
-            return 0.0, f"PBO={pbo_val:.0%}（严重过拟合）"
-        elif pbo_val >= 0.3:
-            return 0.85, f"PBO={pbo_val:.0%}（可疑）"
-        else:
-            return 1.0, f"PBO={pbo_val:.0%}（可信）"
+            return 1.0, f"PBO洗牌={pbo_val:.0%}（可信: {beat_count}/{N_SHUFFLE}次洗牌胜出）"
 
     # ══════════════════════════════════════════
     #  四维度打分函数（0~100）
