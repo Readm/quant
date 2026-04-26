@@ -1,0 +1,51 @@
+#!/bin/bash
+# Pre-commit hook: 强制验证 CHECKLIST.md 已完成
+# 安装: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+CHECKLIST="CHECKLIST.md"
+ERRORS=0
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Pre-Commit Verification"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# 1. CHECKLIST.md 必须在暂存区
+if ! git diff --cached --name-only | grep -q "^${CHECKLIST}$"; then
+    echo "❌ CHECKLIST.md 未在暂存区！"
+    echo "   请完成检查后: git add CHECKLIST.md"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# 2. 所有 [ ] 必须改为 [x]
+UNCHECKED=$(git show :${CHECKLIST} 2>/dev/null | grep -c '^\- \[ \]')
+if [ "$UNCHECKED" -gt 0 ]; then
+    echo "❌ CHECKLIST.md 有 ${UNCHECKED} 项未完成！"
+    git show :${CHECKLIST} 2>/dev/null | grep -n '^\- \[ \]'
+    ERRORS=$((ERRORS + 1))
+fi
+
+# 3. 必须有验证时间戳
+if ! git show :${CHECKLIST} 2>/dev/null | grep -q "Last Verification:"; then
+    echo "❌ CHECKLIST.md 缺少验证时间戳"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# 4. 检查是否有未暂存的 .py/.tsx 修改（说明改了代码但没走检查流程）
+UNSTAGED=$(git diff --name-only | grep -E '\.(py|tsx)$' | head -5)
+if [ -n "$UNSTAGED" ]; then
+    echo "⚠️  有未暂存的代码修改，可能未经验证:"
+    echo "$UNSTAGED"
+    echo "   建议: git add 这些文件并重新检查"
+fi
+
+echo ""
+if [ "$ERRORS" -eq 0 ]; then
+    echo "✅ 所有检查通过，允许提交"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    exit 0
+else
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "❌ ${ERRORS} 项检查失败，提交被阻止"
+    echo "   完成 CHECKLIST.md 并 git add 后重试"
+    exit 1
+fi

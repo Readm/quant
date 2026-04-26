@@ -1,0 +1,636 @@
+{
+  "nodes": [
+    {
+      "id": "backtest_engine",
+      "label": "engine",
+      "fullPath": "backtest.engine",
+      "category": "回测层"
+    },
+    {
+      "id": "backtest_indicators",
+      "label": "indicators",
+      "fullPath": "backtest.indicators",
+      "category": "因子层"
+    },
+    {
+      "id": "backtest_local_data",
+      "label": "local_data",
+      "fullPath": "backtest.local_data",
+      "category": "数据层"
+    },
+    {
+      "id": "config_markets",
+      "label": "markets",
+      "fullPath": "config.markets",
+      "category": "配置层"
+    },
+    {
+      "id": "config_settings",
+      "label": "settings",
+      "fullPath": "config.settings",
+      "category": "配置层"
+    },
+    {
+      "id": "experts_data_loader",
+      "label": "data_loader",
+      "fullPath": "experts.data_loader",
+      "category": "数据层"
+    },
+    {
+      "id": "experts_debate_manager",
+      "label": "debate_manager",
+      "fullPath": "experts.debate_manager",
+      "category": "评审层"
+    },
+    {
+      "id": "experts_evaluator",
+      "label": "evaluator",
+      "fullPath": "experts.evaluator",
+      "category": "评估层"
+    },
+    {
+      "id": "experts_factor_library_factors_price_momentum",
+      "label": "price_momentum",
+      "fullPath": "experts.factor_library.factors.price_momentum",
+      "category": "其他"
+    },
+    {
+      "id": "experts_factor_library_factors_sentiment_price_momentum",
+      "label": "sentiment_price_momentum",
+      "fullPath": "experts.factor_library.factors.sentiment_price_momentum",
+      "category": "其他"
+    },
+    {
+      "id": "experts_factor_library_factors_volume_sentiment_proxy",
+      "label": "volume_sentiment_proxy",
+      "fullPath": "experts.factor_library.factors.volume_sentiment_proxy",
+      "category": "其他"
+    },
+    {
+      "id": "experts_llm_prompts",
+      "label": "llm_prompts",
+      "fullPath": "experts.llm_prompts",
+      "category": "其他"
+    },
+    {
+      "id": "experts_meta_monitor",
+      "label": "meta_monitor",
+      "fullPath": "experts.meta_monitor",
+      "category": "其他"
+    },
+    {
+      "id": "experts_modules_alpha158",
+      "label": "alpha158",
+      "fullPath": "experts.modules.alpha158",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_modules_blackboard",
+      "label": "blackboard",
+      "fullPath": "experts.modules.blackboard",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_modules_data_fetcher",
+      "label": "data_fetcher",
+      "fullPath": "experts.modules.data_fetcher",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_modules_llm_proxy",
+      "label": "llm_proxy",
+      "fullPath": "experts.modules.llm_proxy",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_modules_news_sentiment",
+      "label": "news_sentiment",
+      "fullPath": "experts.modules.news_sentiment",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_modules_pbo_analysis",
+      "label": "pbo_analysis",
+      "fullPath": "experts.modules.pbo_analysis",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_modules_risk_engine",
+      "label": "risk_engine",
+      "fullPath": "experts.modules.risk_engine",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_modules_ts_operators",
+      "label": "ts_operators",
+      "fullPath": "experts.modules.ts_operators",
+      "category": "模块层"
+    },
+    {
+      "id": "experts_orchestrator",
+      "label": "orchestrator",
+      "fullPath": "experts.orchestrator",
+      "category": "编排层"
+    },
+    {
+      "id": "experts_report_writer",
+      "label": "report_writer",
+      "fullPath": "experts.report_writer",
+      "category": "报告层"
+    },
+    {
+      "id": "experts_researchers_factor_codegen",
+      "label": "factor_codegen",
+      "fullPath": "experts.researchers.factor_codegen",
+      "category": "其他"
+    },
+    {
+      "id": "experts_researchers_research_expert",
+      "label": "research_expert",
+      "fullPath": "experts.researchers.research_expert",
+      "category": "其他"
+    },
+    {
+      "id": "experts_researchers_sandbox_evaluator",
+      "label": "sandbox_evaluator",
+      "fullPath": "experts.researchers.sandbox_evaluator",
+      "category": "其他"
+    },
+    {
+      "id": "experts_specialists_expert1a_trend",
+      "label": "expert1a_trend",
+      "fullPath": "experts.specialists.expert1a_trend",
+      "category": "策略层"
+    },
+    {
+      "id": "experts_specialists_expert1b_mean_reversion",
+      "label": "expert1b_mean_reversion",
+      "fullPath": "experts.specialists.expert1b_mean_reversion",
+      "category": "策略层"
+    },
+    {
+      "id": "experts_specialists_factor_combo_expert",
+      "label": "factor_combo_expert",
+      "fullPath": "experts.specialists.factor_combo_expert",
+      "category": "策略层"
+    },
+    {
+      "id": "experts_structured_feedback",
+      "label": "structured_feedback",
+      "fullPath": "experts.structured_feedback",
+      "category": "其他"
+    },
+    {
+      "id": "factors_base_operators",
+      "label": "base_operators",
+      "fullPath": "factors.base_operators",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_chanlun",
+      "label": "chanlun",
+      "fullPath": "factors.chanlun",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_composite",
+      "label": "composite",
+      "fullPath": "factors.composite",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_mean_reversion",
+      "label": "mean_reversion",
+      "fullPath": "factors.mean_reversion",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_momentum",
+      "label": "momentum",
+      "fullPath": "factors.momentum",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_signals",
+      "label": "signals",
+      "fullPath": "factors.signals",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_trend",
+      "label": "trend",
+      "fullPath": "factors.trend",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_volatility",
+      "label": "volatility",
+      "fullPath": "factors.volatility",
+      "category": "因子层"
+    },
+    {
+      "id": "factors_volume",
+      "label": "volume",
+      "fullPath": "factors.volume",
+      "category": "因子层"
+    },
+    {
+      "id": "scripts_build_dashboard",
+      "label": "build_dashboard",
+      "fullPath": "scripts.build_dashboard",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_build_status",
+      "label": "build_status",
+      "fullPath": "scripts.build_status",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_collectors_astock_minute_collector",
+      "label": "astock_minute_collector",
+      "fullPath": "scripts.collectors.astock_minute_collector",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_collectors_qlib_collector",
+      "label": "qlib_collector",
+      "fullPath": "scripts.collectors.qlib_collector",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_collectors_stooq_collector",
+      "label": "stooq_collector",
+      "fullPath": "scripts.collectors.stooq_collector",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_collectors_yfinance_collector",
+      "label": "yfinance_collector",
+      "fullPath": "scripts.collectors.yfinance_collector",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_fetch_tushare",
+      "label": "fetch_tushare",
+      "fullPath": "scripts.fetch_tushare",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_gen_architecture",
+      "label": "gen_architecture",
+      "fullPath": "scripts.gen_architecture",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_init_data",
+      "label": "init_data",
+      "fullPath": "scripts.init_data",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_prepare_tushare",
+      "label": "prepare_tushare",
+      "fullPath": "scripts.prepare_tushare",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_run_iteration",
+      "label": "run_iteration",
+      "fullPath": "scripts.run_iteration",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_run_multi_expert",
+      "label": "run_multi_expert",
+      "fullPath": "scripts.run_multi_expert",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_run_pipeline",
+      "label": "run_pipeline",
+      "fullPath": "scripts.run_pipeline",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_run_research",
+      "label": "run_research",
+      "fullPath": "scripts.run_research",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_smoke_test",
+      "label": "smoke_test",
+      "fullPath": "scripts.smoke_test",
+      "category": "其他"
+    },
+    {
+      "id": "scripts_validate_dashboard",
+      "label": "validate_dashboard",
+      "fullPath": "scripts.validate_dashboard",
+      "category": "其他"
+    }
+  ],
+  "edges": [
+    {
+      "source": "backtest_engine",
+      "target": "config_settings"
+    },
+    {
+      "source": "backtest_engine",
+      "target": "experts_factor_library"
+    },
+    {
+      "source": "backtest_engine",
+      "target": "factors_signals"
+    },
+    {
+      "source": "backtest_engine",
+      "target": "experts_specialists_factor_combo_expert"
+    },
+    {
+      "source": "backtest_indicators",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "backtest_indicators",
+      "target": "experts_modules_data_fetcher"
+    },
+    {
+      "source": "backtest_local_data",
+      "target": "backtest_indicators"
+    },
+    {
+      "source": "experts_data_loader",
+      "target": "backtest_local_data"
+    },
+    {
+      "source": "experts_data_loader",
+      "target": "backtest_indicators"
+    },
+    {
+      "source": "experts_data_loader",
+      "target": "experts_evaluator"
+    },
+    {
+      "source": "experts_debate_manager",
+      "target": "experts_modules_llm_proxy"
+    },
+    {
+      "source": "experts_evaluator",
+      "target": "experts_structured_feedback"
+    },
+    {
+      "source": "experts_evaluator",
+      "target": "experts_modules_pbo_analysis"
+    },
+    {
+      "source": "experts_meta_monitor",
+      "target": "experts_llm_prompts"
+    },
+    {
+      "source": "experts_meta_monitor",
+      "target": "experts_modules_llm_proxy"
+    },
+    {
+      "source": "experts_modules_alpha158",
+      "target": "experts_modules_ts_operators"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_debate_manager"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_evaluator"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_report_writer"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "backtest_engine"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_structured_feedback"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_modules_risk_engine"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_specialists_factor_combo_expert"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_data_loader"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_meta_monitor"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_factor_library"
+    },
+    {
+      "source": "experts_orchestrator",
+      "target": "experts_modules_blackboard"
+    },
+    {
+      "source": "experts_report_writer",
+      "target": "experts_meta_monitor"
+    },
+    {
+      "source": "experts_researchers_factor_codegen",
+      "target": "experts_researchers_research_expert"
+    },
+    {
+      "source": "experts_researchers_factor_codegen",
+      "target": "experts_modules_llm_proxy"
+    },
+    {
+      "source": "experts_researchers_research_expert",
+      "target": "experts_researchers_sandbox_evaluator"
+    },
+    {
+      "source": "experts_researchers_research_expert",
+      "target": "experts_modules_llm_proxy"
+    },
+    {
+      "source": "experts_researchers_research_expert",
+      "target": "experts_researchers_factor_codegen"
+    },
+    {
+      "source": "experts_specialists_expert1a_trend",
+      "target": "config_settings"
+    },
+    {
+      "source": "experts_specialists_expert1a_trend",
+      "target": "factors_trend"
+    },
+    {
+      "source": "experts_specialists_expert1b_mean_reversion",
+      "target": "config_settings"
+    },
+    {
+      "source": "experts_specialists_expert1b_mean_reversion",
+      "target": "experts_modules_alpha158"
+    },
+    {
+      "source": "experts_specialists_expert1b_mean_reversion",
+      "target": "factors_momentum"
+    },
+    {
+      "source": "experts_specialists_expert1b_mean_reversion",
+      "target": "factors_mean_reversion"
+    },
+    {
+      "source": "experts_specialists_factor_combo_expert",
+      "target": "config_settings"
+    },
+    {
+      "source": "experts_specialists_factor_combo_expert",
+      "target": "factors_momentum"
+    },
+    {
+      "source": "experts_specialists_factor_combo_expert",
+      "target": "factors_mean_reversion"
+    },
+    {
+      "source": "experts_specialists_factor_combo_expert",
+      "target": "factors_trend"
+    },
+    {
+      "source": "factors_composite",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "factors_composite",
+      "target": "factors_volume"
+    },
+    {
+      "source": "factors_mean_reversion",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "factors_momentum",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "factors_signals",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "factors_signals",
+      "target": "factors_mean_reversion"
+    },
+    {
+      "source": "factors_signals",
+      "target": "factors_momentum"
+    },
+    {
+      "source": "factors_signals",
+      "target": "factors_chanlun"
+    },
+    {
+      "source": "factors_signals",
+      "target": "factors_volatility"
+    },
+    {
+      "source": "factors_signals",
+      "target": "factors_trend"
+    },
+    {
+      "source": "factors_signals",
+      "target": "factors_volume"
+    },
+    {
+      "source": "factors_trend",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "factors_volatility",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "factors_volatility",
+      "target": "factors_trend"
+    },
+    {
+      "source": "factors_volume",
+      "target": "factors_base_operators"
+    },
+    {
+      "source": "scripts_build_status",
+      "target": "config_settings"
+    },
+    {
+      "source": "scripts_build_status",
+      "target": "factors"
+    },
+    {
+      "source": "scripts_build_status",
+      "target": "config"
+    },
+    {
+      "source": "scripts_build_status",
+      "target": "factors_signals"
+    },
+    {
+      "source": "scripts_init_data",
+      "target": "scripts_collectors_qlib_collector"
+    },
+    {
+      "source": "scripts_init_data",
+      "target": "scripts_collectors_yfinance_collector"
+    },
+    {
+      "source": "scripts_run_iteration",
+      "target": "experts_orchestrator"
+    },
+    {
+      "source": "scripts_run_pipeline",
+      "target": "experts_orchestrator"
+    },
+    {
+      "source": "scripts_run_pipeline",
+      "target": "backtest_local_data"
+    },
+    {
+      "source": "scripts_run_research",
+      "target": "experts_researchers_research_expert"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "experts_orchestrator"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "experts_modules_llm_proxy"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "experts_evaluator"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "backtest_engine"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "experts_specialists_factor_combo_expert"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "factors_signals"
+    },
+    {
+      "source": "scripts_smoke_test",
+      "target": "scripts_validate_dashboard"
+    }
+  ]
+}

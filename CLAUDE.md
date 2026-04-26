@@ -103,3 +103,30 @@ except ValueError:
 - 不为假设的未来需求设计抽象
 - 不添加"兼容性"填充代码（如 `# removed`、未使用的 `_var`）
 - 修 bug 时只改 bug，不顺手清理周边代码
+
+---
+
+## ⛔ 修改前强制检查（pre-commit hook 强制执行）
+
+修改任何 `.py` / `.tsx` / `.json` 文件前，必须完成 CHECKLIST.md：
+
+### 1. 架构检查
+- 运行 `python3 scripts/gen_architecture.py` 查看模块依赖图
+- 确认修改不破坏模块边界、不引入循环导入
+
+### 2. 数据管线完整性
+- 如修改数据结构/字段名, 搜索全项目确认所有消费者
+- 从 Evaluator → report_writer → converter → dashboard 全链路追踪
+- 运行 `python3 scripts/validate_dashboard.py`
+
+### 3. 冒烟测试
+- 运行 `python3 scripts/smoke_test.py`
+- 必须 exit 0
+
+### 4. 更新 CHECKLIST.md
+- 修改 `Last Verification` 时间戳
+- 勾选所有通过的检查项
+- `git add CHECKLIST.md`
+
+**Checklist 驱动的审计日志**: CHECKLIST.md 既是验证清单也是历史记录。
+Pre-commit hook 会阻止未更新 CHECKLIST.md 的提交。
