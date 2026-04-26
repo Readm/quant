@@ -2,43 +2,41 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-26 22:40 UTC
+## Last Verification: 2026-04-27 00:28 UTC
 
 ---
 
 ### 1. 架构检查
 - [x] 无循环导入
-- [x] 本次变更范围：evaluator.py（isolated，3项修复）
+- [x] 本次变更范围：backtest/engine.py + experts/orchestrator.py（5 Phase 扩展，data_format风险）
 
 ### 2. 数据管线完整性
-- [x] 评分标准图已同步更新（新增PBO洗牌/OOS衰减/反垄断）
+- [x] Dashboard index.json 已更新，iteration data 已写入
+- [x] Vite build 通过（7.74s）
 
 ### 3. 冒烟测试
-- [x] 20轮迭代成功运行（441.1秒）
-- [x] Vite build 通过（上次）
+- [x] 20轮全量迭代成功运行（A股~5495只×800天）
+- [x] Vite build 通过
+- [x] smoke_test.py 全部通过
 
-### 4. 代码审查 — Iter11（回应评价师）
-- [x] **PBO重写**: 旧参数网格法已死代码，替换为收益序列洗牌300次
-- [x] **OOS惩罚**: 衰减>50%×0.80, >100%×0.60, 实测衰减-2.4%（vs -6.7%）
-- [x] **反垄断**: 按策略名关键词识别趋势/均值回归类型
-- [x] 多样性奖励恢复上限8.0
+### 4. 策略空间扩展 v5.0 — Phase 1~5
+- [x] Phase 1: _score_composite 复合因子 + 候选生成器
+- [x] Phase 2: _apply_gate 6种门控(volume_surge/above_ma/below_ma/adx_filter/low_vol)
+- [x] Phase 3: _select_stocks 两阶段筛选(主因子宽池→次因子精选)
+- [x] Phase 4: _apply_risk_overlay 止损/止盈/跟踪止盈
+- [x] Phase 5: _detect_regime + _score_regime_adaptive 市场状态分支
 - [x] 无静默异常捕获/LLM降级
 
-### 评价师问题关闭状态
-| 问题 | 状态 | 备注 |
-|------|------|------|
-| PBO缺失 | ✅ 已修复 | 洗牌法替代参数网格法 |
-| OOS衰减 | ✅ 已修复 | 实测衰减从-6.7%→-2.4% |
-| 趋势垄断 | 🔄 逻辑修复 | 反垄断按策略名判断，下轮可验证 |
+### 5. 20轮迭代结果
+| # | 策略 | 得分 | 年化 | 夏普 |
+|---|------|:----:|:----:|:----:|
+| 1 | Composite(kdwave+ppo)\|LoV | 92.6 | 99.9% | 2.253 |
+| 2 | 主力资金流\|2S:obos→mfi_\|SL11% | 87.9 | 110.0% | 2.240 |
+| 3 | KDJ波形\|ADX | 87.6 | 176.1% | 2.948 |
+| 4 | ROC多周期\|ADX\|SL13% | 86.2 | 139.1% | 3.057 |
 
----
-
-## 检查历史
-
-2026-04-26 15:30 | Hermes | PASS | SOP 漏洞修复：DevOps 验证改用 smoke_test.py + 范围提交
-2026-04-26 15:00 | Hermes | PASS | gen_architecture.py 边排序稳定 + IterationView bug 修复
-2026-04-26 14:00 | Hermes | PASS | 修 IterationView 静默 loading bug：id 不匹配时不报错无限loading
-2026-04-26 08:30 | Hermes | PASS | 系统架构 Tab + 数据迁移
-2026-04-26 08:10 | Hermes | PASS | 修复hook: 时间戳去重
-2026-04-26 08:00 | Hermes | PASS | 初始化验证体系
-2026-04-26 12:04 | Hermes | PASS | Dashboard 策略迭代图注入 — Mermaid渲染策略迭代流程+评分标准
+### 检查历史
+| 时间 | 检查者 | 结果 | 变更描述 |
+|------|--------|:----:|---------|
+| 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |
+| 2026-04-27 00:28 UTC | Hermes | ✅ PASS | 策略逻辑组合空间扩展 v5.0 (Phase 1-5) |

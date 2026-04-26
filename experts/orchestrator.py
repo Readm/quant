@@ -154,6 +154,11 @@ class Orchestrator:
         self._champion_evals: list = []      # carried-over top EvalResults from previous round
         self._load_search_state()
 
+        # 双线程标记：辩论+元专家+规划在后台运行
+        self._llm_pool = None
+        self._llm_future = None
+        self._llm_converged = False
+
         # ── 加载生成因子（插件注册）──────────────────────────────
         self._load_generated_factors()
 
@@ -179,6 +184,7 @@ class Orchestrator:
         print("="*68)
 
         symbols_data = load_symbols_data(self.symbols, self.n_days)
+        self._symbols_data = symbols_data  # 给LLM线程用
 
         # 设置评估基准（默认用第一个标的作为基准）
         benchmark_sym = None  # override in subclass if needed
@@ -193,6 +199,21 @@ class Orchestrator:
 
         for rnd in range(1, self.max_rounds + 1):
             _t_rnd = time.perf_counter()
+            
+            # 检查后台LLM线程是否判定收敛
+            if self._llm_converged:
+                print(f"\n✅ 已收敛（后台LLM判定），提前结束"); break
+            
+            # ⏳ 等上一轮的LLM(辩论+元专家+规划)做完
+            if self._llm_future:
+                self._llm_future.result()
+                self._llm_future = None
+                if self._llm_pool:
+                    self._llm_pool.shutdown()
+                    self._llm_pool = None
+                if self._llm_converged:
+                    print(f"\n✅ 已收敛，提前结束"); break
+            
             print(f"\n{'='*68}\n  ▶ 第 {rnd} 轮迭代\n{'='*68}")
 
             need_div = self.evaluator.need_diversify()
@@ -267,170 +288,30 @@ class Orchestrator:
             if not all_pass:
                 print("  ⚠️ 无候选通过，跳过本轮"); continue
 
-            # TODO: news_sentiment 尚未接入真实搜索 API，暂时跳过
-            sent   = {"sentiment_score": 0.0, "sentiment_label": "NEUTRAL",
-                      "confidence": 0.0, "top_stories": [], "market_tips": [],
-                      "explanation": "news_sentiment 未启用（TODO）"}
-            self.bb.write("News", rnd, "sentiment", sent)
+            # ── 双线程：LLM工作在后台(辩论+元专家+规划)，主线程直接开始下一轮回测 ─
+            top_score_cur = max((float(getattr(e, "composite", 0)) for e in all_pass), default=0.0)
+            from concurrent.futures import ThreadPoolExecutor
+            self._llm_pool = ThreadPoolExecutor(max_workers=1)
+            self._llm_future = self._llm_pool.submit(
+                self._run_llm_track, all_pass, all_evals, all_reports, rnd,
+                top_score_cur, self.best_score, self.no_improve)
+            # 不shutdown——下一轮开头的result()取完后才关
 
-            # LLM 策略评审
-            _t_debate = time.perf_counter()
-            debate = self.debate_manager.conduct_debate(all_pass, [], None, [], rnd)
-            _dt_debate = time.perf_counter() - _t_debate
-            DebateManager.print_debate(debate, rnd)
-
-            # 风险评估
-            risk_results = self.risk_expert.analyze_batch([
-                (e.strategy_name, getattr(e, 'params', {}),
-                 e.daily_returns if hasattr(e, "daily_returns") and e.daily_returns else [],
-                 e.total_trades) for e in all_pass
-            ])
-            print(f"\n[风险]")
-            for r in risk_results:
-                ico = {"LOW":"L","MEDIUM":"M","HIGH":"H","VERY_HIGH":"VH"}.get(r.risk_rating,"?")
-                print(f"  [{ico}] {r.strategy_name}: {r.risk_rating} VaR99={r.var_99}%")
-
-            # 组合权重
-            portfolio = self._build_portfolio(debate, all_pass, risk_results, None)
-
-            # 相关性校验
-            corr_map = compute_correlation_matrix(all_pass)
-            if corr_map:
-                print(f"\n[相关性] 发现 {len(corr_map)} 对高相关策略")
-                portfolio = apply_correlation_penalty(portfolio, all_pass, corr_map)
-
-            final = list(portfolio.values())[:self.top_n]
-            for e in final:
-                e.weight = portfolio.get(e.strategy_id, 0.0)
-
-            print(f"\n[结果] 入选 {len(final)} 个策略：")
-            for e in final:
-                w = float(e.weight) if isinstance(e.weight, (int, float)) and e.weight >= 0 else 0.0
-                print(f"  · {e.strategy_name} 分={float(e.composite):.1f} 权重={w:.1%}")
-
-            # Paper Trade 验证
-            holdout_ok = []
-            if rnd > 1:
-                holdout_ok = self._holdout_validate(final, symbols_data[0], None)
-                if holdout_ok:
-                    avg_bias = sum(r["bias"] for r in holdout_ok) / len(holdout_ok)
-                    print(f"\n[OOS验证] 样本外{OOS_DAYS}天（Walk-Forward）：")
-                    for hr in holdout_ok:
-                        ok = hr["oospct"] > 0 and hr["bias"] > -abs(hr["in_pct"]) * 0.8
-                        flag = "✅" if ok else "⚠️"
-                        print(f"  {flag} {hr['name']}: "
-                              f"样本外={hr['oospct']:+.1f}% | 训练内={hr['in_pct']:+.1f}% | "
-                              f"衰减={hr['bias']:+.1f}%")
-                    print(f"  平均OOS年化：{avg_bias + sum(r['in_pct'] for r in holdout_ok)/len(holdout_ok):+.1f}%"
-                          f"  平均衰减：{avg_bias:+.1f}%")
-
-            # 元监控快照
-            snap = make_snapshot(rnd, all_evals, [], debate, risk_results, sent, None)
-            self.monitor.record_round(snap)
-
-            # 收敛判断：基于 all_pass（不只是 final 前4名），5轮无提升才收敛
-            NO_IMPROVE_THRESHOLD = 5
-            top_score = max((float(getattr(e, "composite", 0)) for e in all_pass), default=0.0)
-            if top_score > self.best_score + 0.1:
-                self.best_score = top_score
-                self.no_improve = 0
-                print(f"\n[收敛] 冠军分提升至 {top_score:.1f}")
-            else:
-                self.no_improve += 1
-                print(f"\n[收敛] 冠军分未提升（{self.no_improve}/{NO_IMPROVE_THRESHOLD}），"
-                      f"当前最高={top_score:.1f} 历史={self.best_score:.1f}")
-            converged = (self.no_improve >= NO_IMPROVE_THRESHOLD)
-
-            # ── LLM 元专家评估（每轮，可覆盖收敛判断）─────────────
-            round_strats = [eval_to_strat_dict(e) for e in all_evals]
-            _t_meta = time.perf_counter()
-            meta_eval = self.monitor.llm_evaluate_round(round_strats, self.best_score, self.no_improve)
-            _dt_meta = time.perf_counter() - _t_meta
-            summary = meta_eval.get('round_summary','')
-            insight = meta_eval.get('key_insight','')
-            print(f"\n⏺ 第{rnd}轮快照 — {summary}")
-            if insight:
-                print(f"   📌 {insight}")
-            if not meta_eval.get("convergence_is_real", True) and converged:
-                print(f"[元专家] ⚠️ 判定当前收敛为假象（{meta_eval.get('continue_reason','')}），重置计数器")
-                converged = False
-                self.no_improve = 0
-
-            # ── 元专家动态参数规划（为下一轮准备）─────────────
-            self._meta_history["total_candidates"] += len(all_evals)
-            self._meta_history["total_accepted"] += len(all_pass)
-            self._meta_history["total_rejected"] += len(all_evals) - len(all_pass)
-
-            if rnd < self.max_rounds and not converged:
-                _t_plan = time.perf_counter()
-                round_data = {
-                    "round": rnd,
-                    "top_score": round(top_score, 1),
-                    "accepted": len(all_pass),
-                    "rejected": len(all_evals) - len(all_pass),
-                    "total": len(all_evals),
-                    "zero_trade_count": sum(1 for e in all_evals if getattr(e, "total_trades", 0) == 0),
-                    "avg_trades": sum(getattr(e, "total_trades", 0) for e in all_evals) / max(len(all_evals), 1),
-                    "avg_score": round(sum(float(getattr(e, "composite", 0)) for e in all_evals) / max(len(all_evals), 1), 1),
-                }
-                plan = self.monitor.llm_plan_next_round(round_data, {
-                    "best_score": self.best_score,
-                    "no_improve": self.no_improve,
-                    "completed_rounds": rnd,
-                    **self._meta_history,
-                })
-                _dt_plan = time.perf_counter() - _t_plan
-
-                new_params = plan.get("next_round_params", {})
-                old_combo = self._meta_params["combo_candidates"]
-                old_acc = self._meta_params["accept_threshold"]
-                self._meta_params.update(new_params)
-
-                # 同步更新 evaluator 的门槛
-                self.evaluator.ACCEPT_THRESHOLD = self._meta_params["accept_threshold"]
-                self.evaluator.CONDITIONAL_THRESHOLD = self._meta_params["conditional_threshold"]
-
-                # 同步更新 portfolio 搜索空间
-                self._PORTFOLIO_PARAM_RANGES["n_stocks"] = list(range(
-                    self._meta_params["n_stocks_min"],
-                    self._meta_params["n_stocks_max"] + 1
-                ))
-                if "rebalance_options" in new_params:
-                    self._PORTFOLIO_PARAM_RANGES["rebalance_freq"] = new_params["rebalance_options"]
-
-                changes = []
-                if old_combo != self._meta_params["combo_candidates"]:
-                    changes.append(f"候选数 {old_combo}→{self._meta_params['combo_candidates']}")
-                if abs(old_acc - self._meta_params["accept_threshold"]) > 0.1:
-                    changes.append(f"ACCEPT门槛 {old_acc}→{self._meta_params['accept_threshold']}")
-                if changes:
-                    print(f"\n[元专家-规划] 下轮参数调整: {'；'.join(changes)}")
-                print(f"[元专家-规划] 理由: {plan.get('reasoning', '')}")
-                if plan.get("traps_detected"):
-                    print(f"[元专家-规划] 检测陷阱: {', '.join(plan['traps_detected'])}")
-
-                rp_meta_plan = plan
-            else:
-                _dt_plan = 0
-                rp_meta_plan = {}
-
+            # ⬅️ 不回等！立即进入下一轮 for 循环
+            # 下一轮开头的 _llm_future.result() 会等上一轮做完
+            # 同时回测(30-100s)和LLM(15-25s)并行，互相覆盖等待时间
+            
             _dt_rnd = time.perf_counter() - _t_rnd
             _rnd_times.append(_dt_rnd)
-            print(f"\n[Profiling] 第{rnd}轮总耗时 {_dt_rnd:.1f}s  "
-                  f"回测={_dt_bt:.1f}s  辩论={_dt_debate:.1f}s  元专家={_dt_meta:.1f}s  规划={_dt_plan:.1f}s")
+            self.round_reports.append(None)  # 占位，LLM线程填充
 
-            rp = RoundReportFake(rnd)
-            rp.meta_evaluation = meta_eval
-            rp.all_evals      = all_evals
-            rp.all_reports    = all_reports
-            rp.final_selected = final
-            rp.converged     = converged
-            rp.debate_result = debate
-            rp.holdout_results = holdout_ok
-            self.round_reports.append(rp)
-
-            if converged:
-                print("\n✅ 冠军策略连续3轮未提升，已收敛"); break
+        # 关掉最后一轮的LLM线程
+        if self._llm_future:
+            self._llm_future.result()
+            self._llm_future = None
+        if self._llm_pool:
+            self._llm_pool.shutdown()
+            self._llm_pool = None
 
         if _rnd_times:
             print(f"\n[Profiling] 总计 {len(_rnd_times)} 轮  "
@@ -715,7 +596,9 @@ class Orchestrator:
             return preferred_key  # all capped, allow overflow
 
         # ── 1/3 宽范围随机探索（不依赖默认参数，全空间采样）──────────
-        n_rand = max(1, round(count * 0.35))
+        _composite_budget = max(1, round(count * 0.20))
+        effective_count = count - _composite_budget
+        n_rand = max(1, round(effective_count * 0.35))
         for i in range(n_rand):
             # 失败次数多的模板降采样频率
             weights = [max(0.05, 1.0 / (1 + failed_templates.get(k, 0) * 1.5))
@@ -750,7 +633,7 @@ class Orchestrator:
             _tpl_count[tpl["key"]] = _tpl_count.get(tpl["key"], 0) + 1
 
         # ── 1/3 结构化反馈调参（每个反馈给不同处方）─────────────────
-        n_fb = max(1, round(count * 0.35))
+        n_fb = max(1, round(effective_count * 0.35))
         if type_fbs:
             # 取分数最高的 n_fb 条反馈（而非最近的），每条产生一个候选
             top_fbs = sorted(type_fbs, key=lambda f: f.get("composite", 0), reverse=True)[:n_fb]
@@ -784,7 +667,7 @@ class Orchestrator:
                 out.append(c)
 
         # ── 剩余：Exploitation（对历史最优参数做邻域搜索）──────────
-        while len(out) < count:
+        while len(out) < effective_count:
             if type_fbs:
                 # Pick highest-scoring feedback whose template is still under cap
                 sorted_fbs = sorted(type_fbs, key=lambda f: f.get("composite", 0), reverse=True)
@@ -811,6 +694,135 @@ class Orchestrator:
             }
             out.append(c)
             _tpl_count[tpl["key"]] = _tpl_count.get(tpl["key"], 0) + 1
+
+        # ── 复合因子候选：60% single, 30% dual, 10% triple factor composites ──
+        tpl_keys = [t["key"] for t in templates]
+        _factor_keys = [k for k in tpl_keys if not k.startswith("_")]
+        for _ in range(_composite_budget):
+            pick = rng.random()
+            if pick < 0.6:
+                # Single factor — already covered above, skip
+                continue
+            elif pick < 0.9:
+                # Dual factor: pick 2 different factors with random weights
+                k1, k2 = rng.sample(_factor_keys, 2)
+                w1 = round(rng.choice([0.3, 0.4, 0.5, 0.6, 0.7]), 1)
+                w2 = round(1.0 - w1, 1)
+                factors = [
+                    {"key": k1, "weight": w1},
+                    {"key": k2, "weight": w2},
+                ]
+            else:
+                # Triple factor: equal weight
+                ks = rng.sample(_factor_keys, 3)
+                w = round(1.0 / 3, 2)
+                factors = [{"key": k, "weight": w} for k in ks]
+            import uuid
+            factor_names = "+".join(f["key"][:6] for f in factors)
+            c = {
+                "strategy_id":   f"co_{uuid.uuid4().hex[:8]}",
+                "strategy_type": stype,
+                "strategy_name": f"Composite({factor_names})",
+                "template_key":  "_composite",
+                "params":        {"factors": factors},
+                "tags":          ["composite"],
+                "diversity_note": f"复合因子({len(factors)}因子)",
+            }
+            out.append(c)
+
+        # ── Phase 2: 信号门控 ──────────────────────────────────────────
+        # 50% 的候选随机配置一个门控
+        _gate_types = ["volume_surge", "above_ma", "below_ma", "adx_filter", "low_vol"]
+        for c in out:
+            if rng.random() < 0.50:
+                gate_type = rng.choice(_gate_types)
+                if gate_type == "volume_surge":
+                    param = round(rng.uniform(1.5, 3.0), 1)
+                elif gate_type in ("above_ma", "below_ma"):
+                    param = rng.choice([50, 100, 150, 200, 250])
+                elif gate_type == "adx_filter":
+                    param = round(rng.uniform(20, 40), 0)
+                elif gate_type == "low_vol":
+                    param = round(rng.uniform(0.01, 0.05), 3)
+                else:
+                    param = 2.0
+                c["params"]["gate"] = {"type": gate_type, "param": param}
+                # 门控策略名称修饰
+                short_gt = {"volume_surge": "Vol", "above_ma": "A>MA", "below_ma": "B<MA", "adx_filter": "ADX", "low_vol": "LoV"}.get(gate_type, gate_type[:4])
+                c["strategy_name"] = c["strategy_name"] + f"|{short_gt}"
+
+        # ── Phase 3: 两阶段筛选 ──────────────────────────────────────
+        # ~20% of candidates get two-stage selection
+        _factor_keys = [k for k in tpl_keys if not k.startswith("_")]
+        for c in out:
+            if rng.random() < 0.20 and len(_factor_keys) >= 2:
+                k1, k2 = rng.sample(_factor_keys, 2)
+                pool_size = rng.choice([30, 50, 100, 150, 200, 300])
+                c["params"]["selection_stage"] = "two_stage"
+                c["params"]["primary_factor"] = {"key": k1}
+                c["params"]["secondary_factor"] = {"key": k2}
+                c["params"]["pool_size"] = pool_size
+                c["strategy_name"] = c["strategy_name"] + f"|2S:{k1[:4]}→{k2[:4]}"
+
+        # ── Phase 4: 风险覆盖层 ──────────────────────────────────────
+        # ~30% of candidates get risk rules (stop-loss, take-profit, trailing stop)
+        for c in out:
+            if rng.random() < 0.30:
+                rr = {}
+                # Randomly enable 0~3 rules
+                if rng.random() < 0.6:
+                    rr["stop_loss"] = round(rng.uniform(0.03, 0.15), 2)
+                if rng.random() < 0.5:
+                    rr["take_profit"] = round(rng.uniform(0.08, 0.30), 2)
+                if rng.random() < 0.4:
+                    rr["trailing_stop"] = round(rng.uniform(0.05, 0.15), 2)
+                if rr:
+                    c["params"]["risk_rules"] = rr
+                    tags = []
+                    if "stop_loss" in rr: tags.append(f"SL{rr['stop_loss']:.0%}")
+                    if "take_profit" in rr: tags.append(f"TP{rr['take_profit']:.0%}")
+                    if "trailing_stop" in rr: tags.append(f"TS{rr['trailing_stop']:.0%}")
+                    c["strategy_name"] = c["strategy_name"] + "|" + "".join(tags)
+
+        # ── Phase 5: 市场条件分支 ────────────────────────────────────────
+        # ~10% of candidates get regime-adaptive branching
+        _factor_keys = [k for k in tpl_keys if not k.startswith("_")]
+        _n_regime = max(1, round(count * 0.10))
+        for _ in range(_n_regime):
+            if len(_factor_keys) < 3:
+                continue
+            # Pick 3 distinct factors for trend/mr/safe branches
+            trend_k, mr_k, safe_k = rng.sample(_factor_keys, 3)
+
+            # Add random params for each factor
+            def _rand_factor_params(key):
+                ranges = self._PARAM_RANGES.get(key, {})
+                p = {}
+                for pk, (lo, hi) in ranges.items():
+                    if isinstance(lo, int) and isinstance(hi, int):
+                        p[pk] = rng.randint(lo, hi)
+                    else:
+                        p[pk] = round(rng.uniform(lo, hi), 4)
+                return {"key": key, **p}
+
+            import uuid
+            name_parts = f"R:{trend_k[:4]}/{mr_k[:4]}/{safe_k[:4]}"
+            c = {
+                "strategy_id":   f"ra_{uuid.uuid4().hex[:8]}",
+                "strategy_type": stype,
+                "strategy_name": f"RegimeAdapt({name_parts})",
+                "template_key":  "_regime_adaptive",
+                "params":        {
+                    "branches": {
+                        "trend_factor": _rand_factor_params(trend_k),
+                        "mr_factor":   _rand_factor_params(mr_k),
+                        "safe_factor": _rand_factor_params(safe_k),
+                    }
+                },
+                "tags":          ["regime_adaptive"],
+                "diversity_note": f"市场分支({trend_k}/{mr_k}/{safe_k})",
+            }
+            out.append(c)
 
         # ── 为每个候选注入 portfolio_params（可变异的组合参数）──────
         for c in out:
@@ -972,6 +984,109 @@ class Orchestrator:
         return result
 
     # ── 数据加载（实盘 + 腾讯API）───────────────
+
+    def _run_llm_track(self, all_pass, all_evals, all_reports, rnd,
+                       top_score, best_score_in, no_improve_in):
+        """后台LLM线程：辩论→风险→组合→OOS→收敛→元专家→规划"""
+        import time
+        _t = time.perf_counter()
+        sent = {"sentiment_score": 0.0, "sentiment_label": "NEUTRAL", "confidence": 0.0,
+                "top_stories": [], "market_tips": [], "explanation": "news_sentiment 未启用"}
+        self.bb.write("News", rnd, "sentiment", sent)
+
+        _t_deb = time.perf_counter()
+        debate = self.debate_manager.conduct_debate(all_pass, [], None, [], rnd)
+        _dt_deb = time.perf_counter() - _t_deb
+        DebateManager.print_debate(debate, rnd)
+        risk_results = self.risk_expert.analyze_batch([
+            (e.strategy_name, getattr(e, 'params', {}),
+             e.daily_returns if hasattr(e, "daily_returns") and e.daily_returns else [],
+             e.total_trades) for e in all_pass])
+        print(f"\n[风险]")
+        for r in risk_results:
+            ico = {"LOW":"L","MEDIUM":"M","HIGH":"H","VERY_HIGH":"VH"}.get(r.risk_rating,"?")
+            print(f"  [{ico}] {r.strategy_name}: {r.risk_rating} VaR99={r.var_99}%")
+        portfolio = self._build_portfolio(debate, all_pass, risk_results, None)
+        corr_map = compute_correlation_matrix(all_pass)
+        if corr_map:
+            print(f"\n[相关性] 发现 {len(corr_map)} 对高相关策略")
+            portfolio = apply_correlation_penalty(portfolio, all_pass, corr_map)
+        final = list(portfolio.values())[:self.top_n]
+        for e in final:
+            e.weight = portfolio.get(e.strategy_id, 0.0)
+        print(f"\n[结果] 入选 {len(final)} 个策略：")
+        for e in final:
+            w = float(e.weight) if isinstance(e.weight, (int, float)) and e.weight >= 0 else 0.0
+            print(f"  · {e.strategy_name} 分={float(e.composite):.1f} 权重={w:.1%}")
+        _t_oos = time.perf_counter()
+        holdout_ok = []
+        if rnd > 1:
+            holdout_ok = self._holdout_validate(final, self._symbols_data[0], None)
+        _dt_oos = time.perf_counter() - _t_oos
+        if holdout_ok:
+            print(f"\n[OOS验证] 样本外{OOS_DAYS}天（Walk-Forward）：")
+            for hr in holdout_ok:
+                ok = hr["oospct"] > 0 and hr["bias"] > -abs(hr["in_pct"]) * 0.8
+                flag = "✅" if ok else "⚠️"
+                print(f"  {flag} {hr['name']}: 样本外={hr['oospct']:+.1f}% | "
+                      f"训练内={hr['in_pct']:+.1f}% | 衰减={hr['bias']:+.1f}%")
+        snap = make_snapshot(rnd, all_evals, [], debate, risk_results, sent, None)
+        self.monitor.record_round(snap)
+        top = max((float(getattr(e, "composite", 0)) for e in all_pass), default=0.0)
+        bst, n_imp = best_score_in, no_improve_in
+        if top > bst + 0.1:
+            bst, n_imp = top, 0
+            print(f"\n[收敛] 冠军分提升至 {top:.1f}")
+        else:
+            n_imp += 1
+            print(f"\n[收敛] 冠军分未提升（{n_imp}/8），当前最高={top:.1f} 历史={bst:.1f}")
+        _t_me = time.perf_counter()
+        me = self.monitor.llm_evaluate_round(
+            [eval_to_strat_dict(e) for e in all_evals], bst, n_imp)
+        _dt_me = time.perf_counter() - _t_me
+        print(f"\n⏺ 第{rnd}轮快照 — {me.get('round_summary','')}")
+        if me.get('key_insight'):
+            print(f"   📌 {me['key_insight']}")
+        conv = (n_imp >= 8)
+        if not me.get("convergence_is_real", True) and conv:
+            print(f"[元专家] ⚠️ 判定收敛为假象，重置计数器")
+            conv, n_imp = False, 0
+        self._meta_history["total_candidates"] += len(all_evals)
+        self._meta_history["total_accepted"] += len(all_pass)
+        self._meta_history["total_rejected"] += len(all_evals) - len(all_pass)
+        if rnd < self.max_rounds and not conv:
+            rd = {"round": rnd, "top_score": round(top, 1), "accepted": len(all_pass),
+                  "rejected": len(all_evals) - len(all_pass), "total": len(all_evals),
+                  "zero_trade_count": sum(1 for e in all_evals if getattr(e, "total_trades", 0) == 0),
+                  "avg_trades": sum(getattr(e, "total_trades", 0) for e in all_evals) / max(len(all_evals), 1),
+                  "avg_score": round(sum(float(getattr(e, "composite", 0)) for e in all_evals) / max(len(all_evals), 1), 1)}
+            plan = self.monitor.llm_plan_next_round(rd, {"best_score": bst, "no_improve": n_imp,
+                "completed_rounds": rnd, **self._meta_history})
+            self._meta_params.update(plan.get("next_round_params", {}))
+            self.evaluator.ACCEPT_THRESHOLD = self._meta_params["accept_threshold"]
+            self.evaluator.CONDITIONAL_THRESHOLD = self._meta_params["conditional_threshold"]
+            self._PORTFOLIO_PARAM_RANGES["n_stocks"] = list(range(
+                self._meta_params["n_stocks_min"], self._meta_params["n_stocks_max"] + 1))
+            if "rebalance_options" in plan.get("next_round_params", {}):
+                self._PORTFOLIO_PARAM_RANGES["rebalance_freq"] = plan["next_round_params"]["rebalance_options"]
+            print(f"\n[元专家-规划] 理由: {plan.get('reasoning', '')}")
+            if plan.get("traps_detected"):
+                print(f"[元专家-规划] 检测陷阱: {', '.join(plan['traps_detected'])}")
+        self.best_score = bst
+        self.no_improve = n_imp
+        if conv:
+            self._llm_converged = True
+        # 填充round报告（覆盖主线程的None占位）
+        rp = RoundReportFake(rnd)
+        rp.meta_evaluation = me; rp.all_evals = all_evals; rp.all_reports = all_reports
+        rp.final_selected = final; rp.converged = conv; rp.debate_result = debate
+        rp.holdout_results = holdout_ok
+        while len(self.round_reports) <= rnd - 1:
+            self.round_reports.append(rp)
+        self.round_reports[rnd - 1] = rp
+        _dt = time.perf_counter() - _t
+        print(f"\n[Profiling] 第{rnd}轮(LLM线程) 总={_dt:.1f}s "
+              f"辩论={_dt_deb:.1f}s OOS={_dt_oos:.1f}s 元专家={_dt_me:.1f}s")
 
 
 

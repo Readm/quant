@@ -1,29 +1,47 @@
-# 变更计划 — Switch to A-share only
+# Change Plan: Expand Strategy Logic Combinatorial Space
 
 ## 需求
-1. 系统只关注 A 股，移除所有非 A 股标的
-2. 默认加载全部 A 股（~5,495只），每个策略做全市场扫描 + 选股组合
-3. 修正之前 SPY 被错误映射到沪深300的问题
+突破当前"单因子打分→排名→选股"的单一逻辑结构，让候选策略能组合因子、条件门控、多阶段筛选、风险控制和市场环境分支。
 
-## 风险等级
-data_format（数据加载方式变化）
+## 全局风险等级
+- Phase 1-2: isolated
+- Phase 3-4: data_format
+- Phase 5: data_format (新增注册表 entry)
 
-## 修改项
+## 文件影响矩阵
 
-### 1. `data_loader.py` — 发现全部 A 股标的
-新增函数 `discover_astock_universe()` 扫描 `data/tushare/daily/` 下所有 `.csv` 文件，
-返回完整股票代码列表（约 5,495 只）。
-移除 `_TENCENT_MAP` 中的 SPY/BTCUSDT/ETHUSDT 映射。
+| Phase | engine.py | orchestrator.py | 依赖顺序 |
+|-------|-----------|-----------------|---------|
+| 1 因子加权 | _score_composite + 注册 | 复合因子候选生成 | 可并行 |
+| 2 门控 | _apply_gate + 集成 | 门控参数注入 | 可并行 |
+| 3 两阶段 | _select_stocks 双阶段 | 两阶段候选参数 | 可并行 |
+| 4 风险层 | _apply_risk_overlay + 集成 | 风险规则参数 | 可并行 |
+| 5 市场分支 | _detect_regime + _score_regime_adaptive + 注册 | 分支参数注入 | 可并行 |
 
-### 2. `data_loader.py` — 默认加载全 A 股
-`load_symbols_data` 新增特殊模式：`symbols=["astock"]` 时加载全部 A 股。
+每个 Phase 的 engine.py 和 orchestrator.py 改动**不冲突**，可并行分派。
 
-### 3. `orchestrator.py` — 默认参数改为 A 股
-`__main__` 的 `--symbols` 默认值从 `[AAPL, NVDA, BTCUSDT, ETHUSDT]` 改为全部 A 股。
-`n_days` 从 500 改为 800（A 股数据有 2,001 天可用）。
+## 分派计划
 
-## 注意事项
-- 5,495 只股票 × 800 天的 OHLCV 数据量约 200MB
-- ProcessPoolExecutor 通过 `_init_backtest_worker` 序列化到 worker，加载一次
-- 每轮回测对 55 个候选 × 5000 只股票做因子评分，选 Top-4 持仓
-- 评分权重、PBO 洗牌、反垄断等逻辑不变
+### Backtest Engineer (engine.py)
+- Phase 1: Add `_score_composite` function + register in `_SCORE_REGISTRY` as `"_composite"`
+- Phase 2: Add `_apply_gate` function + integrate into `_compute_score_at` pipeline
+- Phase 3: Refactor `_select_stocks` to support `"two_stage"` mode
+- Phase 4: Add `_apply_risk_overlay` function + integrate into `_sim_range` rebalance loop
+- Phase 5: Add `_detect_regime` + `_score_regime_adaptive` + register as `"_regime_adaptive"`
+
+### Quant Strategy Engineer (orchestrator.py)
+- Phase 1: Update `_generate_diverse_candidates` to generate 60% single / 30% dual / 10% triple factor composites
+- Phase 2: 50% of candidates get a random gate config
+- Phase 3: Some candidates get `"two_stage"` selection config
+- Phase 4: Some candidates get risk_rules config
+- Phase 5: Some candidates get regime_adaptive branches
+
+## 自检条件 (each Phase)
+1. ✅ `python3 -c "from backtest.engine import *; print('OK')"`
+2. ✅ Small smoke test: 5 rounds with --days 200 --rounds 5
+3. ✅ Generated candidates include new logic structures
+
+## 数据链影响
+- Phase 3 (two_stage) and Phase 4 (risk overlay) may add new fields to BacktestReport params
+- No field name changes to existing BacktestReport fields
+- Dashboard data format unchanged (no new report fields)

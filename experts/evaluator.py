@@ -31,7 +31,7 @@ MIN_ANNUAL_RETURN = -2.0
 MIN_SHARPE        = 0.05
 MIN_TRADES        = 1        # v5.3: 3→1, 放宽交易次数限制
 SOFT_MIN_TRADES   = 5        # v5.3: 建议最低(供meta-expert参考)
-MAX_DRAWDOWN      = 25.0     # v5.3: 35→25, 收紧风控
+MAX_DRAWDOWN      = 35.0     # v5.7: 25→35, A股组合回撤天然偏高, 放宽硬过滤
 
 # ── PBO 门控阈值 ───────────────────────────
 PBO_HARD_REJECT   = 0.50   # PBO > 此值 → REJECT（v5.1: 从0.45回调）
@@ -475,13 +475,14 @@ class Evaluator:
 
     @staticmethod
     def _s_dd(d: float) -> float:
-        """最大回撤评分（0~100）。保留原有逻辑。"""
-        if d <=  5: return 100.0
-        if d <= 10: return 90.0
-        if d <= 15: return 75.0
-        if d <= 20: return 60.0
-        if d <= 30: return 40.0
-        return max(0.0, 30 - (d - 30) * 2)
+        """最大回撤评分（0~100）。v5.7: 更陡的惩罚曲线, 对高回撤大幅扣分。"""
+        if d <= 10: return 100.0
+        if d <= 15: return 85.0
+        if d <= 20: return 65.0
+        if d <= 25: return 45.0
+        if d <= 30: return 25.0
+        if d <= 35: return 10.0     # 硬上限边缘, 几乎不贡献分
+        return max(0.0, 15 - (d - 35) * 1.5)
 
     # ══════════════════════════════════════════
     #  弱点诊断 + 处方

@@ -396,6 +396,113 @@ def _make_signal_score(template_key: str):
     return _score
 
 
+def _score_composite(closes, data, indicators, params, t):
+    """加权组合多个因子分数。
+    params = {
+        "factors": [
+            {"key": "rsi", "weight": 0.6, "period": 14, "lower": 30, "upper": 70},
+            {"key": "momentum", "weight": 0.4, "lookback": 20},
+        ]
+    }
+    """
+    factors = params.get("factors", [])
+    if not factors:
+        return 0.0
+    total_score = 0.0
+    total_weight = 0.0
+    for factor in factors:
+        key = factor["key"]
+        fn = _SCORE_REGISTRY.get(key)
+        if fn is None:
+            continue
+        # Pass factor-specific params merged with top-level params
+        factor_params = {k: v for k, v in factor.items() if k != "key" and k != "weight"}
+        score = fn(closes, data, indicators, factor_params, t)
+        weight = float(factor.get("weight", 1.0))
+        total_score += score * weight
+        total_weight += weight
+    if total_weight <= 0:
+        return 0.0
+    return total_score / total_weight
+
+
+def _apply_gate(score, closes, data, indicators, params, t):
+    """Apply conditional gate: return 0.0 if condition not met, else return original score.
+    params = {
+        "gate": {"type": "volume_surge", "param": 2.0},
+    }
+    """
+    gate = params.get("gate")
+    if not gate:
+        return score
+    gate_type = gate.get("type")
+    gate_param = gate.get("param", 2.0)
+
+    if gate_type == "volume_surge":
+        vols = data.get("volumes", [1.0]*len(closes))
+        if t < 20:
+            return score
+        n_back = min(20, t)
+        avg_vol = sum(float(vols[i]) for i in range(t - n_back, t)) / n_back
+        return score if float(vols[t]) / max(avg_vol, 1e-9) > gate_param else 0.0
+
+    elif gate_type == "above_ma":
+        if t < 200:
+            return score
+        ma = sum(closes[t-200:t]) / 200
+        return score if closes[t] > ma else 0.0
+
+    elif gate_type == "below_ma":
+        if t < 200:
+            return score
+        ma = sum(closes[t-200:t]) / 200
+        return score if closes[t] < ma else 0.0
+
+    elif gate_type == "adx_filter":
+        adx = indicators.get("adx", [0]*len(closes))
+        if t < len(adx):
+            return score if adx[t] > gate_param else 0.0
+        return 0.0
+
+    elif gate_type == "low_vol":
+        atr = indicators.get("atr", [1]*len(closes))
+        if t < len(atr) and atr[t] > 0:
+            return score if (atr[t] / closes[t]) < gate_param else 0.0
+        return score
+
+    return score
+
+
+def _detect_regime(closes, indicators, t):
+    """
+    Detect current market regime.
+    - "trend": ADX > 25 and price above 200-day MA
+    - "mean_reversion": ADX <= 25 or price oscillating near MA
+    - "high_vol": ATR/price > 0.03 (high volatility)
+    Returns: "trend", "mean_reversion", or "high_vol"
+    """
+    if t < 200:
+        return "mean_reversion"
+
+    adx = indicators.get("adx", [0] * len(closes))
+    adx_val = adx[t] if t < len(adx) else 0
+
+    ma_200 = sum(closes[t - 200:t]) / 200
+    price_position = (closes[t] - ma_200) / ma_200 if ma_200 > 0 else 0
+
+    atr = indicators.get("atr", [1] * len(closes))
+    atr_val = atr[t] if t < len(atr) else closes[t] * 0.02
+    vol_ratio = atr_val / closes[t] if closes[t] > 0 else 0.02
+
+    if vol_ratio > 0.03:
+        return "high_vol"
+
+    if adx_val > 25 and abs(price_position) > 0.02:
+        return "trend"
+
+    return "mean_reversion"
+
+
 # ── 因子打分注册表 ────────────────────────────────────────────────────
 _SCORE_REGISTRY = {
     "ma_cross":          _score_ma_cross,
@@ -437,6 +544,7 @@ _SCORE_REGISTRY = {
     "ultraband_signal":          _make_signal_score("ultraband_signal"),
     "chanlun_bi":                _make_signal_score("chanlun_bi"),
     "chanlun_tao":               _make_signal_score("chanlun_tao"),
+    "_composite":                _score_composite,
 }
 
 
@@ -463,6 +571,41 @@ def compute_factor_score(
     if template_key in GENERATED_FACTORS:
         extensions = data.get("extensions", {})
         return GENERATED_FACTORS[template_key](closes, data, indicators, extensions, params, t)
+
+    return 0.0
+
+
+def _score_regime_adaptive(closes, data, indicators, params, t):
+    """
+    Score based on detected market regime by selecting different factors.
+    params = {
+        "branches": {
+            "trend_factor": {"key": "macd", "fp": 12, "sp": 26, "sig": 9},
+            "mr_factor": {"key": "rsi", "period": 14, "lower": 30, "upper": 70},
+            "safe_factor": {"key": "bollinger", "period": 20, "std_mult": 2.0},
+        }
+    }
+    """
+    regime = _detect_regime(closes, indicators, t)
+    branches = params.get("branches", {})
+
+    if regime == "trend" and "trend_factor" in branches:
+        branch = branches["trend_factor"]
+        key = branch.get("key", "")
+        branch_params = {k: v for k, v in branch.items() if k != "key"}
+        return compute_factor_score(closes, data, indicators, branch_params, key, t)
+
+    elif regime == "mean_reversion" and "mr_factor" in branches:
+        branch = branches["mr_factor"]
+        key = branch.get("key", "")
+        branch_params = {k: v for k, v in branch.items() if k != "key"}
+        return compute_factor_score(closes, data, indicators, branch_params, key, t)
+
+    elif regime == "high_vol" and "safe_factor" in branches:
+        branch = branches["safe_factor"]
+        key = branch.get("key", "")
+        branch_params = {k: v for k, v in branch.items() if k != "key"}
+        return compute_factor_score(closes, data, indicators, branch_params, key, t)
 
     return 0.0
 
@@ -547,6 +690,133 @@ class PortfolioBacktester:
         self.expert          = expert
         self.cand            = candidate
         self.pp              = {**DEFAULT_PORTFOLIO_PARAMS, **portfolio_params}
+        self._holding_entry_prices = {}  # sym → entry price (for risk overlay)
+        self._holding_peak_prices  = {}  # sym → peak price (for trailing stop)
+
+    def _select_stocks(self, scores, sym_list, closes_by_sym, data_by_sym, ind_by_sym, pctchg_by_sym, t, exec_t, n_stocks):
+        """
+        Single-stage or two-stage stock selection.
+        
+        params.selection_stage == "two_stage":  
+          Phase 1: primary_factor → pool_size (wide pool)
+          Phase 2: secondary_factor → n_stocks (final selection)
+        else: normal single stage.
+        """
+        params = self.cand.get("params", {})
+        stage = params.get("selection_stage", "single")
+        
+        _LIMIT_UP = 9.8
+        _LIMIT_DOWN = -9.8
+        
+        if stage == "two_stage":
+            pool_size = int(params.get("pool_size", 100))
+            primary_key = params.get("primary_factor", {}).get("key", "")
+            secondary_key = params.get("secondary_factor", {}).get("key", "")
+            
+            if not primary_key or not secondary_key:
+                # Fallback to single stage
+                pass
+            else:
+                # Phase 1: Primary factor → wide pool
+                primary_scores = {}
+                for sym in sym_list:
+                    sc = compute_factor_score(
+                        closes_by_sym[sym], data_by_sym[sym],
+                        ind_by_sym[sym], {}, primary_key, t,
+                    )
+                    primary_scores[sym] = sc
+                primary_pos = {s: sc for s, sc in primary_scores.items() if sc > 0}
+                # Limit-up filter
+                pchg_exec = {s: (pctchg_by_sym[s][exec_t]
+                                 if exec_t < len(pctchg_by_sym.get(s, [])) else 0.0)
+                             for s in primary_pos}
+                primary_pos = {s: sc for s, sc in primary_pos.items()
+                               if pchg_exec.get(s, 0.0) < _LIMIT_UP}
+                pool_set = set(sorted(primary_pos, key=primary_pos.__getitem__, reverse=True)[:pool_size])
+                
+                # Phase 2: Secondary factor → narrow selection
+                secondary_scores = {}
+                for sym in sym_list:
+                    if sym not in pool_set:
+                        continue
+                    sc = compute_factor_score(
+                        closes_by_sym[sym], data_by_sym[sym],
+                        ind_by_sym[sym], {}, secondary_key, t,
+                    )
+                    secondary_scores[sym] = sc
+                secondary_pos = {s: sc for s, sc in secondary_scores.items() if sc > 0}
+                selected = sorted(secondary_pos, key=secondary_pos.__getitem__, reverse=True)[:n_stocks]
+                
+                # Return with the secondary scores (for weight computation)
+                return selected, secondary_pos
+        
+        # Single stage (default)
+        positive = {s: sc for s, sc in scores.items() if sc > 0}
+        pchg_exec = {s: (pctchg_by_sym[s][exec_t]
+                         if exec_t < len(pctchg_by_sym.get(s, [])) else 0.0)
+                     for s in positive}
+        positive = {s: sc for s, sc in positive.items()
+                    if pchg_exec.get(s, 0.0) < _LIMIT_UP}
+        selected = sorted(positive, key=positive.__getitem__, reverse=True)[:n_stocks]
+        return selected, positive
+
+    def _apply_risk_overlay(self, holdings, closes_by_sym, t, exec_t, initial_cash):
+        """
+        Apply risk rules (stop-loss, take-profit, trailing-stop) to existing holdings.
+        Returns (sell_proceeds, trades_list, remaining_holdings).
+        """
+        risk_rules = self.cand.get("params", {}).get("risk_rules", {})
+        if not risk_rules:
+            return 0.0, [], holdings
+
+        sell_proceeds = 0.0
+        trades_list = []
+        remaining = {}
+
+        for sym, shares in holdings.items():
+            entry_price = self._holding_entry_prices.get(sym, 0)
+            current_price = closes_by_sym[sym][exec_t] if exec_t < len(closes_by_sym[sym]) else 0
+
+            if current_price <= 0 or entry_price <= 0:
+                remaining[sym] = shares
+                continue
+
+            pnl_pct = (current_price - entry_price) / entry_price
+            force_sell = False
+            reason = ""
+
+            # Stop-loss
+            stop_loss = float(risk_rules.get("stop_loss", 0))
+            if stop_loss > 0 and pnl_pct < -stop_loss:
+                force_sell = True
+                reason = "stop_loss"
+
+            # Take-profit
+            take_profit = float(risk_rules.get("take_profit", 0))
+            if take_profit > 0 and pnl_pct > take_profit:
+                force_sell = True
+                reason = "take_profit"
+
+            # Trailing stop
+            trailing = float(risk_rules.get("trailing_stop", 0))
+            if trailing > 0:
+                peak = self._holding_peak_prices.get(sym, entry_price)
+                if current_price > peak:
+                    self._holding_peak_prices[sym] = current_price
+                    peak = current_price
+                if not force_sell and (peak - current_price) / peak > trailing:
+                    force_sell = True
+                    reason = "trailing_stop"
+
+            if force_sell:
+                gross = shares * current_price
+                net = gross - gross * SELL_COST
+                sell_proceeds += net
+                trades_list.append(net / initial_cash - 1.0 / max(len(closes_by_sym), 1))
+            else:
+                remaining[sym] = shares
+
+        return sell_proceeds, trades_list, remaining
 
     # ── 主入口 ──────────────────────────────────────────────────────
     def run(self, initial_cash: float = 1_000_000.0, oos_days: int = 0):
@@ -646,21 +916,28 @@ class PortfolioBacktester:
                     )
                     for sym in sym_list
                 }
-                positive = {s: sc for s, sc in scores.items() if sc > 0}
-                # 涨跌停过滤用成交日 (exec_t)，排除无法买入的涨停板
-                pchg_exec = {s: (pctchg_by_sym[s][exec_t]
-                                 if exec_t < len(pctchg_by_sym.get(s, [])) else 0.0)
-                             for s in positive}
-                positive = {s: sc for s, sc in positive.items()
-                            if pchg_exec.get(s, 0.0) < _LIMIT_UP}
-                selected = sorted(positive, key=positive.__getitem__,
-                                  reverse=True)[:n_stocks]
+                # Phase 2: 信号门控 — 对每个标的打分后应用门控条件
+                for sym in list(scores.keys()):
+                    scores[sym] = _apply_gate(
+                        scores[sym], closes_by_sym[sym], data_by_sym[sym],
+                        ind_by_sym[sym], params, t,
+                    )
+                selected, positive = self._select_stocks(
+                    scores, sym_list, closes_by_sym, data_by_sym, ind_by_sym,
+                    pctchg_by_sym, t, exec_t, n_stocks,
+                )
 
                 target_w = compute_weights(
                     selected, positive, weight_method, closes_by_sym, exec_t, max_pos,
                 )
 
-                sell_proceeds = 0.0
+                # Phase 4: 风险覆盖层 — 止损/止盈/跟踪止盈
+                risk_proceeds, risk_trades, new_holdings = self._apply_risk_overlay(
+                    holdings, closes_by_sym, t, exec_t, initial_cash,
+                )
+                holdings = new_holdings
+
+                sell_proceeds = risk_proceeds
                 for sym in list(holdings.keys()):
                     pchg = (pctchg_by_sym[sym][exec_t]
                             if exec_t < len(pctchg_by_sym.get(sym, [])) else 0.0)
@@ -672,6 +949,8 @@ class PortfolioBacktester:
                     net    = gross - gross * SELL_COST
                     sell_proceeds += net
                     trades.append(net / initial_cash - 1.0 / max(len(sym_list), 1))
+                for rt in risk_trades:
+                    trades.append(rt)
                 cash += sell_proceeds
 
                 total_eq = cash
@@ -685,6 +964,9 @@ class PortfolioBacktester:
                     shares = (alloc - cost) / price
                     cash  -= alloc
                     holdings[sym] = shares
+                    # Track entry and peak prices for risk overlay
+                    self._holding_entry_prices[sym] = price
+                    self._holding_peak_prices[sym] = price
 
             port_val = cash + sum(
                 holdings[sym] * closes_by_sym[sym][t]
@@ -764,3 +1046,6 @@ class PortfolioBacktester:
             if dd < max_dd:
                 max_dd = dd
         return abs(max_dd) * 100
+
+# ── 后续注册（依赖函数已定义） ──────────────────────────────────────────
+_SCORE_REGISTRY["_regime_adaptive"] = _score_regime_adaptive
