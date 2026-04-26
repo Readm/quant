@@ -183,6 +183,9 @@ function StrategyRow({ s, idx }: { s: Strategy; idx: number }) {
         </td>
         <td className="py-2 px-3 text-center"><DecisionBadge d={s.decision} /></td>
         <td className="py-2 px-3 text-right text-white font-bold">{s.score.toFixed(1)}</td>
+        <td className={`py-2 px-3 text-right font-semibold ${(s.alpha ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>
+          {(s.alpha ?? 0) >= 0 ? '+' : ''}{(s.alpha ?? 0).toFixed(1)}%
+        </td>
         <td className={`py-2 px-3 text-right font-semibold ${s.ann_return >= 0 ? 'text-green-400' : 'text-red-400'}`}>
           {s.ann_return >= 0 ? '+' : ''}{s.ann_return.toFixed(1)}%
         </td>
@@ -193,7 +196,7 @@ function StrategyRow({ s, idx }: { s: Strategy; idx: number }) {
       </tr>
       {open && (
         <tr className="bg-slate-900/50">
-          <td colSpan={9} className="px-4 py-3">
+          <td colSpan={10} className="px-4 py-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
               <div>
                 <div className="text-slate-400 mb-1 font-medium">参数</div>
@@ -221,7 +224,7 @@ function StrategyRow({ s, idx }: { s: Strategy; idx: number }) {
   )
 }
 
-type SortKey = 'score' | 'ann_return' | 'sharpe' | 'max_drawdown' | 'total_trades' | 'name' | 'type' | 'decision'
+type SortKey = 'score' | 'alpha' | 'ann_return' | 'sharpe' | 'max_drawdown' | 'total_trades' | 'name' | 'type' | 'decision'
 type SortDir = 'asc' | 'desc'
 
 function StrategyTable({ strategies }: { strategies: Strategy[] }) {
@@ -261,6 +264,7 @@ function StrategyTable({ strategies }: { strategies: Strategy[] }) {
             <Th label="类型"   k="type" align="center" />
             <Th label="决策"   k="decision" align="center" />
             <Th label="综合分" k="score" />
+            <Th label="Alpha"  k="alpha" />
             <Th label="年化"   k="ann_return" />
             <Th label="夏普"   k="sharpe" />
             <Th label="回撤"   k="max_drawdown" />
