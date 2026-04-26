@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-26 15:00 UTC
+## Last Verification: 2026-04-26 15:30 UTC
 
 ---
 
@@ -24,11 +24,13 @@
 - [x] 无静默异常捕获 / LLM降级
 - [x] 修 IterationView 静默 loading bug：id 不匹配时显示错误提示而非永远"加载中..."
 - [x] gen_architecture.py 边排序稳定：JSON 输出按 (source, target) 排序
+- [x] DevOps SOP 修正：V1 改用 smoke_test.py，git add 改为按范围提交
 
 ---
 
 ## 检查历史
 
+2026-04-26 15:30 | Hermes | PASS | SOP 漏洞修复：DevOps 验证改用 smoke_test.py + 范围提交
 2026-04-26 15:00 | Hermes | PASS | gen_architecture.py 边排序稳定 + IterationView bug 修复
 2026-04-26 14:00 | Hermes | PASS | 修 IterationView 静默 loading bug：id 不匹配时不报错无限loading
 2026-04-26 08:30 | Hermes | PASS | 系统架构 Tab + 数据迁移

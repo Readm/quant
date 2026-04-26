@@ -34,30 +34,19 @@
 依次运行，失败即停：
 
 ```bash
-# V1 — Python import 完整性
-cd ~/hermes/quant && python3 -c "
-from experts.orchestrator import Orchestrator
-from experts.specialists.factor_combo_expert import FactorComboExpert
-from backtest.engine import PortfolioBacktester
-from experts.modules.llm_proxy import llm_analyze
-from factors.signals import FACTOR_TABLE
-from experts.evaluator import Evaluator
-print('✅ Python imports OK')
-"
+# V1 — 冒烟测试（含 Python import、管道验证、TS 编译、数据验证）
+cd ~/hermes/quant && python3 scripts/smoke_test.py
 
-# V2 — 冒烟测试
-python3 scripts/smoke_test.py
-
-# V3 — Dashboard 数据验证
+# V2 — Dashboard 数据验证
 python3 scripts/validate_dashboard.py
 
-# V4 — TypeScript 编译
+# V3 — TypeScript 编译
 cd dashboard && npx tsc --noEmit
 
-# V5 — Vite 构建
+# V4 — Vite 构建
 node ./node_modules/vite/bin/vite.js build
 
-# V6 — 架构图更新
+# V5 — 架构图更新
 cd ~/hermes/quant && python3 scripts/gen_architecture.py
 ```
 
@@ -83,14 +72,23 @@ V1-V6 全部通过后，检查 CHECKLIST.md：
 □ 检查历史已追加一行
 ```
 
-**全部满足 → 直接 commit**，不需要用户确认：
+**全部满足 → 直接 commit**，但只提交计划内的文件，不提交无关变更：
 
 ```bash
 cd ~/hermes/quant
-git add -A
+
+# 按 change_plan 指定范围 add
+# 原则: 不 git add -A，只 add 计划内和必要文档
+git add scripts/gen_architecture.py          # 改动的代码文件
+git add CHECKLIST.md                          # 审计日志
+git add .hermes/plans/                        # 当次流水线产物
+git add dashboard/src/data/architecture/      # 架构图输出
+
+# 确认无意外文件
+git status
+
 git commit -m "变更描述"
-echo "✅ DevOps 流水线完成，变更已提交"
-git log --oneline -1
+echo "✅ DevOps 流水线完成，变更已提交: $(git log --oneline -1)"
 ```
 
 **有任何一项不满足 → 打印失败原因，停止**：
