@@ -1,4 +1,5 @@
-import { ListOrdered, TrendingUp, TrendingDown, Zap, Shield, RefreshCw } from 'lucide-react'
+import { ListOrdered, TrendingUp, TrendingDown, Zap, Shield } from 'lucide-react'
+import MermaidDiagram from '../components/MermaidDiagram'
 
 const strategies = [
   {
@@ -22,15 +23,6 @@ const strategies = [
       { name: '成交量异常', key: 'vol_surge',   params: { vol_ma: 20, threshold: 2.0 },   desc: '成交量突增threshold倍于均值' },
     ],
   },
-]
-
-const evolutionSteps = [
-  { phase: 'Phase 1', title: '候选生成',    desc: 'Trend + MR 各生成候选，加入随机探索',    color: '#fbbf24' },
-  { phase: 'Phase 2', title: 'Expert2 评估', desc: '年化/夏普/回撤/胜率多维打分，淘汰不合格', color: '#f59e0b' },
-  { phase: 'Phase 3', title: 'E3A/B 辩论',   desc: '趋势 vs 均值回归对抗辩论，E4裁判',        color: '#6366f1' },
-  { phase: 'Phase 4', title: '组合优化',     desc: '相关性惩罚 + 风险校准 + 权重分配',        color: '#4ade80' },
-  { phase: 'Phase 5', title: 'Qlib 回测',    desc: 'quant 信号 → Qlib SimulatorExecutor 验证', color: '#22d3ee' },
-  { phase: 'Phase 6', title: 'Holdout 验证', desc: '最后30天 Paper Trade，确认偏差',          color: '#a78bfa' },
 ]
 
 export default function StrategyView() {
@@ -77,32 +69,11 @@ export default function StrategyView() {
         </div>
       ))}
 
-      {/* Pipeline */}
-      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-          <RefreshCw size={15} className="text-indigo-400" />
-          quant → Qlib 融合流水线
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-          {evolutionSteps.map((step, i) => (
-            <div key={step.phase} className="relative">
-              <div
-                className="rounded-lg p-3 text-center border"
-                style={{ backgroundColor: step.color + '11', borderColor: step.color + '33' }}
-              >
-                <div className="text-xs font-mono mb-1" style={{ color: step.color }}>{step.phase}</div>
-                <div className="text-xs font-medium text-white mb-1">{step.title}</div>
-                <div className="text-xs text-slate-500 leading-tight">{step.desc}</div>
-              </div>
-              {i < evolutionSteps.length - 1 && (
-                <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10">
-                  <div className="w-2 h-2 rounded-full bg-slate-600" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Strategy iteration flow diagram */}
+      <MermaidDiagram fileKey="strategy/iteration_flow" title="策略迭代流程" />
+
+      {/* Scoring standards diagram */}
+      <MermaidDiagram fileKey="strategy/scoring_standards" title="评分标准" />
 
       {/* Key stats */}
       <div className="grid grid-cols-3 gap-4">

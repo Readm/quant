@@ -1,43 +1,47 @@
-# 变更计划 — gen_architecture 边排序稳定
+# 变更计划 — Dashboard 策略迭代图注入
 
 ## 需求
-修 gen_architecture.py 每次运行时边顺序不固定，导致 deps.json 产生噪音 diff。
+创建策略工程师维护的迭代流程图和评分标准图，Dashboard 加载渲染。
 
 ## 影响范围
-- 文件: `scripts/gen_architecture.py`
-- 风险: isolated（单文件、不改数据、不改逻辑）
-- 涉及角色: DevOps（改脚本）→ 代码质量工程师（审）→ DevOps（自提）
+- 新建: `dashboard/src/data/strategy/iteration_flow.mmd`
+- 新建: `dashboard/src/data/strategy/scoring_standards.mmd`
+- 新建: `dashboard/src/components/MermaidDiagram.tsx`
+- 修改: `dashboard/src/views/StrategyView.tsx`
+- 修改: `dashboard/package.json`
+- 风险: data_format（新增数据文件 + 组件 + View + 依赖）
+- 涉及角色: 策略工程师（图内容）→ 前端工程师（渲染）→ 代码质量工程师（审）→ DevOps（提交）
 
 ## 修改内容
-在 gen_architecture.py 的边序列化处加 `sorted()`，按 (source, target) 排序。
 
-当前代码（约 line 120-130）:
-```python
-edges = []
-for src, tgts in deps.items():
-    for tgt in tgts:
-        edges.append({"source": src, "target": tgt})
-```
+### Task 1 — 策略工程师：创建 Mermaid 图
+创建 `iteration_flow.mmd` 和 `scoring_standards.mmd`
 
-改为:
-```python
-edges = sorted(
-    [{"source": src, "target": tgt}
-     for src, tgts in deps.items()
-     for tgt in tgts],
-    key=lambda e: (e["source"], e["target"])
-)
-```
+iteration_flow.mmd 内容（从 orchestrator.py v5.0 提取）:
+- 10 步: 候选生成 → 组合回测 → 评估评分 → 冠军保留 → LLM评审 → 风险评估 → 组合优化 → Paper Trade验证 → 元监控 → 元专家规划 → 回到候选生成
+- 每步标注关键参数和产出
 
-## 验证方式
-1. 跑两次 gen_architecture.py，确认 deps.json 的边顺序一致
-2. smoke_test.py
-3. 确认 deps.json diff 干净
+scoring_standards.mmd 内容（从 evaluator.py v5.x 提取）:
+- 评分公式: Sortino 22% + Calmar 18% + IR 18% + DD 18% + Alpha缩放 24%
+- 硬过滤阈值: 年化>-2%, 夏普>0.05, 交易>=1, 回撤<25%
+- PBO门控: 0.50硬拒, 0.30折扣
+- 决策阈值: ACCEPT>=45, CONDITIONAL>=25, <25 REJECT
+- 多样性/交易质量奖励
 
-## 分派
-- DevOps: 改代码
-- 代码质量工程师: 审查改动
-- DevOps: 自提
+### Task 2 — 前端工程师：渲染 Mermaid 图
+1. `npm install mermaid` 到 dashboard/
+2. 新建 `MermaidDiagram.tsx` 组件 — 接收 .mmd 文件路径（用 `import.meta.glob` 加载），渲染 Mermaid 图
+3. 修改 StrategyView.tsx:
+   - 保留策略模板列表区
+   - 替换"Pipeline"区为渲染的 iteration_flow.mmd
+   - 在下方新增区渲染 scoring_standards.mmd
 
 ## 依赖
-无（单文件，无人依赖）
+- Task 1 → Task 2 无硬依赖（文件路径确定后两者可并行）
+- Task 1 + Task 2 → Code Quality 审查
+
+## 分派
+- 策略工程师: Task 1
+- 前端工程师: Task 2
+- 代码质量工程师: 审查全部改动
+- DevOps: V1-V6 → commit

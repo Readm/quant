@@ -1,23 +1,30 @@
-# 需求解析 — 修复 IterationView 静默 loading bug
+# 需求解析 — Dashboard 策略迭代图注入
 
 ## Purpose
-修复 IterationView.tsx 中当 index.json 的 id 与迭代数据文件名不匹配时，页面永远显示"加载中..."且无错误提示的问题。
+创建策略工程师维护的 iteration_flow.mmd 和 scoring_standards.mmd，并让 Dashboard 的 StrategyView 加载渲染这两张图，取代当前硬编码的 6 阶段文字描述。
 
 ## Scope
-- 修改文件: `dashboard/src/views/IterationView.tsx`
-- 只改前端，不改后端
-- 不改数据格式
+- 新建文件:
+  - `dashboard/src/data/strategy/iteration_flow.mmd`
+  - `dashboard/src/data/strategy/scoring_standards.mmd`
+  - `dashboard/src/components/MermaidDiagram.tsx`
+- 修改文件:
+  - `dashboard/src/views/StrategyView.tsx`
+  - `dashboard/package.json`（新增 mermaid 依赖）
+  - `dashboard/package-lock.json`（自动更新）
 
 ## Out of scope
-- 后端数据格式变更
-- 其他 Dashboard 视图
-- index.json 的内容修改
+- 不改后端 Python 代码
+- 不改 ArchitectureView（系统架构图不走 Mermaid）
+- 不改其他 View
 
 ## Risk classification
-isolated — 仅前端单层修改，不涉及数据格式变更
+data_format — 新增数据文件 (mmd) + 新增组件 + 修改 View + 增依赖，跨前端组件层，但所有改动在 dashboard/ 内
 
 ## Acceptance criteria
-1. 当 index.json 的 id 匹配失败时，页面显示错误提示（不是永远 loading）
-2. 正常加载路径不受影响
-3. TypeScript 编译通过
-4. Vite build 通过
+1. iteration_flow.mmd 准确反映 orchestrator.py v5.0 的 10 步迭代流程
+2. scoring_standards.mmd 准确反映 evaluator.py v5.x 的评分公式和阈值
+3. StrategyView 在"策略迭代流程"区域渲染 Mermaid 图
+4. TypeScript 编译通过
+5. Vite build 通过
+6. validate_dashboard 通过
