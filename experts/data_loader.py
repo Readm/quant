@@ -5,11 +5,28 @@ data_loader.py — 数据加载与指标预计算层
 import json, re, urllib.request
 from pathlib import Path
 
-from backtest.local_data import load_multiple
+from backtest.local_data import load_multiple, _tushare_symbol_to_path
 from backtest.indicators import compute_indicators
 from experts.evaluator import compute_benchmark_returns
 
-_TENCENT_MAP = {'SPY': 'sh000300', 'BTCUSDT': 'btcusdt', 'ETHUSDT': 'ethusdt'}
+# ── 腾讯API映射 ──────────────────────────────
+_TENCENT_MAP = dict()  # 全部走本地tushare数据，不移除
+
+# ── 沪深300基准路径 ──────────────────────────
+_CSI300_PATH = Path(__file__).parent.parent / "data" / "tushare" / "index_daily" / "000300.SH.csv"
+
+
+def discover_astock_universe() -> list:
+    """扫描 data/tushare/daily/ 发现全部 A 股代码，返回格式 ['000001.SZ', ...]"""
+    daily_dir = Path(__file__).parent.parent / "data" / "tushare" / "daily"
+    stocks = []
+    if daily_dir.exists():
+        for f in sorted(daily_dir.glob("*.csv")):
+            sym = f.stem  # 000001.SZ
+            if sym and len(sym) > 2:
+                stocks.append(sym)
+    print(f"[A股全量] 发现 {len(stocks)} 只股票")
+    return stocks
 
 
 def fetch_tencent(sym: str, n: int = 300) -> dict | None:
@@ -61,10 +78,9 @@ def compute_benchmark_for_symbols(
                 closes = sd.get("data", {}).get("closes", [])
                 return compute_benchmark_returns(closes)
 
-    # 优先用沪深300指数 CSV
+    # 沪深300指数 CSV
     import pandas as _pd
-    idx_path = (Path(__file__).parent.parent / "data" / "tushare"
-                / "index_daily" / "000300.SH.csv")
+    idx_path = _CSI300_PATH
     if idx_path.exists():
         df = _pd.read_csv(idx_path, dtype={"trade_date": str}).sort_values("trade_date")
         if symbols_data:
@@ -101,9 +117,15 @@ def _load_one(sym: str, n_days: int) -> tuple:
 
 def load_symbols_data(symbols: list, n_days: int) -> list:
     """加载多标的 OHLCV，返回 orchestrator 所需的 list[dict] 格式。
+    传入 symbols=["astock"] 时自动展开为全部 A 股。
     并行加载（ThreadPoolExecutor），tushare 指标结果缓存到磁盘。
     """
     import concurrent.futures
+    
+    # "astock" 特殊值 → 展开为全 A 股
+    if len(symbols) == 1 and symbols[0] == "astock":
+        symbols = discover_astock_universe()
+    
     result = {}
     workers = min(32, len(symbols))
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
@@ -115,8 +137,7 @@ def load_symbols_data(symbols: list, n_days: int) -> list:
                 closes = d['data']['closes']
                 dates  = d['data'].get('dates', [])
                 span   = f"{dates[0]}→{dates[-1]}" if dates else "?"
-                src    = "腾讯API" if sym in _TENCENT_MAP else "本地缓存"
-                print(f"[数据] {sym}: {len(closes)} bars ({src}, {span})")
+                print(f"[数据] {sym}: {len(closes)} bars ({span})")
             else:
                 print(f"[数据] {sym}: ❌ 数据加载失败")
 

@@ -1,45 +1,29 @@
-# 变更计划 — Iter11: 修复PBO+OOS衰减+多样性（回应评价师）
+# 变更计划 — Switch to A-share only
 
 ## 需求
-根据 Iter10 量化策略评价师审查结论，修复三个问题：
-1. PBO 评分始终为 0，门控从未生效（死代码）
-2. OOS 衰减最高 -14.9%，但评分中不惩罚衰减
-3. TrendExpert 连续 20 轮垄断，多样性指数 0.00
+1. 系统只关注 A 股，移除所有非 A 股标的
+2. 默认加载全部 A 股（~5,495只），每个策略做全市场扫描 + 选股组合
+3. 修正之前 SPY 被错误映射到沪深300的问题
 
 ## 风险等级
-isolated（只改 evaluator.py 的评分逻辑，不改数据链）
+data_format（数据加载方式变化）
 
-## 问题根因分析
+## 修改项
 
-### PBO 缺失
-`_pbo_gate()` 传入 `report.daily_returns` 给期望收盘价的 `compute_pbo`，
-且 signal_fn 使用 `lambda c, **kw: [0]*len(c)` 恒为 0 的信号。
-同时 `compute_pbo` 要求的 PBO 语义（越高越稳健）与 `_pbo_gate` 的阈值（>=0.6 硬拒）方向相反。
-结果是这个门控从未生效过。
+### 1. `data_loader.py` — 发现全部 A 股标的
+新增函数 `discover_astock_universe()` 扫描 `data/tushare/daily/` 下所有 `.csv` 文件，
+返回完整股票代码列表（约 5,495 只）。
+移除 `_TENCENT_MAP` 中的 SPY/BTCUSDT/ETHUSDT 映射。
 
-### OOS 衰减
-`oos_annualized_return` 已在 EvalResult 中，但完全未参与评分。
+### 2. `data_loader.py` — 默认加载全 A 股
+`load_symbols_data` 新增特殊模式：`symbols=["astock"]` 时加载全部 A 股。
 
-### 多样性
-Iter10 把多样性奖励上限从 8.0 降到 6.0，使 TrendExpert 更易垄断。
-应反向操作。
+### 3. `orchestrator.py` — 默认参数改为 A 股
+`__main__` 的 `--symbols` 默认值从 `[AAPL, NVDA, BTCUSDT, ETHUSDT]` 改为全部 A 股。
+`n_days` 从 500 改为 800（A 股数据有 2,001 天可用）。
 
-## 修改内容
-
-### 1. `_pbo_gate` 重写为收益序列洗牌法（MCS test）
-- 不需要参数网格，不需要信号函数
-- 洗牌策略日收益序列 300 次，每次计算 Sharpe
-- PBO = 洗牌后 Sharpe 超过实际 Sharpe 的概率
-- 阈值：>0.30 硬拒（超过 30% 的随机洗牌能打败实际策略→过拟合）
-- 这比参数网格法更简单、更鲁棒（对参数不敏感）
-
-### 2. 加入 OOS 衰减惩罚
-- 从 EvalResult 读取 `oos_annualized_return`
-- 计算衰减率: `decay = (in_sample_ann - oos_ann) / abs(oos_ann)` 
-- 衰减 > 50% → composite ×0.80
-- 衰减 > 100%（样本外亏损）→ composite ×0.60
-
-### 3. 多样性奖励调回+加强
-- 上限从 6.0 恢复到 8.0
-- 增加一个额外的"反垄断"加分：如果当前轮 top-3 全部是同一 type（trend），
-  给其他 type 的候选 +3 加分（强制干预）
+## 注意事项
+- 5,495 只股票 × 800 天的 OHLCV 数据量约 200MB
+- ProcessPoolExecutor 通过 `_init_backtest_worker` 序列化到 worker，加载一次
+- 每轮回测对 55 个候选 × 5000 只股票做因子评分，选 Top-4 持仓
+- 评分权重、PBO 洗牌、反垄断等逻辑不变

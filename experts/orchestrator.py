@@ -993,11 +993,16 @@ class RoundReportFake:
 if __name__ == "__main__":
     import argparse
     p = argparse.ArgumentParser()
-    p.add_argument("--symbols",nargs="+",default=["AAPL","NVDA","BTCUSDT","ETHUSDT"])
-    p.add_argument("--days",type=int,default=500)
+    p.add_argument("--symbols",nargs="+",default=["astock"])
+    p.add_argument("--days",type=int,default=800)
     p.add_argument("--rounds",type=int,default=3)
     p.add_argument("--seed",type=int,default=2026)
     p.add_argument("--top-n",type=int,default=4)
     args = p.parse_args()
+    
+    if args.symbols == ["astock"]:
+        print(f"[默认] 使用全部 A 股 (~5000只), {args.days} 天数据, {args.rounds} 轮")
+    else:
+        print(f"[默认] 标的是 {args.symbols}, {args.days} 天数据, {args.rounds} 轮")
     print("🔵 因子组合量化系统 v5.0 启动")
     Orchestrator(args.symbols,args.days,args.seed,args.rounds,args.top_n).run()
