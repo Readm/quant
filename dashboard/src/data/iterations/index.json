@@ -1,19 +1,19 @@
 [
   {
-    "id": "因子组合v5_20260426_0133",
-    "name": "因子组合v5_20260426_0133",
+    "id": "iter_0027",
+    "name": "Iter1:38因子补全",
     "symbols": [
       "SPY"
     ],
-    "run_at": "2026-04-26 03:35",
-    "total_rounds": 5,
+    "run_at": "04-26 11:48",
+    "total_rounds": 8,
     "days": 500,
-    "best_score": 75.3,
-    "converged": false
+    "best_score": 77.5,
+    "converged": true
   },
   {
-    "id": "因子组合v5_20260426_0315",
-    "name": "因子组合v5_20260426_0315",
+    "id": "iter_0315",
+    "name": "Iter1-20轮5标的",
     "symbols": [
       "SPY",
       "QQQ",
@@ -21,25 +21,160 @@
       "NVDA",
       "BTCUSDT"
     ],
-    "run_at": "2026-04-26 03:35",
+    "run_at": "04-26 11:48",
     "total_rounds": 20,
     "days": 500,
     "best_score": 76.2,
     "converged": false
   },
   {
-    "id": "因子组合v5_20260426_0333",
-    "name": "因子组合v5_20260426_0333",
+    "id": "iter_0333",
+    "name": "Iter2:Alpha权重+PBO",
     "symbols": [
       "SPY",
       "QQQ",
       "AAPL",
       "NVDA"
     ],
-    "run_at": "2026-04-26 03:35",
+    "run_at": "04-26 11:48",
     "total_rounds": 20,
     "days": 500,
     "best_score": 79.0,
+    "converged": false
+  },
+  {
+    "id": "iter_0358",
+    "name": "Iter2补-38模板重跑",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 79.0,
+    "converged": false
+  },
+  {
+    "id": "iter_0409",
+    "name": "Iter3:评估权重重构",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 66.6,
+    "converged": false
+  },
+  {
+    "id": "iter_0426",
+    "name": "Iter4:Alpha缩放修复",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 58.9,
+    "converged": false
+  },
+  {
+    "id": "iter_0436",
+    "name": "Iter5:多样性奖励",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 74.6,
+    "converged": false
+  },
+  {
+    "id": "iter_0502",
+    "name": "Iter6:放宽交易门槛",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 79.0,
+    "converged": false
+  },
+  {
+    "id": "iter_0512",
+    "name": "Iter7:vol_inverse权重",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 77.1,
+    "converged": false
+  },
+  {
+    "id": "iter_0524",
+    "name": "Iter8:交易质量奖励",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 74.8,
+    "converged": false
+  },
+  {
+    "id": "iter_0534",
+    "name": "Iter9:BTC_ETH混搭",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "AAPL",
+      "NVDA"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 82.9,
+    "converged": false
+  },
+  {
+    "id": "iter_0544",
+    "name": "Iter9-混搭标的",
+    "symbols": [
+      "SPY",
+      "QQQ",
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "run_at": "04-26 11:48",
+    "total_rounds": 20,
+    "days": 500,
+    "best_score": 81.5,
     "converged": false
   }
 ]
