@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Layers, TrendingUp, TrendingDown, Zap, Filter } from 'lucide-react'
+import { Layers, TrendingUp, TrendingDown, Filter } from 'lucide-react'
 
 // ── 完整策略模板定义 ─────────────────────────────────────────────────────────
 interface Template {
@@ -545,60 +545,6 @@ export default function FactorView() {
         </div>
       )}
 
-      {/* Why strategies underperform */}
-      <div className="bg-slate-800 rounded-xl p-6 border border-amber-500/30 space-y-4">
-        <div className="flex items-center gap-2">
-          <Zap size={18} className="text-amber-400" />
-          <h3 className="text-white font-semibold">为什么策略跑不赢大盘？</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              title: '① 标的宇宙太小（最核心原因）',
-              color: '#f87171',
-              desc: '截面因子模型需要 20–500 只股票排名才有统计意义。目前只有4只标的，排名几乎等于随机二选一，alpha被噪声淹没。',
-            },
-            {
-              title: '② 交易成本侵蚀收益',
-              color: '#fbbf24',
-              desc: '单次换仓成本 ≈ 0.26%（买+卖），5天调仓一年约50次 = 年化13%成本，超过大多数策略的alpha。建议改为20–60天调仓。',
-            },
-            {
-              title: '③ 基准选股有误',
-              color: '#f87171',
-              desc: '当前以第一个标的（如茅台）为基准，计算IR分。应改用沪深300（SH000300）或同期等权买入标的作为基准。',
-            },
-            {
-              title: '④ 信号执行有偏差',
-              color: '#fbbf24',
-              desc: '用收盘价生成信号、同时以收盘价成交——A股T+1规则下，实际只能次日执行。存在轻微前视偏差。',
-            },
-            {
-              title: '⑤ 因子设计未针对A股',
-              color: '#94a3b8',
-              desc: '许多因子（RSI/MACD/Bollinger）为欧美市场设计，A股特有的涨跌停、T+1、散户主导的行为逻辑未完全体现。新增的A股专属因子（烂板/涨停动能/主力资金流）是改进方向。',
-            },
-            {
-              title: '⑥ 牛市中买持难以被战胜',
-              color: '#94a3b8',
-              desc: '2020–2021年的单边牛市环境下，简单持有大盘就能年化30%+。任何频繁换仓的战术策略在强趋势市中几乎必败。',
-            },
-          ].map(r => (
-            <div key={r.title} className="bg-slate-900 rounded-lg p-4">
-              <div className="text-sm font-medium mb-2" style={{ color: r.color }}>{r.title}</div>
-              <p className="text-xs text-slate-400 leading-relaxed">{r.desc}</p>
-            </div>
-          ))}
-        </div>
-        <div className="bg-slate-900 rounded-lg p-4 border border-green-500/20">
-          <div className="text-sm font-medium text-green-400 mb-2">💡 优先级最高的3个改进</div>
-          <ol className="text-xs text-slate-300 space-y-1 list-decimal list-inside">
-            <li><strong>扩大标的宇宙</strong>：从4只增加到 20–50 只A股（沪深300成分股），让截面排名真正有效</li>
-            <li><strong>降低调仓频率</strong>：改为20天或60天调仓，减少交易成本侵蚀</li>
-            <li><strong>修正基准</strong>：用SH000300（沪深300指数）日收益率作为IR基准，而非个股</li>
-          </ol>
-        </div>
-      </div>
     </div>
   )
 }

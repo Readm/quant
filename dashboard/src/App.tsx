@@ -1,13 +1,8 @@
 import { useState, Component, ReactNode } from 'react'
-import { BarChart3, Database, Brain, Layers, ListOrdered, Circle, Activity, GitBranch, GitMerge } from 'lucide-react'
-import DataSourceView from './views/DataSourceView'
-import BacktestView from './views/BacktestView'
-import ExpertView from './views/ExpertView'
+import { BarChart3, Layers, ListOrdered, GitBranch, Circle } from 'lucide-react'
 import FactorView from './views/FactorView'
 import StrategyView from './views/StrategyView'
-import SystemStatusView from './views/SystemStatusView'
 import IterationView from './views/IterationView'
-import ArchitectureView from './views/ArchitectureView'
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null }
@@ -25,28 +20,18 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
   }
 }
 
-type ViewKey = 'status' | 'data' | 'backtest' | 'expert' | 'factor' | 'strategy' | 'iteration' | 'architecture'
+type ViewKey = 'iteration' | 'factor' | 'strategy'
 
 const NAV = [
   { key: 'iteration' as ViewKey, label: '迭代过程', Icon: GitBranch,   color: '#a855f7' },
-  { key: 'architecture' as ViewKey, label: '系统架构', Icon: GitMerge,   color: '#f59e0b' },
-  { key: 'status'    as ViewKey, label: '系统状态', Icon: Activity,    color: '#94a3b8' },
-  { key: 'data'      as ViewKey, label: '数据来源', Icon: Database,    color: '#22d3ee' },
-  { key: 'backtest'  as ViewKey, label: '回测框架', Icon: BarChart3,   color: '#6366f1' },
-  { key: 'expert'    as ViewKey, label: '专家框架', Icon: Brain,       color: '#a78bfa' },
   { key: 'factor'    as ViewKey, label: '因子库',   Icon: Layers,      color: '#4ade80' },
   { key: 'strategy'  as ViewKey, label: '策略库',   Icon: ListOrdered, color: '#fbbf24' },
 ]
 
 const VIEWS: Record<ViewKey, React.ComponentType> = {
-  status:    SystemStatusView,
-  data:      DataSourceView,
-  backtest:  BacktestView,
-  expert:    ExpertView,
+  iteration: IterationView,
   factor:    FactorView,
   strategy:  StrategyView,
-  iteration: IterationView,
-  architecture: ArchitectureView,
 }
 
 export default function App() {

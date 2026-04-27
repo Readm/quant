@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-27 14:30 UTC
+## Last Verification: 2026-04-27 19:20 UTC
 
 ---
 
@@ -23,6 +23,15 @@
 - [x] 删除 `src/data/strategy/*.mmd`（SVG已预渲染至 `public/data/strategy/`）
 - [x] 删除 `src/data/architecture/deps.mmd`（仅保留 `deps.json`）
 - [x] git push 触发 Actions 重新部署
+
+### 4. UI精简 + Bug修复
+- [x] 按用户要求移除5个页签（系统架构/系统状态/数据来源/回测框架/专家框架）
+- [x] FactorView: 移除"为什么策略跑不赢大盘"区域
+- [x] StrategyView: 移除策略模板卡片，保留迭代图和评分标准
+- [x] IterationView: 修复thread列表加载后未自动选中首项导致卡"加载中"
+- [x] tsc --noEmit 通过
+- [x] Vite build 通过（2.73s）
+- [x] 新server验证：localhost:9000 可访问
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |

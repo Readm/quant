@@ -582,7 +582,11 @@ export default function IterationView() {
   useEffect(() => {
     fetch('./data/iterations/index.json')
       .then(r => r.json())
-      .then(data => { setThreads(data); setThreadsLoading(false) })
+      .then(data => {
+        setThreads(data)
+        setThreadsLoading(false)
+        if (data.length > 0 && !activeThreadId) setActiveThreadId(data[0].id)
+      })
       .catch(() => { setThreads([]); setThreadsLoading(false) })
   }, [])
 
