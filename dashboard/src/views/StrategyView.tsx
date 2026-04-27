@@ -1,5 +1,4 @@
-import { ListOrdered, TrendingUp, TrendingDown, Zap, Shield } from 'lucide-react'
-import MermaidDiagram from '../components/MermaidDiagram'
+import { ListOrdered, TrendingUp, TrendingDown, Zap, Shield, Presentation, Scale } from 'lucide-react'
 
 const strategies = [
   {
@@ -70,10 +69,22 @@ export default function StrategyView() {
       ))}
 
       {/* Strategy iteration flow diagram */}
-      <MermaidDiagram fileKey="strategy/iteration_flow" title="策略迭代流程" />
+      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+        <h3 className="text-white font-semibold mb-4 text-sm flex items-center gap-2">
+          <Presentation size={15} className="text-indigo-400" />
+          策略迭代流程
+        </h3>
+        <img src="./data/strategy/iteration_flow.svg" alt="策略迭代流程" className="w-full" />
+      </div>
 
       {/* Scoring standards diagram */}
-      <MermaidDiagram fileKey="strategy/scoring_standards" title="评分标准" />
+      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+        <h3 className="text-white font-semibold mb-4 text-sm flex items-center gap-2">
+          <Scale size={15} className="text-indigo-400" />
+          评分标准
+        </h3>
+        <img src="./data/strategy/scoring_standards.svg" alt="评分标准" className="w-full" />
+      </div>
 
       {/* Key stats */}
       <div className="grid grid-cols-3 gap-4">

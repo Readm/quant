@@ -64,17 +64,6 @@ interface ThreadMeta {
   best_score: number; converged: boolean
 }
 
-// ── Lazy-load individual iteration files (only load when selected) ──
-const ITERATION_LOADERS = import.meta.glob('../data/iterations/*.json') as
-  Record<string, () => Promise<{ default: IterationLog }>>
-const INDEX_DATA = (() => {
-  try {
-    const m = import.meta.glob('../data/iterations/index.json', { eager: true }) as any
-    const key = Object.keys(m)[0]
-    return (key ? m[key].default : []) as ThreadMeta[]
-  } catch { return [] as ThreadMeta[] }
-})()
-
 // ── Palette ──────────────────────────────────────────────────────
 const COLORS = ['#6366f1','#22d3ee','#4ade80','#fbbf24','#f87171','#a78bfa','#fb923c','#34d399']
 const TYPE_COLOR: Record<string, string> = { trend: '#6366f1', mean_reversion: '#22d3ee' }
@@ -580,32 +569,46 @@ function ThreadSelector({
 
 // ── Main View ─────────────────────────────────────────────────────
 export default function IterationView() {
-  const threads: ThreadMeta[] = INDEX_DATA.length > 0 ? INDEX_DATA : []
+  const [threads, setThreads] = useState<ThreadMeta[]>([])
+  const [threadsLoading, setThreadsLoading] = useState(true)
 
-  const [activeThreadId, setActiveThreadId] = useState<string>(threads[0]?.id ?? '')
+  const [activeThreadId, setActiveThreadId] = useState<string>('')
   const [activeRound,    setActiveRound]    = useState(1)
   const [log,            setLog]            = useState<IterationLog | null>(null)
   const [loading,        setLoading]        = useState(false)
   const [error,          setError]           = useState<string | null>(null)
 
+  // Fetch index.json on mount
+  useEffect(() => {
+    fetch('./data/iterations/index.json')
+      .then(r => r.json())
+      .then(data => { setThreads(data); setThreadsLoading(false) })
+      .catch(() => { setThreads([]); setThreadsLoading(false) })
+  }, [])
+
   // When thread changes, reset to round 1
   function selectThread(id: string) { setActiveThreadId(id); setActiveRound(1) }
 
-  // Lazy-load iteration JSON when activeThreadId changes
+  // Fetch iteration JSON when activeThreadId changes
   useEffect(() => {
     if (!activeThreadId) return
-    const key = Object.keys(ITERATION_LOADERS).find(k =>
-      k.includes(activeThreadId) || k.endsWith(`${activeThreadId}.json`)
-    )
-    if (!key) {
-      setError(`找不到迭代数据【${activeThreadId}】：index.json 中的 id 与迭代文件名不匹配`)
-      return
-    }
     setLoading(true)
     setLog(null)
     setError(null)
-    ITERATION_LOADERS[key]().then(m => { setLog(m.default); setLoading(false); setError(null) })
+    fetch(`./data/iterations/${activeThreadId}.json`)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then(data => { setLog(data as IterationLog); setLoading(false) })
+      .catch(err => { setError(`加载迭代数据失败: ${err.message}`); setLoading(false) })
   }, [activeThreadId])
+
+  if (threadsLoading) return (
+    <div className="flex items-center gap-2 text-slate-400 p-8">
+      <RefreshCw size={18} className="animate-spin"/>加载中...
+    </div>
+  )
 
   if (threads.length === 0) return (
     <div className="p-8 text-red-400 space-y-2">
@@ -625,7 +628,7 @@ export default function IterationView() {
       </div>
       <div className="text-sm text-red-300/80">{error}</div>
       <div className="text-xs text-slate-500 mt-4">
-        检查 <code className="bg-slate-800 px-1 rounded">dashboard/src/data/iterations/index.json</code>{' '}
+        检查 <code className="bg-slate-800 px-1 rounded">public/data/iterations/index.json</code>{' '}
         中的 id 是否与文件名匹配
       </div>
     </div>
