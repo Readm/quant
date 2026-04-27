@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-27 10:40 UTC
+## Last Verification: 2026-04-27 14:30 UTC
 
 ---
 
@@ -18,9 +18,16 @@
 - [x] 迭代数据页正常访问（fetch 运行时加载）
 - [x] 策略流程图正常显示（SVG 静态图片）
 
+### 3. 清理旧版遗留文件
+- [x] 删除 9.2MB `src/data/iteration_log.json`（不再被引用）
+- [x] 删除 `src/data/strategy/*.mmd`（SVG已预渲染至 `public/data/strategy/`）
+- [x] 删除 `src/data/architecture/deps.mmd`（仅保留 `deps.json`）
+- [x] git push 触发 Actions 重新部署
+
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
 |------|--------|:----:|---------|
 | 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |
 | 2026-04-27 00:28 UTC | Hermes | ✅ PASS | 策略逻辑组合空间扩展 v5.0 (Phase 1-5) |
 | 2026-04-27 10:40 UTC | Hermes | ✅ PASS | Dashboard 轻量化: fetch 加载 + SVG 预渲染 |
+| 2026-04-27 14:30 UTC | Hermes | ✅ PASS | 移除旧版遗留文件 (−9.2MB + stale .mmd) |
