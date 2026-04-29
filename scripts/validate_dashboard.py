@@ -3,33 +3,41 @@
 import json, sys
 from pathlib import Path
 
-data_dir = Path(__file__).parent / 'dashboard' / 'src' / 'data' / 'iterations'
-errors = []
+status = True
 
-for f in sorted(data_dir.glob('iter_*.json')):
-    d = json.loads(f.read_text())
-    rounds = d.get('rounds', [])
-    if not rounds:
-        errors.append(f'{f.name}: 无轮次数据')
+for label, data_dir in [
+    ("src/data", Path(__file__).parent.parent / 'dashboard' / 'src' / 'data' / 'iterations'),
+    ("public/data", Path(__file__).parent.parent / 'dashboard' / 'public' / 'data' / 'iterations'),
+]:
+    if not data_dir.exists():
+        print(f"  ⚠️ {label}: {data_dir} 目录不存在")
         continue
-    
-    # 检查每轮是否有 alpha 数据
-    missing_alpha = 0
-    total = 0
-    for r in rounds:
-        for s in r.get('strategies', []):
-            total += 1
-            if s.get('alpha', 0) == 0:
-                missing_alpha += 1
-    
-    zero_pct = missing_alpha / max(total, 1) * 100
-    status = '✅' if zero_pct < 30 else '⚠️' if zero_pct < 60 else '❌'
-    print(f'{status} {f.name}: {len(rounds)}r {total}s alpha_zero={zero_pct:.0f}%')
+    for f in sorted(data_dir.glob('*.json')):
+        if f.name == 'index.json':
+            continue
+        try:
+            d = json.loads(f.read_text())
+        except Exception as e:
+            print(f'❌ {label}/{f.name}: JSON 解析失败 - {e}')
+            status = False
+            continue
+        rounds = d.get('rounds', [])
+        if not rounds:
+            print(f'❌ {label}/{f.name}: 无轮次数据')
+            status = False
+            continue
+        total_strats = sum(len(r.get('strategies',[])) for r in rounds)
+        missing_ec = sum(1 for r in rounds for s in r.get('strategies',[]) if 'equity_curve' not in s)
+        if missing_ec == total_strats:
+            # 旧格式数据，不含 equity_curve 字段 — 兼容通过
+            print(f'⚠️ {label}/{f.name}: 旧格式({total_strats}s, 无equity_curve), {len(rounds)}r')
+        elif missing_ec > 0:
+            print(f'❌ {label}/{f.name}: {missing_ec}/{total_strats} 策略缺少 equity_curve')
+            status = False
+        else:
+            print(f'✅ {label}/{f.name}: {len(rounds)}r {total_strats}s')
 
-if errors:
-    print('\n❌ ERRORS:')
-    for e in errors:
-        print(f'  {e}')
+if not status:
     sys.exit(1)
 else:
     print('\n✅ All dashboard data valid')

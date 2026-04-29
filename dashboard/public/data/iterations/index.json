@@ -1,38 +1,14 @@
 [
   {
-    "id": "因子组合v5.9_20260429_2118",
-    "name": "因子组合v5.9 全A股(修复胜率)",
+    "id": "astock_20260429_2227",
+    "name": "astock",
     "symbols": [
       "astock"
     ],
-    "run_at": "2026-04-29 21:18:59",
-    "total_rounds": 10,
-    "days": 800,
-    "best_score": 90.1,
-    "converged": true
-  },
-  {
-    "id": "因子组合v5.8_20260429_1802",
-    "name": "因子组合v5.8 全A股(Alpha缩放修正)",
-    "symbols": [
-      "astock"
-    ],
-    "run_at": "2026-04-29 18:02",
-    "total_rounds": 13,
-    "days": 800,
-    "best_score": 93.0,
-    "converged": true
-  },
-  {
-    "id": "multi_expert_v4_20260427_0022",
-    "name": "A股策略扩展v5.0",
-    "symbols": [
-      "astock"
-    ],
-    "run_at": "2026-04-27 00:28",
+    "run_at": "2026-04-29T22:27:35.884622",
     "total_rounds": 20,
     "days": 800,
-    "best_score": 92.6,
+    "best_score": 96.6,
     "converged": false
   }
 ]

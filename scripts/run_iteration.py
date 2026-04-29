@@ -46,7 +46,7 @@ def daily_returns_to_equity(daily_returns: list, n_points: int = 80) -> list[dic
     if not daily_returns:
         return []
     equity = 100.0
-    curve = [{"i": 0, "v": round(equity, 2)}]
+    curve = [100.0]
     for r in daily_returns:
         equity *= (1 + r)
         curve.append(round(equity, 2))
@@ -307,6 +307,13 @@ def main():
     print(f"\n✅ Thread [{name}] 已写入 {out_path}")
     print(f"   {len(round_logs)} 轮 · {sum(len(r['strategies']) for r in round_logs)} 个候选策略")
     print(f"   索引已更新: {ITERATIONS_DIR / 'index.json'}")
+    
+    # 同步到 public/data/（生产环境运行时 fetch）
+    import shutil
+    public_dir = Path(__file__).parent.parent / 'dashboard' / 'public' / 'data' / 'iterations'
+    public_dir.mkdir(parents=True, exist_ok=True)
+    for f in ITERATIONS_DIR.glob('*.json'):
+        shutil.copy2(f, public_dir / f.name)
 
 
 if __name__ == "__main__":

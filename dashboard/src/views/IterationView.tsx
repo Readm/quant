@@ -96,7 +96,7 @@ function EquityCurvesChart({ strategies, benchmarkEquity }: {
   benchmarkEquity?: EquityPoint[]
 }) {
   // Show all non-REJECT strategies (ACCEPT + CONDITIONAL = "通过") with equity data
-  const visible = strategies.filter(s => s.decision !== 'REJECT' && s.equity_curve.length > 0)
+  const visible = strategies.filter(s => s.decision !== 'REJECT' && (s.equity_curve || []).length > 0)
   if (visible.length === 0)
     return <div className="text-slate-500 text-sm p-4">本轮无通过策略（全部淘汰）</div>
 
@@ -203,7 +203,7 @@ function StrategyRow({ s, idx }: { s: Strategy; idx: number }) {
               <div>
                 <div className="text-slate-400 mb-1 font-medium">参数</div>
                 <div className="font-mono text-slate-300 bg-slate-800 rounded px-2 py-1.5">
-                  {Object.entries(s.params).map(([k,v]) => `${k}=${v}`).join('  ·  ') || '—'}
+                  {Object.entries(s.params || {}).map(([k,v]) => `${k}=${v}`).join('  ·  ') || '—'}
                 </div>
               </div>
               <div>
