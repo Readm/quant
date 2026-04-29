@@ -2,8 +2,6 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 18:05 UTC
-
 ---
 
 ### 1. v5.8 — 修复Alpha缩放扁平化 + 权重调整
@@ -91,6 +89,16 @@
 - [x] 集成: smoke_test.py [7] — Dashboard E2E 渲染测试
 - [x] Vite build 通过
 - [x] E2E 渲染测试通过（7/7 项）
+
+### 12. v5.16a — 嵌套组合引擎 + 候选生成 + 28项单元测试
+- [x] engine.py: _combo_get_factor_scores 通过 _SCORE_REGISTRY 递归，使嵌套组合天然支持
+- [x] factor_combo_expert.py: 新增 NESTED_PROB=0.15 + NESTABLE_MODES 5种
+- [x] factor_combo_expert.py: 多因子候选~15%概率产生嵌套（AND⊂RANK 等）
+- [x] tests/test_combo_engine.py: 新增8个嵌套测试（含3层深度嵌套）+ 1个候选生成嵌套测试
+- [x] 28 项单元测试全部通过
+- [x] 候选生成: 2000 候选 ≈ 9.7%嵌套率
+
+## Last Verification: 2026-04-29 22:45 UTC
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |

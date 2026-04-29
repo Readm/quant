@@ -5,6 +5,8 @@ test_combo_engine.py — 因子组合引擎单元测试
   1. 候选生成随机性 — 所有 8 种组合模式都被随机到
   2. 候选生成格式 — 每种模式的 template_key / factors 格式正确
   3. 打分行为 — AND/OR/weighted/rank/product/hierarchical/conditional 各场景
+  4. 候选生成嵌套 — 生成器能产生嵌套组合 (AND⊂RANK 等)
+  5. 嵌套组合 — 引擎层递归支持 (AND→RANK, Conditional→AND 等)
 """
 
 import sys, os, random, math
@@ -14,7 +16,7 @@ from backtest.engine import (
     _combo_score_and, _combo_score_or, _combo_score_weighted,
     _combo_score_product, _combo_score_rank,
     _combo_score_hierarchical, _combo_score_conditional,
-    _SCORE_REGISTRY,
+    _SCORE_REGISTRY, compute_factor_score,
 )
 from experts.specialists.factor_combo_expert import FactorComboExpert
 
@@ -329,6 +331,173 @@ def test_nonexistent_factor_key():
     score = _combo_score_and(_CLOSES, _DATA, _INDICATORS, params, 30)
     # Should work with the one valid factor
     assert score > 0, f"AND should skip unknown factors, got {score}"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 测试 4.5: 候选生成嵌套
+# ═══════════════════════════════════════════════════════════════════
+
+def test_nested_candidates_generated():
+    """Verify candidate generator produces nested combos (~10-15% of multi-factor)."""
+    fce = FactorComboExpert(seed=42)
+    cands = fce.generate_candidates(2000)
+    nested = []
+    for c in cands:
+        factors = c.get("params", {}).get("factors", [])
+        has_nested = any(f.get("key", "").startswith("_combo_") for f in factors)
+        if has_nested:
+            nested.append(c)
+    assert len(nested) >= 5, f"Expected at least 5 nested candidates in 2000, got {len(nested)}"
+    # Verify structure: nested candidate has _combo_* factor with its own "factors"
+    sample = nested[0]
+    factors = sample["params"]["factors"]
+    nested_factor = [f for f in factors if f["key"].startswith("_combo_")][0]
+    assert "factors" in nested_factor, f"Nested entry missing sub-factors: {nested_factor}"
+    assert len(nested_factor["factors"]) >= 2, f"Sub-combo needs ≥2 factors, got {len(nested_factor['factors'])}"
+    for sf in nested_factor["factors"]:
+        assert "key" in sf, f"Sub-factor missing key: {sf}"
+        assert not sf["key"].startswith("_combo_"), \
+            f"Sub-factor should not be nested again (single level): {sf['key']}"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 测试 4.6: 嵌套组合
+# ═══════════════════════════════════════════════════════════════════
+
+def test_nested_rank_and():
+    """Nested: RANK( momentum, AND(ma_cross, momentum) ) → all positive."""
+    params = {
+        "factors": [
+            {"key": "momentum", "lookback": 3, "threshold": 0.001},
+            {
+                "key": "_combo_and",
+                "factors": [
+                    {"key": "ma_cross", "fast": 5, "slow": 15},
+                    {"key": "momentum", "lookback": 3, "threshold": 0.001},
+                ]
+            }
+        ]
+    }
+    score = _combo_score_rank(_CLOSES, _DATA, _INDICATORS, params, 30)
+    assert score > 0, f"Nested RANK(AND) should be positive, got {score}"
+    assert -100 <= score <= 100, f"Score out of range [-100, 100]: {score}"
+
+
+def test_nested_rank_and_blocked():
+    """Nested: RANK( momentum, AND(gap_break=0, ma_cross) ) →
+    AND returns 0, RANK still produces a positive score from momentum alone."""
+    params = {
+        "factors": [
+            {"key": "momentum", "lookback": 3, "threshold": 0.001},
+            {
+                "key": "_combo_and",
+                "factors": [
+                    {"key": "gap_break", "min_gap_pct": 99.0, "lookback": 3},
+                    {"key": "ma_cross", "fast": 5, "slow": 15},
+                ]
+            }
+        ]
+    }
+    score = _combo_score_rank(_CLOSES, _DATA, _INDICATORS, params, 30)
+    # AND(0, positive) → 0; RANK(positive, 0) → ~1.0
+    # Score should be positive (momentum alone lifts it), but less than when both fire
+    assert score > 0, f"Should still be positive via momentum alone, got {score}"
+    assert score < 100, f"Score out of range: {score}"
+
+
+def test_nested_conditional_and():
+    """Nested: Conditional containing AND sub-factors.
+    In uptrend data, trend factors should be positive."""
+    params = {
+        "factors": [
+            {
+                "key": "_combo_and",
+                "factors": [
+                    {"key": "ma_cross", "fast": 5, "slow": 15},
+                    {"key": "momentum", "lookback": 3, "threshold": 0.001},
+                ],
+                "weight_trend": 0.7, "weight_sideways": 0.3,
+            },
+            {"key": "momentum", "lookback": 3, "threshold": 0.001,
+             "weight_trend": 0.3, "weight_sideways": 0.7},
+        ],
+        "condition": {
+            "key": "adx_trend", "adx_thr": 25,
+            "trend_threshold": 25,
+        }
+    }
+    score = _combo_score_conditional(_CLOSES, _DATA, _INDICATORS, params, 30)
+    # Both factors are trend-following → should be positive regardless of regime
+    assert score > 0, f"Conditional(AND) with trend factors should be positive, got {score}"
+
+
+def test_nested_or_inside_weighted():
+    """Nested: Weighted( OR(momentum, ma_cross), momentum )."""
+    params = {
+        "factors": [
+            {
+                "key": "_combo_or",
+                "factors": [
+                    {"key": "momentum", "lookback": 3, "threshold": 0.001},
+                    {"key": "ma_cross", "fast": 5, "slow": 15},
+                ],
+                "weight": 0.4,
+            },
+            {"key": "momentum", "lookback": 3, "threshold": 0.001, "weight": 0.6},
+        ]
+    }
+    score = _combo_score_weighted(_CLOSES, _DATA, _INDICATORS, params, 30)
+    assert score > 0, f"Weighted(OR) should be positive, got {score}"
+
+
+def test_nested_via_compute_factor_score():
+    """Nested combo through the main entry point: compute_factor_score handles it."""
+    params = {
+        "factors": [
+            {"key": "momentum", "lookback": 3, "threshold": 0.001},
+            {
+                "key": "_combo_and",
+                "factors": [
+                    {"key": "ma_cross", "fast": 5, "slow": 15},
+                    {"key": "bollinger", "period": 20, "std_mult": 2.0},
+                ]
+            }
+        ]
+    }
+    score = compute_factor_score(_CLOSES, _DATA, _INDICATORS, params, "_combo_rank", 30)
+    assert -100 <= score <= 100, f"compute_factor_score range: {score}"
+    assert score > 0, f"compute_factor_score result should be positive, got {score}"
+
+
+def test_deeply_nested():
+    """Triple nesting: RANK( momentum, AND( OR(...), product(...) ) )."""
+    params = {
+        "factors": [
+            {"key": "momentum", "lookback": 3, "threshold": 0.001},
+            {
+                "key": "_combo_and",
+                "factors": [
+                    {
+                        "key": "_combo_or",
+                        "factors": [
+                            {"key": "ma_cross", "fast": 5, "slow": 15},
+                            {"key": "bollinger", "period": 20, "std_mult": 2.0},
+                        ]
+                    },
+                    {
+                        "key": "_combo_product",
+                        "factors": [
+                            {"key": "momentum", "lookback": 3, "threshold": 0.001},
+                            {"key": "ma_cross", "fast": 5, "slow": 15},
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+    score = _combo_score_rank(_CLOSES, _DATA, _INDICATORS, params, 30)
+    assert score > 0, f"Deeply nested should be positive, got {score}"
+    assert -100 <= score <= 100, f"Score out of range: {score}"
 
 
 if __name__ == "__main__":

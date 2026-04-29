@@ -100,6 +100,11 @@ class FactorComboExpert:
     # 概率分布对应 COMBO_MODES 索引
     COMBO_PROBS = [0.30, 0.20, 0.15, 0.15, 0.05, 0.05, 0.05, 0.05]
 
+    # 嵌套组合概率（多因子候选有 15% 机会把其中一个因子替换为子组合）
+    NESTED_PROB = 0.15
+    # 可嵌套的子组合模式（不包含 conditional/hierarchical 以保持简单）
+    NESTABLE_MODES = ["and", "or", "weighted", "rank", "product"]
+
     def __init__(self, seed: int = 42):
         self.name = "FactorComboExpert"
         self._rng = random.Random(seed)
@@ -207,6 +212,36 @@ class FactorComboExpert:
                     for entry in factor_entries:
                         entry["weight_trend"] = 0.7 if entry["key"] == all_factor_keys[0] else 0.3
                         entry["weight_sideways"] = 0.3 if entry["key"] == all_factor_keys[0] else 0.7
+
+                # ── 嵌套组合（~15%概率）─────────────────────
+                # 在非 single/conditional 的多因子候选中，把其中一个因子替换为子组合
+                if mode not in ("single", "conditional") and self._rng.random() < self.NESTED_PROB:
+                    sub_mode = self._rng.choice(self.NESTABLE_MODES)
+                    # 除 weight 外随机挑一个因子位置做嵌套
+                    nest_idx = self._rng.randrange(len(factor_entries))
+                    # 选 2 个不重复的子因子
+                    all_factors = [t["key"] for t in self.TEMPLATES]
+                    used_keys = set(e["key"] for e in factor_entries if e.get("key", "").startswith("_combo_"))
+                    available_sub = [k for k in all_factors if k not in used_keys and k != factor_entries[nest_idx].get("key", "")]
+                    if len(available_sub) >= 2:
+                        sub_factors = [available_sub.pop(self._rng.randrange(len(available_sub))) for _ in range(2)]
+                        # 保留原 entry 的 weight（如果有）
+                        old_weight = factor_entries[nest_idx].get("weight")
+                        sub_entry = {
+                            "key": f"_combo_{sub_mode}",
+                            "factors": [
+                                self._build_factor_entry(sub_factors[0]),
+                                self._build_factor_entry(sub_factors[1]),
+                            ],
+                        }
+                        if sub_mode == "weighted":
+                            sub_entry["factors"][0]["weight"] = 0.6
+                            sub_entry["factors"][1]["weight"] = 0.4
+                        if old_weight is not None:
+                            sub_entry["weight"] = old_weight
+                        factor_entries[nest_idx] = sub_entry
+                        # 更新名字中对应的部分为嵌套模式名
+                        name += f"(⊂{sub_mode})"
 
                 cand = {
                     "strategy_id":   f"cmb_{uuid.uuid4().hex[:8]}",
