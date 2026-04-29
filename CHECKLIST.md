@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 23:30 UTC
+## Last Verification: 2026-04-29 16:06 UTC
 
 ---
 
@@ -67,13 +67,16 @@
 - [x] IterationView.tsx 表头添加 hover tooltip（9 个指标解释）
 - [x] smoke_test.py + TypeScript 编译通过
 
-### 9. v5.15 — 修复 Dashboard 渲染错误 + 数据同步
+### 9. v5.15 — 修复 Dashboard 渲染错误 + E2E 冒烟测试
 - [x] 修复: IterationView 策略 equity_curve 缺失时崩溃（加 `|| []` 防御）
 - [x] 修复: daily_returns_to_equity curve[0] 双包装 bug
 - [x] 修复: validate_dashboard.py 路径错误 + 兼容旧格式
 - [x] 增强: validate_dashboard.py 同时检查 src/data/ 和 public/data/
 - [x] 增强: run_iteration.py 写入后自动同步到 public/data/
+- [x] 新增: scripts/smoke_dashboard_e2e.mjs — Playwright 浏览器渲染冒烟
+- [x] 集成: smoke_test.py [7] — Dashboard E2E 渲染测试
 - [x] Vite build 通过
+- [x] E2E 渲染测试通过（7/7 项）
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |

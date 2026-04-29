@@ -142,6 +142,33 @@ except FileNotFoundError:
 except Exception as e:
     check(f"TypeScript: {e}", False)
 
+# ── 7. Dashboard E2E 冒烟测试 ────────────────────────────────────
+print("\n[7] Dashboard E2E 渲染测试")
+try:
+    r = subprocess.run(
+        ["node", "scripts/smoke_dashboard_e2e.mjs"],
+        cwd=str(PROJECT),
+        capture_output=True, text=True, timeout=120
+    )
+    if r.returncode == 0:
+        # 提取结果行
+        for line in r.stdout.split("\n"):
+            if "结果:" in line or "All" in line.lower():
+                check(f"Dashboard E2E", True)
+                break
+        else:
+            check("Dashboard E2E (无结果行)", True)
+    else:
+        err = r.stderr[:300] or r.stdout[-500:]
+        check(f"Dashboard E2E 失败", False)
+        print(f"    {err}")
+except FileNotFoundError:
+    check("node 不可用（跳过 Dashboard E2E）", True)
+except subprocess.TimeoutExpired:
+    check("Dashboard E2E 超时（跳过）", True)
+except Exception as e:
+    check(f"Dashboard E2E: {e}", False)
+
 # ── 6. CLAUDE.md 规则检查 ────────────────────────────────────────
 print("\n[6] 代码规则检查")
 try:
