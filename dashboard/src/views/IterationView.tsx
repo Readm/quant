@@ -68,6 +68,19 @@ interface ThreadMeta {
 const COLORS = ['#6366f1','#22d3ee','#4ade80','#fbbf24','#f87171','#a78bfa','#fb923c','#34d399']
 const TYPE_COLOR: Record<string, string> = { trend: '#6366f1', mean_reversion: '#22d3ee' }
 
+// ── Metric tooltips ────────────────────────────────────────────────
+const METRIC_TIP: Record<string, string> = {
+  score: '综合评分(0~100)，越大越好。由 Sortino/Calmar/IR/DD/Alpha 五个维度加权合成',
+  alpha: '超额年化收益(%)，越大越好。策略年化 - 基准年化',
+  ann_return: '复利年化收益率(%)，越大越好。基于组合净值的几何增长率',
+  sharpe: '每单位波动获取的超额收益，越大越好。>1.0 良好，>2.0 优秀',
+  max_drawdown: '历史最大净值回撤(%)，越小越好。衡量策略在最差行情下的亏损',
+  total_trades: '总交易次数。太少(<5)不具统计意义，太少(<20)需要降级观察',
+  name: '策略名称，标识因子模板和参数',
+  type: '策略类型：趋势(追涨) 或 均值回归(抄底)',
+  decision: '决策结果：ACCEPT(采纳) / REJECT(淘汰) / CONDITIONAL(待观察)',
+}
+
 // ── Decision badge ────────────────────────────────────────────────
 function DecisionBadge({ d }: { d: string }) {
   if (d === 'ACCEPT')
@@ -235,8 +248,10 @@ function StrategyTable({ strategies }: { strategies: Strategy[] }) {
   function Th({ label, k, align = 'right' }: { label: string; k: SortKey; align?: string }) {
     const active = sortKey === k
     const arrow = active ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''
+    const tip = METRIC_TIP[k] || ''
     return (
       <th onClick={() => handleSort(k)}
+        title={tip}
         className={`py-2 px-3 text-${align} cursor-pointer select-none whitespace-nowrap
           ${active ? 'text-purple-300' : 'text-slate-400 hover:text-slate-200'}`}>
         {label}{arrow}

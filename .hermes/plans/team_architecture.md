@@ -32,6 +32,9 @@ graph TB
         QuantStrat -.-> |策略方案| QuantReviewer[量化策略评价师]
         QuantReviewer --> |审查意见（通过/打回）| Architect
         
+        Architect --> |周期结束通知| SysDesign[系统设计总结]
+        SysDesign --> |更新| DR[(DESIGN_RECORD.md)]
+        
         Architect --> |汇总报告| DevOps
     end
 
@@ -65,6 +68,7 @@ graph TB
 | **前端工程师** | Dashboard、ReactFlow、图表 | 改完的 dashboard/ + 自检 | 不改 Python |
 | **量化策略评价师** | 质疑策略未来函数、过拟合 | 审查意见（通过/打回） | 不写代码 |
 | **代码质量工程师** | 审查全部代码的简洁性、鲁棒性 | 质量报告（大/小问题分层） | 不改代码、不审策略方法 |
+| **系统设计总结** | 维护设计日志，记录决策和 rationale | DESIGN_RECORD.md 更新 | 不改代码、不做审查 |
 | **DevOps** | 冒烟测试、构建、CHECKLIST、commit | 验证报告 + commit | 不改代码、不审策略 |
 
 ## 工作流
@@ -85,7 +89,10 @@ Architect 收齐各方输出
   ├─ 有重大问题？ → 写入周期报告，向我汇报
   ├─ 有小问题？   → 直接打回工程师，不报告
   ├─ Quant Reviewer 打回？ → 写入周期报告，汇报
-  └─ 全 ✅？       → 通知 DevOps 执行
+  └─ 全 ✅？       → 通知 System Designer 更新设计记录
+  │
+  ▼
+System Designer: 追加 DESIGN_RECORD.md → 通知 DevOps
   │
   ▼
 DevOps: smoke_test → tsc → validate_dashboard → gen_architecture → CHECKLIST → commit

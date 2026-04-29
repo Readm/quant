@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 22:50 UTC
+## Last Verification: 2026-04-29 23:10 UTC
 
 ---
 
@@ -59,6 +59,13 @@
 - [x] BacktestReport 新增 execution_shortfall_median/mean 字段
 - [x] EvalResult 新增对应字段
 - [x] smoke_test.py 通过
+
+### 8. v5.14 — 系统设计总结角色 + Dashboard tooltips
+- [x] 新建 role_system_designer.md SOP（设计日志维护职责）
+- [x] 新建 DESIGN_RECORD.md，记录 7 个设计决策
+- [x] 更新 team_architecture.md（Mermaid图+角色表+工作流）
+- [x] IterationView.tsx 表头添加 hover tooltip（9 个指标解释）
+- [x] smoke_test.py + TypeScript 编译通过
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
