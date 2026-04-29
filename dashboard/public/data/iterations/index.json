@@ -1,5 +1,17 @@
 [
   {
+    "id": "因子组合v5.9_20260429_2118",
+    "name": "因子组合v5.9 全A股(修复胜率)",
+    "symbols": [
+      "astock"
+    ],
+    "run_at": "2026-04-29 21:18:59",
+    "total_rounds": 10,
+    "days": 800,
+    "best_score": 90.1,
+    "converged": true
+  },
+  {
     "id": "因子组合v5.8_20260429_1802",
     "name": "因子组合v5.8 全A股(Alpha缩放修正)",
     "symbols": [

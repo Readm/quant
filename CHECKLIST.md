@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 18:26 UTC
+## Last Verification: 2026-04-29 21:30 UTC
 
 ---
 
@@ -26,6 +26,13 @@
 - [x] smoke_test.py 通过
 - [x] validate_dashboard.py 通过
 - [x] Vite build 通过
+
+### 3. v5.9b — 修复后全量回测验证
+- [x] 10轮全A股回测完成（10轮收敛）
+- [x] 真实胜率确认: 45%-64%（vs 修复前100%）
+- [x] Dashboard数据注入: 因子组合v5.9_20260429_2118
+- [x] Vite build 通过（2.98s）
+- [x] validate_dashboard.py 通过
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
