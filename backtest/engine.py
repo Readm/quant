@@ -884,12 +884,12 @@ class PortfolioBacktester:
             initial_cash=initial_cash,
         )
 
-        equity, trades, daily_rets = self._sim_range(1, train_end, **sim_kw)
+        equity, trades, daily_rets, exec_shortfalls = self._sim_range(1, train_end, **sim_kw)
         report = self._build_report(strategy_id, strategy_name, params,
-                                    equity, trades, daily_rets, train_end, initial_cash)
+                                    equity, trades, daily_rets, exec_shortfalls, train_end, initial_cash)
 
         if oos_days > 0 and train_end < n:
-            _, _, oos_rets = self._sim_range(train_end, n, **sim_kw)
+            _, _, oos_rets, _ = self._sim_range(train_end, n, **sim_kw)
             if oos_rets:
                 report.oos_annualized_return = round(
                     sum(oos_rets) / len(oos_rets) * 252 * 100, 2)
@@ -909,6 +909,7 @@ class PortfolioBacktester:
         trades   = []
         daily_rets = []
 
+        exec_shortfalls = []
         for t in range(t_start, t_end):
             # 信号在 t 日收盘后生成，次日 (t+1) 开盘/收盘成交，消除同日未来函数
             if (t - t_start) % rebalance_freq == 0 and t + 1 < t_end:
@@ -975,6 +976,10 @@ class PortfolioBacktester:
                     # Track entry and peak prices for risk overlay
                     self._holding_entry_prices[sym] = price
                     self._holding_peak_prices[sym] = price
+                    # 执行损耗: 信号价(t日收盘) → 实际成交价(t+1日收盘)
+                    sig_price = closes_by_sym[sym][t]
+                    if sig_price > 0:
+                        exec_shortfalls.append((price - sig_price) / sig_price)
 
             port_val = cash + sum(
                 holdings[sym] * closes_by_sym[sym][t]
@@ -985,11 +990,11 @@ class PortfolioBacktester:
             equity.append(port_val)
             daily_rets.append((port_val - prev) / prev if prev > 0 else 0.0)
 
-        return equity, trades, daily_rets
+        return equity, trades, daily_rets, exec_shortfalls
 
     # ── 统计指标 ────────────────────────────────────────────────────
     def _build_report(self, sid, name, params, equity, trades,
-                       daily_rets, n, cash):
+                       daily_rets, exec_shortfalls, n, cash):
         from experts.specialists.factor_combo_expert import BacktestReport
         final = float(equity[-1])
         tr    = final / cash - 1
@@ -1007,6 +1012,15 @@ class PortfolioBacktester:
         avg_w = sum(wins) / len(wins) if wins else 0.0
         avg_l = abs(sum(loss) / len(loss)) if loss else 1e-9
         pf    = avg_w / avg_l if avg_l > 1e-9 else 0.0
+        # 执行损耗统计
+        if exec_shortfalls:
+            sorted_es = sorted(exec_shortfalls)
+            n_es = len(sorted_es)
+            es_median = sorted_es[n_es // 2] if n_es % 2 else (sorted_es[n_es//2 - 1] + sorted_es[n_es//2]) / 2
+            es_mean = sum(exec_shortfalls) / n_es
+        else:
+            es_median = 0.0
+            es_mean = 0.0
         return BacktestReport(
             strategy_id       = sid,
             strategy_name     = name,
@@ -1026,6 +1040,8 @@ class PortfolioBacktester:
             calmar_ratio      = round(calmar, 3),
             sortino_ratio     = round(sortino_v, 3),
             daily_returns     = [round(r, 4) for r in daily_rets],
+            execution_shortfall_median = round(es_median * 100, 2),
+            execution_shortfall_mean   = round(es_mean * 100, 2),
         )
 
     @staticmethod

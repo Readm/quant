@@ -86,9 +86,11 @@ class EvalResult:
 
     # ── 相对收益 ─────────────────────
     benchmark_ann_return: float = 0.0   # 基准年化收益
-    alpha: float = 0.0                     # 超额收益
+    alpha: float = 0.0                  # 超额年化
+    execution_shortfall_median: float = 0.0   # 中位执行损耗(%)
+    execution_shortfall_mean: float = 0.0     # 平均执行损耗(%)
 
-    # ── 模板标识 ─────────────────────
+    # ── 模板追踪 ─────────────────────
     template_key: str = ""
 
     # ── 样本外收益 ───────────────────
@@ -319,6 +321,8 @@ class Evaluator:
             pbo_score=0.0, pbo_label=pbo_label, pbo_multiplier=pbo_multiplier,
             benchmark_ann_return=round(benchmark_ann, 2), alpha=round(alpha, 2),
             template_key=template_key,
+            execution_shortfall_median=getattr(r, "execution_shortfall_median", 0.0),
+            execution_shortfall_mean=getattr(r, "execution_shortfall_mean", 0.0),
             oos_annualized_return=getattr(r, "oos_annualized_return", 0.0),
             structured_feedback=sfb,
         )

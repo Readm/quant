@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 22:30 UTC
+## Last Verification: 2026-04-29 22:50 UTC
 
 ---
 
@@ -53,6 +53,12 @@
 - [x] 新 Sharpe 2.8~3.3（旧 7+），合理
 - [x] n_stocks N5~N9 出现，分散化有效
 - [x] Dashboard 验证通过 + Vite build 通过
+
+### 7. v5.13 — 添加执行损耗(execution_shortfall)跟踪
+- [x] 每次买入时记录: 信号价(t日收盘) → 执行价(t+1日收盘) 的差值
+- [x] BacktestReport 新增 execution_shortfall_median/mean 字段
+- [x] EvalResult 新增对应字段
+- [x] smoke_test.py 通过
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |

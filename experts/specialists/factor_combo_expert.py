@@ -26,6 +26,8 @@ class BacktestReport:
     avg_holding_days: float = 0.0; calmar_ratio: float = 0.0
     sortino_ratio: float = 0.0; daily_returns: list = None
     oos_annualized_return: float = 0.0
+    execution_shortfall_median: float = 0.0
+    execution_shortfall_mean: float = 0.0
     def __post_init__(self):
         if self.tags is None: self.tags = []
         if self.params is None: self.params = {}
