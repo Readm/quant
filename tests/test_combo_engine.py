@@ -16,7 +16,7 @@ from backtest.engine import (
     _combo_score_and, _combo_score_or, _combo_score_weighted,
     _combo_score_product, _combo_score_rank,
     _combo_score_hierarchical, _combo_score_conditional,
-    _SCORE_REGISTRY, compute_factor_score,
+    _SCORE_REGISTRY, compute_factor_score, PortfolioBacktester,
 )
 from experts.specialists.factor_combo_expert import FactorComboExpert
 
@@ -498,6 +498,47 @@ def test_deeply_nested():
     score = _combo_score_rank(_CLOSES, _DATA, _INDICATORS, params, 30)
     assert score > 0, f"Deeply nested should be positive, got {score}"
     assert -100 <= score <= 100, f"Score out of range: {score}"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 测试 4.7: 涨跌停阈值
+# ═══════════════════════════════════════════════════════════════════
+
+def test_limit_threshold_main_board():
+    """沪深主板 ±10%."""
+    up, down = PortfolioBacktester._get_limit_threshold("600519.SH")
+    assert abs(up - 9.95) < 0.01, f"SH main board limit_up: {up}"
+    assert abs(down + 9.95) < 0.01, f"SH main board limit_down: {down}"
+
+    up, down = PortfolioBacktester._get_limit_threshold("000001.SZ")
+    assert abs(up - 9.95) < 0.01, f"SZ main board limit_up: {up}"
+
+    up, down = PortfolioBacktester._get_limit_threshold("002001.SZ")
+    assert abs(up - 9.95) < 0.01, f"SME board limit_up: {up}"
+
+
+def test_limit_threshold_star_chinext():
+    """科创板/创业板 ±20%."""
+    up, down = PortfolioBacktester._get_limit_threshold("688001.SH")
+    assert abs(up - 19.95) < 0.01, f"STAR limit_up: {up}"
+
+    up, down = PortfolioBacktester._get_limit_threshold("300001.SZ")
+    assert abs(up - 19.95) < 0.01, f"ChiNext limit_up: {up}"
+
+    up, down = PortfolioBacktester._get_limit_threshold("301001.SZ")
+    assert abs(up - 19.95) < 0.01, f"ChiNext 301 limit_up: {up}"
+
+
+def test_limit_threshold_bse():
+    """北交所 ±30%."""
+    up, down = PortfolioBacktester._get_limit_threshold("830001")
+    assert abs(up - 29.95) < 0.01, f"BSE limit_up: {up}"
+
+
+def test_limit_threshold_default():
+    """未知格式默认主板 ±10%."""
+    up, down = PortfolioBacktester._get_limit_threshold("unknown")
+    assert abs(up - 9.95) < 0.01, f"Unknown limit_up: {up}"
 
 
 if __name__ == "__main__":

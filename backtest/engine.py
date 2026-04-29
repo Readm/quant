@@ -861,6 +861,21 @@ class PortfolioBacktester:
         self._holding_entry_prices = {}  # sym → entry price (for risk overlay)
         self._holding_peak_prices  = {}  # sym → peak price (for trailing stop)
 
+    @staticmethod
+    def _get_limit_threshold(symbol: str) -> tuple:
+        """Return (limit_up_pct, limit_down_pct) based on A-share board rules.
+        Symbol format: '000001.SZ' or '600519.SH'
+        主板 (±10%)  : 60xxxx.SH, 00xxxx.SZ, 001xxx.SZ, 002xxx.SZ, 003xxx.SZ
+        创业板/科创板 (±20%): 300xxx.SZ, 301xxx.SZ, 688xxx.SH
+        北交所 (±30%) : 8xxxxx
+        """
+        code = symbol.split(".")[0]
+        if code.startswith("688") or code.startswith("300") or code.startswith("301"):
+            return (19.95, -19.95)  # STAR/ChiNext ±20%
+        elif code.startswith("8"):
+            return (29.95, -29.95)  # 北交所 ±30%
+        return (9.95, -9.95)        # 主板/SME ±10%
+
     def _select_stocks(self, scores, sym_list, closes_by_sym, data_by_sym, ind_by_sym, pctchg_by_sym, t, exec_t, n_stocks):
         """
         Single-stage or two-stage stock selection.
@@ -873,8 +888,8 @@ class PortfolioBacktester:
         params = self.cand.get("params", {})
         stage = params.get("selection_stage", "single")
         
-        _LIMIT_UP = 9.8
-        _LIMIT_DOWN = -9.8
+        def _sym_up_limit(sym):
+            return self._get_limit_threshold(sym)[0]
         
         if stage == "two_stage":
             pool_size = int(params.get("pool_size", 100))
@@ -899,7 +914,7 @@ class PortfolioBacktester:
                                  if exec_t < len(pctchg_by_sym.get(s, [])) else 0.0)
                              for s in primary_pos}
                 primary_pos = {s: sc for s, sc in primary_pos.items()
-                               if pchg_exec.get(s, 0.0) < _LIMIT_UP}
+                               if pchg_exec.get(s, 0.0) < _sym_up_limit(s)}
                 pool_set = set(sorted(primary_pos, key=primary_pos.__getitem__, reverse=True)[:pool_size])
                 
                 # Phase 2: Secondary factor → narrow selection
@@ -924,7 +939,7 @@ class PortfolioBacktester:
                          if exec_t < len(pctchg_by_sym.get(s, [])) else 0.0)
                      for s in positive}
         positive = {s: sc for s, sc in positive.items()
-                    if pchg_exec.get(s, 0.0) < _LIMIT_UP}
+                    if pchg_exec.get(s, 0.0) < _sym_up_limit(s)}
         selected = sorted(positive, key=positive.__getitem__, reverse=True)[:n_stocks]
         return selected, positive
 
@@ -1020,8 +1035,7 @@ class PortfolioBacktester:
                          for sd in self.symbols_data}
         data_by_sym   = {sd["symbol"]: sd["data"]       for sd in self.symbols_data}
         ind_by_sym    = {sd["symbol"]: sd["indicators"]  for sd in self.symbols_data}
-        # TODO: 精确的涨跌停判断需要日内择时策略（如竞价阶段判断能否成交）。
-        #       此处用 pct_chg 阈值粗略排除，主板±10%，科创/创业板±20% 暂不区分。
+        # 各板块涨跌幅限制: _get_limit_threshold 按代码前缀区分
         pctchg_by_sym = {sd["symbol"]: sd["data"].get("pct_chgs", [])
                          for sd in self.symbols_data}
 
@@ -1069,8 +1083,6 @@ class PortfolioBacktester:
                    sym_list, params, template_key, n_stocks, rebalance_freq,
                    weight_method, max_pos, initial_cash):
         """从 t_start 到 t_end 运行一段模拟，返回 (equity, trades, daily_rets)。"""
-        _LIMIT_UP   =  9.8
-        _LIMIT_DOWN = -9.8
         cash     = float(initial_cash)
         holdings: Dict[str, float] = {}
         equity   = [cash]
@@ -1114,7 +1126,7 @@ class PortfolioBacktester:
                 for sym in list(holdings.keys()):
                     pchg = (pctchg_by_sym[sym][exec_t]
                             if exec_t < len(pctchg_by_sym.get(sym, [])) else 0.0)
-                    if pchg <= _LIMIT_DOWN:
+                    if pchg <= self._get_limit_threshold(sym)[1]:  # limit down check
                         continue
                     shares = holdings.pop(sym)
                     price  = closes_by_sym[sym][exec_t]
