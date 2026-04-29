@@ -38,11 +38,11 @@ PBO_HARD_REJECT   = 0.50   # PBO > 此值 → REJECT（v5.1: 从0.45回调）
 PBO_SOFT_DISCOUNT = 0.30   # PBO > 此值 → composite ×0.85
 
 # ── 打分权重 v5.1: Alpha翻倍 ───────────────
-W_SORTINO  = 0.22
-W_CALMAR   = 0.18
-W_IR       = 0.18
-W_DRAWDOWN = 0.18
-W_ALPHA    = 0.24   # Alpha直接奖励（翻倍, 让高Alpha策略真正胜出）
+W_SORTINO  = 0.26   # v5.8: 提升Sortino权重, 更强调下行风险调整
+W_CALMAR   = 0.20   # v5.8: 微调Calmar
+W_IR       = 0.18   # 不变
+W_DRAWDOWN = 0.18   # 不变
+W_ALPHA    = 0.18   # v5.8: 降低Alpha权重(0.24→0.18), 配合线性缩放不过度奖励高Alpha
 
 # ── 默认基准映射 ───────────────────────────
 DEFAULT_BENCHMARK = {
@@ -216,8 +216,9 @@ class Evaluator:
         # IR：需要基准日收益
         ir_s, benchmark_ann, alpha = self._compute_ir_score(daily_rets)
 
-        # v5.2: Alpha 缩放 — alpha 是年化百分比(0~15), 映射到 0~100
-        alpha_scaled = max(0, min(100, alpha * 5))  # alpha=10% → 50分
+        # v5.8: Alpha 线性缩放 — alpha 是超额年化(0~200%), 直接映射到 0~100
+        # 旧版 alpha*5 导致 alpha>20% 后全部封顶 100, 失去区分度
+        alpha_scaled = max(0, min(100, alpha))  # alpha=86.5% → 86.5分
 
         raw_composite = (
             sortino_s * W_SORTINO

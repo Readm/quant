@@ -1,5 +1,17 @@
 [
   {
+    "id": "因子组合v5.8_20260429_1802",
+    "name": "因子组合v5.8 全A股(Alpha缩放修正)",
+    "symbols": [
+      "astock"
+    ],
+    "run_at": "2026-04-29 18:02",
+    "total_rounds": 13,
+    "days": 800,
+    "best_score": 93.0,
+    "converged": true
+  },
+  {
     "id": "multi_expert_v4_20260427_0022",
     "name": "A股策略扩展v5.0",
     "symbols": [

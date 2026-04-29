@@ -2,36 +2,19 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-27 19:20 UTC
+## Last Verification: 2026-04-29 18:30 UTC
 
 ---
 
-### 1. 架构检查
-- [x] 无循环导入
-- [x] 本次变更范围：dashboard/ 纯前端（isolated）
-
-### 2. Dashboard 轻量化
-- [x] 迭代数据从 `import.meta.glob` 改为运行时 `fetch()` — 消除 464KB data chunk
-- [x] Mermaid 图预渲染为 SVG，移除 mermaid 依赖 — 消除 40+ chunks (~1.1MB)
-- [x] Vite build 通过（2.99s，原 7.92s → -62%）
-- [x] 产物 JS 从 ~2.2MB 降至 ~792KB（-64%）
-- [x] 迭代数据页正常访问（fetch 运行时加载）
-- [x] 策略流程图正常显示（SVG 静态图片）
-
-### 3. 清理旧版遗留文件
-- [x] 删除 9.2MB `src/data/iteration_log.json`（不再被引用）
-- [x] 删除 `src/data/strategy/*.mmd`（SVG已预渲染至 `public/data/strategy/`）
-- [x] 删除 `src/data/architecture/deps.mmd`（仅保留 `deps.json`）
-- [x] git push 触发 Actions 重新部署
-
-### 4. UI精简 + Bug修复
-- [x] 按用户要求移除5个页签（系统架构/系统状态/数据来源/回测框架/专家框架）
-- [x] FactorView: 移除"为什么策略跑不赢大盘"区域
-- [x] StrategyView: 移除策略模板卡片，保留迭代图和评分标准
-- [x] IterationView: 修复thread列表加载后未自动选中首项导致卡"加载中"
-- [x] tsc --noEmit 通过
-- [x] Vite build 通过（2.73s）
-- [x] 新server验证：localhost:9000 可访问
+### 1. v5.8 — 修复Alpha缩放扁平化 + 权重调整
+- [x] evaluator.py: alpha_scaled = alpha*5 → alpha*1 (线性缩放, 消除>20%后封顶问题)
+- [x] evaluator.py: 权重 Sortino 0.22→0.26, Alpha 0.24→0.18
+- [x] 权重总和 = 1.0 已验证
+- [x] 冒烟测试: 导入evaluator并通过权重和检查
+- [x] 20轮全A股回测完成(13轮收敛)
+- [x] Dashboard数据注入: index.json + 新iter JSON
+- [x] Vite build 通过（2.79s）
+- [x] validate_dashboard.py 通过
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
