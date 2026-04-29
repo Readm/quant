@@ -995,7 +995,9 @@ class PortfolioBacktester:
         tr    = final / cash - 1
         ann   = (final / cash) ** (252 / max(n - 1, 1)) - 1
         vol   = self._std(daily_rets) * math.sqrt(252) if daily_rets else 0.0
-        s     = ann / vol if vol > 0 else 0.0
+        # Sharpe = mean(r_i) / σ(r_i) * √252 (标准定义)
+        mean_daily = sum(daily_rets) / n if daily_rets and n > 0 else 0.0
+        s = (mean_daily * 252) / vol if vol > 0 else 0.0
         sortino_v = self._sortino(daily_rets)
         max_dd_v  = self._max_dd(daily_rets)
         calmar    = ann / (max_dd_v / 100) if max_dd_v > 0 else 0.0

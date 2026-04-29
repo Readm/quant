@@ -437,7 +437,7 @@ class MetaMonitor:
                 "accept_threshold": 45,
                 "conditional_threshold": 25,
                 "n_stocks_min": 2,
-                "n_stocks_max": 5,
+                "n_stocks_max": 10,
                 "rebalance_options": [5, 10, 20, 60],
             },
             "reasoning": "LLM 不可用，使用默认参数",
@@ -459,7 +459,7 @@ class MetaMonitor:
         if params["conditional_threshold"] >= params["accept_threshold"]:
             params["conditional_threshold"] = params["accept_threshold"] - 10
         params["n_stocks_min"] = max(2, min(3, int(params.get("n_stocks_min", 2))))
-        params["n_stocks_max"] = max(params["n_stocks_min"], min(5, int(params.get("n_stocks_max", 5))))
+        params["n_stocks_max"] = max(params["n_stocks_min"], min(10, int(params.get("n_stocks_max", 10))))
 
         result["next_round_params"] = params
         return result

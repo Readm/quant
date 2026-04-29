@@ -168,7 +168,7 @@ class Orchestrator:
             "accept_threshold": 45,
             "conditional_threshold": 25,
             "n_stocks_min": 2,
-            "n_stocks_max": 5,
+            "n_stocks_max": 10,
             "rebalance_options": [5, 10, 20, 60],
         }
         self._meta_history = {

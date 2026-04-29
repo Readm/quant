@@ -232,6 +232,10 @@ class Evaluator:
         diversity_bonus = self._diversity_bonus(template_key)
         raw_composite += diversity_bonus
 
+        # v5.6: 反垄断加分（如果Top-3全是趋势，给均值回归+3）
+        monopoly_bonus = self._monopoly_suppression(template_type, strategy_name) if template_key else 0.0
+        raw_composite += monopoly_bonus
+
         # v5.5: 交易可靠性调整 — 阶梯式约束（Iter10: 强化惩罚力度）
         n_trades_warning = False
         if n_trades >= 20:

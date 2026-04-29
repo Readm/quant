@@ -148,22 +148,20 @@ class InstrumentedOrchestrator:
         for rp in self.orc.round_reports:
             rnd = getattr(rp, "round_num", len(self.round_logs) + 1)
 
-            t_evals  = getattr(rp, "trend_evals",  []) or []
-            mr_evals = getattr(rp, "mr_evals",     []) or []
-            selected = getattr(rp, "final_selected",[]) or []
-            debate   = getattr(rp, "debate_result", None)
-            holdout  = getattr(rp, "holdout_results",[]) or []
+            all_evals = getattr(rp, "all_evals",  []) or []
+            selected  = getattr(rp, "final_selected",[]) or []
+            debate    = getattr(rp, "debate_result", None)
+            holdout   = getattr(rp, "holdout_results",[]) or []
 
             selected_names = {getattr(e, "strategy_name", "") for e in selected}
 
             # Build strategy_id → daily_returns map from backtest reports
-            t_reports  = getattr(rp, "trend_reports",  []) or []
-            mr_reports = getattr(rp, "mr_reports",     []) or []
+            all_reports = getattr(rp, "all_reports", []) or []
             dr_map = {getattr(r, "strategy_id", ""): getattr(r, "daily_returns", []) or []
-                      for r in t_reports + mr_reports}
+                      for r in all_reports}
 
             strategies = []
-            for e in t_evals + mr_evals:
+            for e in all_evals:
                 d = eval_to_dict(e)
                 # Inject equity curve from backtest report
                 sid = d.get("id", "")

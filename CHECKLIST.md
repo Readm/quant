@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 21:30 UTC
+## Last Verification: 2026-04-29 22:15 UTC
 
 ---
 
@@ -33,6 +33,19 @@
 - [x] Dashboard数据注入: 因子组合v5.9_20260429_2118
 - [x] Vite build 通过（2.98s）
 - [x] validate_dashboard.py 通过
+
+### 4. v5.10 — 修复 Sharpe 公式：CAGR/σ → mean(r)/σ×√252
+- [x] 标准定义: Sharpe = mean(rᵢ) / σ(rᵢ) × √252
+- [x] 旧公式 CAGR/σ 在正收益序列下虚高 Sharpe（11.8→6.1 验证）
+- [x] smoke_test.py 通过
+- [x] ann(CAGR) 保留用于 Calmar 计算不受影响
+
+### 5. v5.11 — n_stocks 2→10 + 启用反垄断评分
+- [x] B: n_stocks 范围从 [2,5] 扩大到 [2,10]（orchestrator/llm_prompts/meta_monitor ×4 处修改）
+- [x] C: _monopoly_suppression 从死代码变为实际调用（evaluator.py）
+- [x] 反垄断逻辑: Top-3 全是趋势时，均值回归策略 +3 分
+- [x] diversity_bonus 保留（最高+8），与反垄断叠加使用
+- [x] smoke_test.py 通过
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
