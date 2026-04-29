@@ -190,14 +190,6 @@ def _score_vol_surge(c, data, indicators, params, t):
     return -(float(vols[t]) / avg_v - 1) * 100 if avg_v > 0 else 0.0
 
 
-def _score_mean_reversion_proxy(c, data, indicators, params, t):
-    """mfi_signal / rvi_signal / kdwave / multi_roc_signal / obos_composite / elder_ray_signal"""
-    lb = max(int(params.get("period", 10)), 5)
-    if t < lb:
-        return 0.0
-    mom = (c[t] / c[t - lb] - 1) * 100 if c[t - lb] > 0 else 0.0
-    return -mom
-
 
 def _score_smart_money(c, data, indicators, params, t):
     period  = max(int(params.get("period", 20)), 5)
@@ -376,18 +368,16 @@ def _score_mean_rev_composite(c, data, indicators, params, t):
 # ── 通用信号代理评分工厂 ──────────────────────────────────────────────
 def _make_signal_score(template_key: str):
     """返回一个评分函数，调用 generate_signal() 获取信号值。"""
-    from factors.signals import generate_signal, FACTOR_TABLE
-    key_to_fid = {v[0]: k for k, v in FACTOR_TABLE.items()}
-    fid = key_to_fid.get(template_key)
+    from factors.signals import generate_signal
 
     def _score(closes, data, indicators, params, t):
-        if not fid:
+        if not template_key:
             return 0.0
         highs = data.get("highs", closes)
         lows  = data.get("lows",  closes)
         vols  = data.get("volumes", [1e9] * len(closes))
         try:
-            signals = generate_signal(fid, list(closes), list(highs), list(lows), list(vols))
+            signals = generate_signal(template_key, list(closes), list(highs), list(lows), list(vols))
             if t < len(signals):
                 return float(signals[t]) * 100.0
         except Exception:
@@ -677,12 +667,12 @@ _SCORE_REGISTRY = {
     "rsi":               _score_rsi,
     "bollinger":         _score_bollinger,
     "vol_surge":         _score_vol_surge,
-    "mfi_signal":        _score_mean_reversion_proxy,
-    "rvi_signal":        _score_mean_reversion_proxy,
-    "kdwave":            _score_mean_reversion_proxy,
-    "multi_roc_signal":  _score_mean_reversion_proxy,
-    "obos_composite":    _score_mean_reversion_proxy,
-    "elder_ray_signal":  _score_mean_reversion_proxy,
+    "mfi_signal":        _make_signal_score("mfi_signal"),
+    "rvi_signal":        _make_signal_score("rvi_signal"),
+    "kdwave":            _make_signal_score("kdwave"),
+    "multi_roc_signal":  _make_signal_score("multi_roc_signal"),
+    "obos_composite":    _make_signal_score("obos_composite"),
+    "elder_ray_signal":  _make_signal_score("elder_ray_signal"),
     "smart_money":       _score_smart_money,
     "gap_break":         _score_gap_break,
     "limit_board":       _score_limit_board,
