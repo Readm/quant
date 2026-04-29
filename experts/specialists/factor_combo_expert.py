@@ -95,7 +95,10 @@ class FactorComboExpert:
     TEMPLATES = _TREND + _MR + _INNOVATIVE + _EXTENDED
 
     # ── 组合模式 ─────────────────────────────────────────────────
-    COMBO_MODES = ["single", "and", "or", "weighted"]
+    COMBO_MODES = ["single", "and", "or", "weighted", "rank", "product", "hierarchical", "conditional"]
+
+    # 概率分布对应 COMBO_MODES 索引
+    COMBO_PROBS = [0.30, 0.20, 0.15, 0.15, 0.05, 0.05, 0.05, 0.05]
 
     def __init__(self, seed: int = 42):
         self.name = "FactorComboExpert"
@@ -105,10 +108,24 @@ class FactorComboExpert:
 
     # ── 候选生成 ──────────────────────────────────────────────────
 
+    def _build_factor_entry(self, tpl_key: str, extra_params: dict = None) -> dict:
+        """Build a factor entry dict for combo modes: key + all params."""
+        tpl = self._tpl_map.get(tpl_key, {})
+        entry = {"key": tpl_key}
+        # Copy template default params
+        for k, v in tpl.get("params", {}).items():
+            entry[k] = v
+        # Override with any extra params
+        if extra_params:
+            entry.update(extra_params)
+        return entry
+
     def generate_candidates(self, count: int = 55, feedback: list = None) -> List[dict]:
         """
         生成 count 个候选策略，每个候选 = 1~3 个因子的组合。
-        30% 单因子（纯探索） / 40% 双因子 AND / 20% 双因子 OR / 10% 三因子加权
+        概率分布:
+          30% single / 20% and(2因子) / 15% or(2因子) / 15% weighted(3因子)
+           5% rank(2因子) / 5% product(2因子) / 5% hierarchical(2因子) / 5% conditional(2因子)
         """
         candidates = []
         for i in range(count):
@@ -116,16 +133,24 @@ class FactorComboExpert:
 
             # 决定组合模式
             roll = self._rng.random()
-            if roll < 0.30:
-                n_factors, mode = 1, "single"
-            elif roll < 0.70:
-                n_factors, mode = 2, "and"
-            elif roll < 0.90:
-                n_factors, mode = 2, "or"
-            else:
-                n_factors, mode = 3, "weighted"
+            cum = 0.0
+            chosen_idx = 0
+            for idx, p in enumerate(self.COMBO_PROBS):
+                cum += p
+                if roll < cum:
+                    chosen_idx = idx
+                    break
+            mode = self.COMBO_MODES[chosen_idx]
 
-            # 选因子（避免重复，用权重采样）
+            # 因子数和调参来源
+            if mode == "single":
+                n_factors = 1
+            elif mode == "weighted":
+                n_factors = 3
+            else:
+                n_factors = 2
+
+            # 选因子
             factors = self._pick_factors(n_factors, fb)
             primary       = factors[0]
             combo_factors = factors[1:] if len(factors) > 1 else []
@@ -139,17 +164,63 @@ class FactorComboExpert:
                 combo_names = [self._tpl_map[f]["name"] for f in combo_factors]
                 name = f"{tpl['name']}+{'&'.join(combo_names)}"
 
-            candidates.append({
-                "strategy_id":   f"cmb_{uuid.uuid4().hex[:8]}",
-                "strategy_type": "combo",
-                "strategy_name": name,
-                "template_key":  primary,
-                "combo_factors": combo_factors,
-                "combo_mode":    mode,
-                "params":        params,
-                "tags":          [mode, primary] + combo_factors,
-                "feedback_note": self._fb_summary(fb),
-            })
+            # 构建候选
+            if mode == "single":
+                cand = {
+                    "strategy_id":   f"cmb_{uuid.uuid4().hex[:8]}",
+                    "strategy_type": "combo",
+                    "strategy_name": name,
+                    "template_key":  primary,
+                    "combo_factors": [],
+                    "combo_mode":    mode,
+                    "params":        params,
+                    "tags":          [mode, primary],
+                    "feedback_note": self._fb_summary(fb),
+                }
+            else:
+                # 多因子组合: 构建 factors 数组
+                all_factor_keys = [primary] + combo_factors
+                factor_entries = [self._build_factor_entry(k) for k in all_factor_keys]
+
+                # weighted 模式设不等权重
+                if mode == "weighted":
+                    weights = [0.5, 0.3, 0.2]
+                    for j, entry in enumerate(factor_entries):
+                        if j < len(weights):
+                            entry["weight"] = weights[j]
+                        else:
+                            entry["weight"] = 1.0
+
+                # hierarchical 模式标记分层
+                combo_params = dict(params)
+                if mode == "hierarchical":
+                    combo_params["layer_split"] = 1
+
+                # conditional 模式配置条件因子
+                if mode == "conditional":
+                    combo_params["condition"] = {
+                        "key": primary,
+                        "trend_threshold": params.get("adx_thr", 25),
+                    }
+                    # 条件因子作为判断依据，不参与打分
+                    factor_entries = [self._build_factor_entry(f) for f in all_factor_keys[:2]]
+                    for entry in factor_entries:
+                        entry["weight_trend"] = 0.7 if entry["key"] == all_factor_keys[0] else 0.3
+                        entry["weight_sideways"] = 0.3 if entry["key"] == all_factor_keys[0] else 0.7
+
+                cand = {
+                    "strategy_id":   f"cmb_{uuid.uuid4().hex[:8]}",
+                    "strategy_type": "combo",
+                    "strategy_name": name,
+                    "template_key":  f"_combo_{mode}",
+                    "combo_factors": combo_factors,
+                    "combo_mode":    mode,
+                    "params":        {**combo_params, "factors": factor_entries},
+                    "tags":          [mode, primary] + combo_factors,
+                    "feedback_note": self._fb_summary(fb),
+                }
+
+            candidates.append(cand)
         return candidates
 
     def _pick_factors(self, n: int, fb: dict) -> List[str]:

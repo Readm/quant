@@ -497,11 +497,28 @@ class Orchestrator:
         """Similarity hash: bucket continuous params to nearest 5% step.
         Includes portfolio_params so same strategy with different portfolio
         config is treated as a distinct candidate.
+        For combo strategies (template_key starts with _combo_), hash by factors list.
         """
         def _bucket(v):
             if isinstance(v, float): return round(v * 20) / 20  # 0.05 buckets
             if isinstance(v, int):   return round(v / 3) * 3     # nearest-3 buckets
             return v
+
+        # combo策略: 用 factors 列表的摘要作为哈希核心
+        if template_key.startswith("_combo_"):
+            factors = params.get("factors", [])
+            factors_sig = "|".join(
+                f"{f['key']}:{_bucket(f.get(k,0))}"
+                for f in factors
+                for k in sorted(f.keys()) if k not in ("key", "weight", "weight_trend", "weight_sideways")
+            )
+            pp_key = ""
+            if portfolio_params:
+                pp_key = f"|N{portfolio_params.get('n_stocks',1)}" \
+                         f"R{portfolio_params.get('rebalance_freq',20)}" \
+                         f"{portfolio_params.get('weight_method','equal')[0]}"
+            return f"{template_key}|{factors_sig}{pp_key}"
+
         bucketed = {k: _bucket(v) for k, v in sorted(params.items())
                     if not str(k).startswith("pf_")}
         pp_key = ""

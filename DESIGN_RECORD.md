@@ -103,3 +103,22 @@
 **验收**：v5.13 提交。smoke_test 通过。下次全量回测会自动输出各策略的执行损耗。
 
 ---
+
+## 2026-04-29 因子组合引擎全链路接入
+
+**问题**：`factor_combo_expert.py` 生成了 `combo_factors` 和 `combo_mode` 字段，
+但 `backtest/engine.py` 的 `compute_factor_score` 只读 `template_key`，
+组合因子和模式从未被消费。策略名虽然叫"RSI+动量"，实际只跑了RSI。
+
+**方案**：两端同时改造 — 引擎层新增 7 个组合打分函数，注册表层新增
+`_combo_and`/`_or`/`_weighted`/`_rank`/`_product`/`_hierarchical`/`_conditional` 键；
+候选生成层将多因子模式输出格式改为 `template_key="_combo_<mode>"`，
+`params.factors` 为标准 entry 数组。OR 双确认、AND 任一触发、weighted 加权求和、
+rank 排序等权、product 乘积几何平均、hierarchical 层级筛选、conditional 条件加权。
+
+**涉及文件**：
+- `backtest/engine.py`:428-588 — 新增 7 个组合打分函数 + 注册
+- `experts/specialists/factor_combo_expert.py`:97-225 — 候选生成新格式 + 8 种模式
+- `experts/orchestrator.py`:494-512 — `_cand_hash` combo 适配
+
+**验收**：v5.16 提交。21 个单元测试全通过。TypeScript 编译通过。

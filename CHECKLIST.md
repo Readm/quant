@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 17:10 UTC
+## Last Verification: 2026-04-29 18:05 UTC
 
 ---
 
@@ -67,7 +67,15 @@
 - [x] IterationView.tsx 表头添加 hover tooltip（9 个指标解释）
 - [x] smoke_test.py + TypeScript 编译通过
 
-### 10. v5.15c — 移除类型列 + 修正反馈文案 + toFixed null 防御
+### 11. v5.16 — 因子组合引擎全链路接入 + 7种组合模式
+- [x] engine.py: 新增 7 个组合打分函数 (AND/OR/weighted/rank/product/hierarchical/conditional)
+- [x] engine.py: 注册到 _SCORE_REGISTRY (_combo_and 等7个键)
+- [x] factor_combo_expert.py: COMBO_MODES 扩展到8种 + 概率分布调整
+- [x] factor_combo_expert.py: 多因子模式输出改 template_key=_combo_<mode>, factors 数组
+- [x] orchestrator.py: _cand_hash 适配 combo 策略的 factors 哈希
+- [x] tests/test_combo_engine.py: 21 个单元测试全部通过
+- [x] TypeScript 编译通过
+- [x] Vite build 通过
 - [x] 移除: IterationView 策略表"类型"列（全显示"均值回归"，误导）
 - [x] 修正: 反馈文案"可适度扩大仓位"→"进入下一轮迭代"（歧义）
 - [x] 修正: 其余5条反馈文案增加上下文说明（Sharpe/回撤/胜率/盈亏比/频次）

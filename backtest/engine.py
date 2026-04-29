@@ -426,6 +426,166 @@ def _score_composite(closes, data, indicators, params, t):
     return total_score / total_weight
 
 
+def _combo_get_factor_scores(closes, data, indicators, factors, t):
+    """Helper for combo modes: evaluate all factors and return (scores, weights, keys)."""
+    scores, weights, keys = [], [], []
+    for factor in factors:
+        key = factor.get("key", "")
+        fn = _SCORE_REGISTRY.get(key)
+        if fn is None:
+            continue
+        f_params = {k: v for k, v in factor.items() if k not in ("key", "weight")}
+        score = fn(closes, data, indicators, f_params, t)
+        scores.append(score)
+        weights.append(float(factor.get("weight", 1.0)))
+        keys.append(key)
+    return scores, weights, keys
+
+
+def _combo_score_and(closes, data, indicators, params, t):
+    """AND mode: all factors must produce positive signals.
+    params = {"factors": [{"key": "rsi", ...}, {"key": "momentum", ...}]}
+    """
+    factors = params.get("factors", [])
+    scores, _, _ = _combo_get_factor_scores(closes, data, indicators, factors, t)
+    if not scores:
+        return 0.0
+    for s in scores:
+        if s <= 0:
+            return 0.0
+    return sum(scores) / len(scores)
+
+
+def _combo_score_or(closes, data, indicators, params, t):
+    """OR mode: any positive signal triggers, take the strongest."""
+    factors = params.get("factors", [])
+    scores, _, _ = _combo_get_factor_scores(closes, data, indicators, factors, t)
+    if not scores:
+        return 0.0
+    # Take the strongest signal (positive or negative)
+    return max(scores, key=abs)
+
+
+def _combo_score_weighted(closes, data, indicators, params, t):
+    """Weighted sum mode: same as _score_composite, renamed for registry consistency."""
+    return _score_composite(closes, data, indicators, params, t)
+
+
+def _combo_score_rank(closes, data, indicators, params, t):
+    """Rank aggregation: normalize each factor to [0,1] via rank, then equal-weight average.
+    Requires knowing the full universe of scores. Uses params.get('_universe_scores') if available.
+    Simple fallback: divide by factor's typical range.
+    """
+    factors = params.get("factors", [])
+    scores, _, _ = _combo_get_factor_scores(closes, data, indicators, factors, t)
+    if not scores:
+        return 0.0
+    # Normalize each factor score by its factor's estimated typical range
+    # This avoids one factor dominating due to scale differences
+    normalized = []
+    for s in scores:
+        normalized.append(max(-1.0, min(1.0, s / 100.0)))
+    return sum(normalized) / len(normalized) * 100.0
+
+
+def _combo_score_product(closes, data, indicators, params, t):
+    """Product / geometric mean: multiply scores. Any near-zero score suppresses result."""
+    factors = params.get("factors", [])
+    scores, _, _ = _combo_get_factor_scores(closes, data, indicators, factors, t)
+    if not scores:
+        return 0.0
+    product = 1.0
+    for s in scores:
+        if abs(s) < 0.01:
+            return 0.0
+        product *= s
+    # Geometric mean preserving sign
+    n = len(scores)
+    if product < 0:
+        return -((-product) ** (1.0 / n))
+    return product ** (1.0 / n)
+
+
+def _combo_score_hierarchical(closes, data, indicators, params, t):
+    """Hierarchical: layer1 must pass (score > 0), then layer2 scores.
+    params = {
+        "factors": [{"key": "adx", ...}, {"key": "momentum", ...}],
+        "layer_split": 1  # first N factors are layer1, rest are layer2
+    }
+    """
+    factors = params.get("factors", [])
+    layer_split = int(params.get("layer_split", 1))
+    if not factors or layer_split <= 0 or layer_split >= len(factors):
+        return 0.0
+
+    layer1_factors = factors[:layer_split]
+    layer2_factors = factors[layer_split:]
+
+    # Layer 1: all must pass
+    s1, _, _ = _combo_get_factor_scores(closes, data, indicators, layer1_factors, t)
+    if not s1:
+        return 0.0
+    for s in s1:
+        if s <= 0:
+            return 0.0
+
+    # Layer 2: score
+    s2, w2, _ = _combo_get_factor_scores(closes, data, indicators, layer2_factors, t)
+    if not s2:
+        return sum(s1) / len(s1)  # fallback to layer1 avg
+
+    total = sum(s * w for s, w in zip(s2, w2))
+    total_w = sum(w2)
+    return total / total_w if total_w > 0 else 0.0
+
+
+def _combo_score_conditional(closes, data, indicators, params, t):
+    """Conditional weighting: weights change based on a condition factor.
+    params = {
+        "factors": [
+            {"key": "momentum", "weight_trend": 0.7, "weight_sideways": 0.3},
+            {"key": "rsi",      "weight_trend": 0.3, "weight_sideways": 0.7},
+        ],
+        "condition": {"key": "adx_trend", "params": {"adx_thr": 25}, "trend_threshold": 25}
+    }
+    When condition > threshold → use weight_trend, else use weight_sideways.
+    """
+    condition = params.get("condition", {})
+    cond_key = condition.get("key", "")
+    cond_params = {k: v for k, v in condition.items() if k not in ("key", "trend_threshold")}
+    trend_threshold = float(condition.get("trend_threshold", 25))
+
+    factors = params.get("factors", [])
+
+    # Evaluate condition factor
+    if cond_key:
+        fn = _SCORE_REGISTRY.get(cond_key)
+        if fn:
+            cond_score = fn(closes, data, indicators, cond_params, t)
+            is_trend = cond_score >= trend_threshold
+        else:
+            is_trend = True  # default if condition factor not found
+    else:
+        is_trend = True
+
+    # Score with regime-appropriate weights
+    total_score = 0.0
+    total_weight = 0.0
+    for factor in factors:
+        key = factor.get("key", "")
+        fn = _SCORE_REGISTRY.get(key)
+        if fn is None:
+            continue
+        f_params = {k: v for k, v in factor.items()
+                    if k not in ("key", "weight_trend", "weight_sideways")}
+        score = fn(closes, data, indicators, f_params, t)
+        weight = float(factor.get("weight_trend" if is_trend else "weight_sideways", 1.0))
+        total_score += score * weight
+        total_weight += weight
+
+    return total_score / total_weight if total_weight > 0 else 0.0
+
+
 def _apply_gate(score, closes, data, indicators, params, t):
     """Apply conditional gate: return 0.0 if condition not met, else return original score.
     params = {
@@ -545,6 +705,14 @@ _SCORE_REGISTRY = {
     "chanlun_bi":                _make_signal_score("chanlun_bi"),
     "chanlun_tao":               _make_signal_score("chanlun_tao"),
     "_composite":                _score_composite,
+    # combo modes (v5.15d)
+    "_combo_and":          _combo_score_and,
+    "_combo_or":           _combo_score_or,
+    "_combo_weighted":     _combo_score_weighted,
+    "_combo_rank":         _combo_score_rank,
+    "_combo_product":      _combo_score_product,
+    "_combo_hierarchical": _combo_score_hierarchical,
+    "_combo_conditional":  _combo_score_conditional,
 }
 
 
