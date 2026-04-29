@@ -12,7 +12,7 @@ import json, sys, os
 from pathlib import Path
 from datetime import datetime
 
-PROJECT = Path(__file__).parent.parent
+PROJECT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT))
 ERRORS = 0
 

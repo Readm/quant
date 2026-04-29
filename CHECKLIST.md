@@ -98,7 +98,11 @@
 - [x] 28 项单元测试全部通过
 - [x] 候选生成: 2000 候选 ≈ 9.7%嵌套率
 
-## Last Verification: 2026-04-29 22:45 UTC
+### 12.1. v5.16b — 修复 smoke_test.py 路径解析假阳性
+- [x] 修复: PROJECT = Path(__file__).resolve().parent.parent，避免 exec() 下 __file__ 指向 /tmp/
+- [x] 冒烟测试 7/7 全部通过: 结果文件(34个) / TS编译 / CLAUDE.md 规则 / Dashboard E2E
+
+## Last Verification: 2026-04-29 23:00 UTC
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
