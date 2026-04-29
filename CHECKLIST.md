@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 18:30 UTC
+## Last Verification: 2026-04-29 18:26 UTC
 
 ---
 
@@ -16,9 +16,21 @@
 - [x] Vite build 通过（2.79s）
 - [x] validate_dashboard.py 通过
 
+### 2. v5.9 — 修复 trade_return 计算使用真实成本基准
+- [x] backtest/engine.py:815 修复 (risk overlay sell)
+- [x] backtest/engine.py:955-959 修复 (regular rebalance sell)
+- [x] 旧逻辑: net/initial_cash - 1/N → 即使-50%亏损也显示正收益
+- [x] 新逻辑: (net - cost_basis) / cost_basis → 正确反映盈亏
+- [x] 50%亏损场景验证: old=+0.2493, new=-0.5010
+- [x] 语法检查通过
+- [x] smoke_test.py 通过
+- [x] validate_dashboard.py 通过
+- [x] Vite build 通过
+
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
 |------|--------|:----:|---------|
+| 2026-04-29 18:26 UTC | Hermes | ✅ PASS | v5.9 trade_return 修复：使用真实成本基准而非 total_cash |
 | 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |
 | 2026-04-27 00:28 UTC | Hermes | ✅ PASS | 策略逻辑组合空间扩展 v5.0 (Phase 1-5) |
 | 2026-04-27 10:40 UTC | Hermes | ✅ PASS | Dashboard 轻量化: fetch 加载 + SVG 预渲染 |

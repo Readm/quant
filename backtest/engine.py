@@ -812,7 +812,11 @@ class PortfolioBacktester:
                 gross = shares * current_price
                 net = gross - gross * SELL_COST
                 sell_proceeds += net
-                trades_list.append(net / initial_cash - 1.0 / max(len(closes_by_sym), 1))
+                cost_basis = shares * entry_price * (1 + BUY_COST)
+                trade_return = (net - cost_basis) / cost_basis if cost_basis > 0 else 0.0
+                trades_list.append(trade_return)
+                self._holding_entry_prices.pop(sym, None)
+                self._holding_peak_prices.pop(sym, None)
             else:
                 remaining[sym] = shares
 
@@ -948,7 +952,11 @@ class PortfolioBacktester:
                     gross  = shares * price
                     net    = gross - gross * SELL_COST
                     sell_proceeds += net
-                    trades.append(net / initial_cash - 1.0 / max(len(sym_list), 1))
+                    entry_price = self._holding_entry_prices.pop(sym, 0)
+                    self._holding_peak_prices.pop(sym, None)
+                    cost_basis = shares * entry_price * (1 + BUY_COST)
+                    trade_return = (net - cost_basis) / cost_basis if cost_basis > 0 else 0.0
+                    trades.append(trade_return)
                 for rt in risk_trades:
                     trades.append(rt)
                 cash += sell_proceeds
