@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 16:06 UTC
+## Last Verification: 2026-04-29 16:40 UTC
 
 ---
 
@@ -67,7 +67,13 @@
 - [x] IterationView.tsx 表头添加 hover tooltip（9 个指标解释）
 - [x] smoke_test.py + TypeScript 编译通过
 
-### 9. v5.15 — 修复 Dashboard 渲染错误 + E2E 冒烟测试
+### 10. v5.15c — 移除类型列 + 修正反馈文案 + toFixed null 防御
+- [x] 移除: IterationView 策略表"类型"列（全显示"均值回归"，误导）
+- [x] 修正: 反馈文案"可适度扩大仓位"→"进入下一轮迭代"（歧义）
+- [x] 修正: 其余5条反馈文案增加上下文说明（Sharpe/回撤/胜率/盈亏比/频次）
+- [x] 修复: s.score / s.sharpe / s.max_drawdown / t.best_score toFixed null 崩溃
+- [x] TypeScript 编译通过
+- [x] E2E 渲染测试通过（7/7 项，0 console error）
 - [x] 修复: IterationView 策略 equity_curve 缺失时崩溃（加 `|| []` 防御）
 - [x] 修复: daily_returns_to_equity curve[0] 双包装 bug
 - [x] 修复: validate_dashboard.py 路径错误 + 兼容旧格式

@@ -558,12 +558,12 @@ class Evaluator:
     @staticmethod
     def _make_feedback(ann, sharpe, dd, wr, pf, n_trades) -> str:
         tips = []
-        if sharpe < 0.5:  tips.append("收紧出场条件减少假信号")
-        if dd > 20:        tips.append("降低单笔仓位至≤10%")
-        if wr < 40:       tips.append("缩短持仓周期或加入趋势过滤")
-        if pf < 1.3:      tips.append("优化止盈止损比，减少赢转亏")
-        if n_trades < 5:  tips.append("放宽入场条件增加交易频率")
-        if not tips:      tips.append("指标良好，可适度扩大仓位")
+        if sharpe < 0.5:  tips.append("信号噪声偏高，收紧入场条件减少假信号")
+        if dd > 20:        tips.append("最大回撤超过20%，建议降低单笔仓位")
+        if wr < 40:       tips.append("胜率偏低，收紧信号条件或加入趋势过滤")
+        if pf < 1.3:      tips.append("盈亏比不足，优化止损止盈参数减少亏损交易")
+        if n_trades < 5:  tips.append("交易频次过低，放宽信号条件增加交易频率")
+        if not tips:      tips.append("指标良好，进入下一轮迭代")
         return "；".join(tips)
 
     # ── 多样性检测 ────────────────────────

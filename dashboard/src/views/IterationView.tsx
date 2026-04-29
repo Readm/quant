@@ -66,7 +66,7 @@ interface ThreadMeta {
 
 // ── Palette ──────────────────────────────────────────────────────
 const COLORS = ['#6366f1','#22d3ee','#4ade80','#fbbf24','#f87171','#a78bfa','#fb923c','#34d399']
-const TYPE_COLOR: Record<string, string> = { trend: '#6366f1', mean_reversion: '#22d3ee' }
+
 
 // ── Metric tooltips ────────────────────────────────────────────────
 const METRIC_TIP: Record<string, string> = {
@@ -77,7 +77,7 @@ const METRIC_TIP: Record<string, string> = {
   max_drawdown: '历史最大净值回撤(%)，越小越好。衡量策略在最差行情下的亏损',
   total_trades: '总交易次数。太少(<5)不具统计意义，太少(<20)需要降级观察',
   name: '策略名称，标识因子模板和参数',
-  type: '策略类型：趋势(追涨) 或 均值回归(抄底)',
+  // (type 已移除)
   decision: '决策结果：ACCEPT(采纳) / REJECT(淘汰) / CONDITIONAL(待观察)',
 }
 
@@ -178,27 +178,22 @@ function StrategyRow({ s, idx }: { s: Strategy; idx: number }) {
           <span className={`text-sm ${s.selected ? 'text-white font-semibold' : 'text-slate-300'}`}>{s.name}</span>
           {s.selected && <Award size={11} className="inline ml-1 text-yellow-400" />}
         </td>
-        <td className="py-2 px-3 text-center">
-          <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: (TYPE_COLOR[s.type] || '#888') + '22', color: TYPE_COLOR[s.type] || '#888' }}>
-            {s.type === 'trend' ? '趋势' : '均值回归'}
-          </span>
-        </td>
         <td className="py-2 px-3 text-center"><DecisionBadge d={s.decision} /></td>
-        <td className="py-2 px-3 text-right text-white font-bold">{s.score.toFixed(1)}</td>
+        <td className="py-2 px-3 text-right text-white font-bold">{(s.score ?? 0).toFixed(1)}</td>
         <td className={`py-2 px-3 text-right font-semibold ${(s.alpha ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>
           {(s.alpha ?? 0) >= 0 ? '+' : ''}{(s.alpha ?? 0).toFixed(1)}%
         </td>
         <td className={`py-2 px-3 text-right font-semibold ${s.ann_return >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-          {s.ann_return >= 0 ? '+' : ''}{s.ann_return.toFixed(1)}%
+          {s.ann_return >= 0 ? '+' : ''}{(s.ann_return ?? 0).toFixed(1)}%
         </td>
-        <td className="py-2 px-3 text-right text-slate-300">{s.sharpe.toFixed(2)}</td>
-        <td className="py-2 px-3 text-right text-red-300">{s.max_drawdown.toFixed(1)}%</td>
+        <td className="py-2 px-3 text-right text-slate-300">{(s.sharpe ?? 0).toFixed(2)}</td>
+        <td className="py-2 px-3 text-right text-red-300">{(s.max_drawdown ?? 0).toFixed(1)}%</td>
         <td className="py-2 px-3 text-right text-slate-400">{s.total_trades}</td>
         <td className="py-2 px-3 text-slate-400">{open ? <ChevronDown size={13}/> : <ChevronRight size={13}/>}</td>
       </tr>
       {open && (
         <tr className="bg-slate-900/50">
-          <td colSpan={10} className="px-4 py-3">
+          <td colSpan={9} className="px-4 py-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
               <div>
                 <div className="text-slate-400 mb-1 font-medium">参数</div>
@@ -226,7 +221,7 @@ function StrategyRow({ s, idx }: { s: Strategy; idx: number }) {
   )
 }
 
-type SortKey = 'score' | 'alpha' | 'ann_return' | 'sharpe' | 'max_drawdown' | 'total_trades' | 'name' | 'type' | 'decision'
+type SortKey = 'score' | 'alpha' | 'ann_return' | 'sharpe' | 'max_drawdown' | 'total_trades' | 'name' | 'decision'
 type SortDir = 'asc' | 'desc'
 
 function StrategyTable({ strategies }: { strategies: Strategy[] }) {
@@ -265,7 +260,6 @@ function StrategyTable({ strategies }: { strategies: Strategy[] }) {
         <thead>
           <tr className="border-b border-slate-600">
             <Th label="策略名" k="name" align="left" />
-            <Th label="类型"   k="type" align="center" />
             <Th label="决策"   k="decision" align="center" />
             <Th label="综合分" k="score" />
             <Th label="Alpha"  k="alpha" />
@@ -571,7 +565,7 @@ function ThreadSelector({
                 <div className="text-xs text-slate-400 mt-0.5">{t.symbols.length > 6 ? `${t.symbols.slice(0,3).join(' · ')} … 共${t.symbols.length}只` : t.symbols.join(' · ')} · {t.days}天</div>
               </div>
               <div className="text-right shrink-0">
-                <div className="text-xs text-white font-bold">{t.best_score.toFixed(1)}分</div>
+                <div className="text-xs text-white font-bold">{(t.best_score ?? 0).toFixed(1)}分</div>
                 <div className="text-xs text-slate-500">{t.total_rounds}轮</div>
               </div>
             </button>
