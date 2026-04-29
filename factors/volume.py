@@ -56,25 +56,44 @@ def volume_price_trend(closes: list, volumes: list) -> List[float]:
     return vpt
 
 
-def mass_index(highs: list, lows: list, ema_period: int = 9,
+def mass_index(highs: list, lows: list, closes: list = None,
+              ema_period: int = 9,
               ema2_period: int = 25) -> List[float]:
     """
     Mass Index（梅斯指标）
     高位反转信号：mass>27后跌穿26.5→趋势反转
+    mass = SUM(EMA(TR, 9) / EMA(EMA(TR, 9), 25), over 25 periods)
     """
-    tr_vals = [float("nan")] * len(highs)
-    for i in range(1, len(highs)):
-        tr_vals[i] = max(highs[i] - lows[i],
-                         abs(highs[i] - closes[i - 1]) if i > 0 else 0.0,
-                         abs(lows[i] - closes[i - 1])  if i > 0 else 0.0)
-    ema1 = ema(tr_vals, ema_period)
-    ema2 = ema(ema1, ema2_period)
     n = len(highs)
+    tr_vals = [float("nan")] * n
+    tr_vals[0] = highs[0] - lows[0]
+    for i in range(1, n):
+        prev_c = closes[i - 1] if closes and i < len(closes) else highs[i - 1]
+        tr_vals[i] = max(highs[i] - lows[i],
+                         abs(highs[i] - prev_c),
+                         abs(lows[i] - prev_c))
+    # Compute EMA on valid segment only
+    valid_tr = [v for v in tr_vals if not math.isnan(v)]
     mass = [float("nan")] * n
-    for i in range(ema2_period - 1, n):
-        if math.isnan(ema1[i]) or math.isnan(ema2[i]):
-            continue
-        mass[i] = ema1[i] / (ema2[i] + 1e-10)
+    if len(valid_tr) >= ema_period + ema2_period:
+        ema1_raw = ema(valid_tr, ema_period)
+        valid_ema1 = [v for v in ema1_raw if not math.isnan(v)]
+        if len(valid_ema1) >= ema2_period:
+            ema2_raw = ema(valid_ema1, ema2_period)
+            valid_ratio = []
+            for i in range(len(valid_ema1)):
+                e2 = ema2_raw[i - (ema2_period - 1)] if i >= ema2_period - 1 else float("nan")
+                if not math.isnan(valid_ema1[i]) and not math.isnan(e2) and abs(e2) > 1e-10:
+                    valid_ratio.append(valid_ema1[i] / e2)
+            # Classic Mass Index: sum of ratios over ema2_period
+            # valid_ratio[j] corresponds to original index (ema_period-1)+(ema2_period-1)+j
+            ratio_base = (ema_period - 1) + (ema2_period - 1)
+            for j in range(len(valid_ratio)):
+                if j >= ema2_period - 1:
+                    window_sum = sum(valid_ratio[j - ema2_period + 1:j + 1])
+                    orig_idx = ratio_base + j
+                    if orig_idx < n:
+                        mass[orig_idx] = window_sum
     return mass
 
 

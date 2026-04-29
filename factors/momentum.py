@@ -71,9 +71,19 @@ def ppo(closes: list, fast: int = 12, slow: int = 26,
     for i in range(n):
         e = es[i] if not math.isnan(es[i]) else 0.0
         f = ef[i] if not math.isnan(ef[i]) else 0.0
-        if abs(e) > 1e-10:
+        if abs(e) > 1e-10 and not math.isnan(es[i]):
             ppo_vals[i] = (f - e) / e * 100.0
-    sig = ema(ppo_vals, signal)
+    # Compute signal line on valid (non-NaN) segment only to avoid NaN chain
+    sig = [float("nan")] * n
+    valid_ppo = [v for v in ppo_vals if not math.isnan(v)]
+    if len(valid_ppo) >= signal:
+        valid_sig = ema(valid_ppo, signal)
+        vi = 0
+        for i in range(n):
+            if not math.isnan(ppo_vals[i]):
+                if vi < len(valid_sig):
+                    sig[i] = valid_sig[vi]
+                vi += 1
     return ppo_vals, sig
 
 
