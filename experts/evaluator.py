@@ -70,7 +70,8 @@ class EvalResult:
     # 维度分（0~100）
     sortino_score: float; calmar_score: float
     ir_score: float; drawdown_score: float
-    composite: float
+    composite: float        # 含多样性/交易量等修正，用于迭代排序
+    display_score: float    # 不含多样性修正，仅五个维度的原始综合分，用于展示
 
     # 决策
     decision: str            # ACCEPT / REJECT / CONDITIONAL
@@ -229,6 +230,8 @@ class Evaluator:
             + dd_s      * W_DRAWDOWN
             + alpha_scaled * W_ALPHA
         )
+        # v5.15c: 五维原始分（不含多样性/交易量修正），用于展示
+        display_base = raw_composite
 
         # v5.3: 模板多样性奖励
         diversity_bonus = self._diversity_bonus(template_key)
@@ -252,6 +255,7 @@ class Evaluator:
 
         # ── PBO 折扣 ──────────────────────
         composite = min(100.0, round(raw_composite * pbo_multiplier, 1))
+        display_score = min(100.0, round(display_base * pbo_multiplier, 1))
 
         # ── 4. 决策 ────────────────────────────
         if is_rejected:
@@ -315,7 +319,7 @@ class Evaluator:
             total_trades=n_trades,
             sortino_score=round(sortino_s, 1), calmar_score=round(calmar_s, 1),
             ir_score=round(ir_s, 1), drawdown_score=round(dd_s, 1),
-            composite=composite,
+            composite=composite, display_score=display_score,
             decision=decision, reason=reason, feedback=fb_text,
             elimination_note=elim_note,
             pbo_score=0.0, pbo_label=pbo_label, pbo_multiplier=pbo_multiplier,

@@ -81,7 +81,7 @@ def eval_to_dict(e) -> dict:
         "template":      getattr(e, "template_key",  ""),
         "params":        getattr(e, "params",        {}),
         "decision":      getattr(e, "decision",      ""),
-        "score":         safe_float(getattr(e, "composite",        0)),
+        "score":         safe_float(getattr(e, "display_score",  0)) or safe_float(getattr(e, "composite", 0)),
         "ann_return":    safe_float(getattr(e, "annualized_return", 0)),
         "sharpe":        safe_float(getattr(e, "sharpe_ratio",      0)),
         "max_drawdown":  safe_float(getattr(e, "max_drawdown_pct",  0)),

@@ -2,7 +2,7 @@
 
 > 此文件是审计日志。每次提交前必须更新，pre-commit hook 强制检查。
 
-## Last Verification: 2026-04-29 16:40 UTC
+## Last Verification: 2026-04-29 17:10 UTC
 
 ---
 
@@ -87,7 +87,7 @@
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
 |------|--------|:----:|---------|
-| 2026-04-29 18:26 UTC | Hermes | ✅ PASS | v5.9 trade_return 修复：使用真实成本基准而非 total_cash |
+| 2026-04-29 17:10 UTC | Hermes | ✅ PASS | v5.15d: 展示用原始分(display_score)，迭代用含多样性修正分(composite) |
 | 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |
 | 2026-04-27 00:28 UTC | Hermes | ✅ PASS | 策略逻辑组合空间扩展 v5.0 (Phase 1-5) |
 | 2026-04-27 10:40 UTC | Hermes | ✅ PASS | Dashboard 轻量化: fetch 加载 + SVG 预渲染 |
