@@ -14,7 +14,7 @@ portfolio_backtest.py — 多股持仓组合回测引擎
   max_position_pct — 单只股票最大仓位占比 (0.3~1.0)
 """
 import math
-from typing import Dict, List
+from typing import Dict
 
 # ── 交易成本（与 expert1a/1b 保持一致）──────────────────────────────
 from config.settings import TRADING_COST as _TC
@@ -1142,6 +1142,10 @@ class PortfolioBacktester:
                     trades.append(rt)
                 cash += sell_proceeds
 
+                # 排除跌停未卖出的标的（仍在 holdings 中），避免静默覆盖旧仓位
+                selected = [s for s in selected if s not in holdings]
+                target_w = {s: w for s, w in target_w.items() if s in selected}
+
                 total_eq = cash
                 for sym in selected:
                     w     = target_w.get(sym, 0.0)
@@ -1161,10 +1165,12 @@ class PortfolioBacktester:
                     if sig_price > 0:
                         exec_shortfalls.append((price - sig_price) / sig_price)
 
+            # 调仓日用 exec_t 估值（持仓实际在 exec_t 价格成交），非调仓日用 t
+            mtm_t = exec_t if ((t - t_start) % rebalance_freq == 0 and t + 1 < t_end) else t
             port_val = cash + sum(
-                holdings[sym] * closes_by_sym[sym][t]
+                holdings[sym] * closes_by_sym[sym][mtm_t]
                 for sym in holdings
-                if t < len(closes_by_sym[sym])
+                if mtm_t < len(closes_by_sym[sym])
             )
             prev = equity[-1]
             equity.append(port_val)
@@ -1181,7 +1187,7 @@ class PortfolioBacktester:
         ann   = (final / cash) ** (252 / max(n - 1, 1)) - 1
         vol   = self._std(daily_rets) * math.sqrt(252) if daily_rets else 0.0
         # Sharpe = mean(r_i) / σ(r_i) * √252 (标准定义)
-        mean_daily = sum(daily_rets) / n if daily_rets and n > 0 else 0.0
+        mean_daily = sum(daily_rets) / len(daily_rets) if daily_rets else 0.0
         s = (mean_daily * 252) / vol if vol > 0 else 0.0
         sortino_v = self._sortino(daily_rets)
         max_dd_v  = self._max_dd(daily_rets)

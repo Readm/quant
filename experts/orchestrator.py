@@ -935,11 +935,6 @@ class Orchestrator:
             print(f"[因子库] 加载失败（首次运行时正常）: {e}")
 
     @staticmethod
-    def _sf_to_text(sf):
-        adj = sf.get("adjustment",""); param = sf.get("param",""); mag = sf.get("magnitude",0)
-        return f"建议{adj}参数{param}" if adj and adj != "none" else ""
-
-    @staticmethod
     def _randomize(params, fraction, rng):
         out = {}
         for k, v in params.items():
