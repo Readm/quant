@@ -1,0 +1,14 @@
+[
+  {
+    "id": "astock_20260429_2227",
+    "name": "astock",
+    "symbols": [
+      "astock"
+    ],
+    "run_at": "2026-04-29T22:27:35.884622",
+    "total_rounds": 20,
+    "days": 800,
+    "best_score": 96.6,
+    "converged": false
+  }
+]
