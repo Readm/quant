@@ -110,11 +110,22 @@
 - [x] tests/test_factors.py: 567项测试覆盖非恒定值/无异常/非零信号/互异性/敏感性
 - [x] test_combo_engine.py 32项全部通过
 
-## Last Verification: 2026-04-30 13:55 UTC
+### 3. 统一测试框架: pytest化
+- [x] pip install --break-system-packages pytest
+- [x] test_factors.py: 56 tests ✅ (原pytest.mark.parametrize，以前缺pytest炸)
+- [x] test_combo_engine.py: 32 tests ✅ (自建Runner → pytest自动发现)
+- [x] test_trade_return_fix.py: 5 tests ✅ (迁移到tests/)
+- [x] pytest.ini 配置: testpaths=tests, -v --tb=short
+- [x] 全量 93 tests 通过 (0.21s)
+- [x] scripts/smoke_test.py 独立保持正常
+- [x] 统一入口: /usr/bin/python3.12 -m pytest
+
+## Last Verification: 2026-04-30 16:01 UTC
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
 |------|--------|:----:|---------|
+| 2026-04-30 16:01 UTC | Hermes | ✅ PASS | v5.20 统一测试框架: 安装 pytest, 全部 pytest 化 |
 | 2026-04-30 13:55 UTC | Hermes | ✅ PASS | v5.20: 修复6因子bug(mass_index/ppo/accdist/signal_horizon等) + factor单元测试 |
 | 2026-04-29 17:10 UTC | Hermes | ✅ PASS | v5.15d: 展示用原始分(display_score)，迭代用含多样性修正分(composite) |
 | 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |
