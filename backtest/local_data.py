@@ -1,10 +1,9 @@
 """
 local_data.py — 本地缓存读取器（离线回测）
 数据来源:
-  data/raw/          JSON 格式，由 stooq_collector.py 填充
   data/tushare/daily CSV 格式，由 fetch_tushare.py 填充
 """
-import csv, json, math, pickle
+import csv, math, pickle
 from pathlib import Path
 from typing import Optional, Dict, List
 
@@ -99,51 +98,18 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
     }
 
 
-def load_symbol(symbol: str, data_dir: str = "data/raw", n: int = 0) -> Optional[dict]:
-    """从本地缓存加载，去重后按日期升序返回。
-    优先读 data/raw/*.json；未找到时 fallback 到 data/tushare/daily/*.csv。
-    """
-    files = sorted(Path(data_dir).glob(f"{symbol.upper()}_*.json"), reverse=True)
-    if not files:
-        # fallback: tushare CSV
-        csv_path = _tushare_symbol_to_path(symbol)
-        if csv_path:
-            return _load_tushare_csv(csv_path, n)
-        print(f"[local_data] Not found: {symbol} in {data_dir} or tushare/daily")
-        return None
-    d = json.load(open(files[0]))
-    rows = d.get("rows", [])
-    if not rows: return None
-    rows.sort(key=lambda r: r["date"])
-    if n > 0 and len(rows) > n: rows = rows[-n:]
-    closes = [r["close"] for r in rows]
-    returns = [0.0] + [(closes[i]-closes[i-1])/closes[i-1] for i in range(1,len(closes))]
-    from backtest.indicators import compute_indicators
-    ind = compute_indicators({
-        "closes":  closes,
-        "highs":   [r["high"] for r in rows],
-        "lows":    [r["low"]  for r in rows],
-        "volumes": [r["vol"]  for r in rows],
-    })
-    return {
-        "symbol":     symbol,
-        "dates":      [r["date"]  for r in rows],
-        "opens":      [r["open"]  for r in rows],
-        "highs":      [r["high"]  for r in rows],
-        "lows":       [r["low"]   for r in rows],
-        "closes":     closes,
-        "volumes":    [r["vol"]   for r in rows],
-        "returns":    returns,
-        "indicators": ind,
-        "extensions": d.get("extensions", {}),   # Tushare 附加数据
-        "source":     f"cache:{files[0].name}",
-        "count":      len(rows),
-    }
+def load_symbol(symbol: str, n: int = 0) -> Optional[dict]:
+    """从 tushare CSV 加载 OHLCV。"""
+    csv_path = _tushare_symbol_to_path(symbol)
+    if csv_path:
+        return _load_tushare_csv(csv_path, n)
+    print(f"[local_data] Not found: {symbol}")
+    return None
 
-def load_multiple(symbols: List[str], data_dir: str = "data/raw", n: int = 0) -> Dict[str,dict]:
+def load_multiple(symbols: List[str], n: int = 0) -> Dict[str,dict]:
     out = {}
     for sym in symbols:
-        d = load_symbol(sym, data_dir, n)
+        d = load_symbol(sym, n)
         if d: out[sym] = d
     return out
 
