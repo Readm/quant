@@ -94,10 +94,21 @@ class FactorComboExpert:
 
     # v5.21: 基本面/资金面因子（依赖 tushare daily_basic / moneyflow）
     _FUNDAMENTAL = [
-        {"key": "pe_percentile",   "name": "PE分位数低估",   "params": {"lookback": 60}},
-        {"key": "turnover_surge",  "name": "换手率突变",     "params": {"lookback": 20}},
-        {"key": "big_money_flow",  "name": "超大单资金流向", "params": {}},
-        {"key": "mcap_filter",     "name": "小市值选股",     "params": {"lookback": 120}},
+        {"key": "pe_percentile",      "name": "PE分位数低估",     "params": {"lookback": 60}},
+        {"key": "turnover_surge",     "name": "换手率突变",       "params": {"lookback": 20}},
+        {"key": "big_money_flow",     "name": "超大单资金流向",   "params": {}},
+        {"key": "mcap_filter",        "name": "小市值选股",       "params": {"lookback": 120}},
+        {"key": "earnings_yield",     "name": "盈利收益率",       "params": {}},
+        {"key": "pe_trend",           "name": "PE趋势变化",       "params": {"lookback": 60}},
+        {"key": "dv_yield",           "name": "股息率筛选",       "params": {"threshold": 2.0}},
+        {"key": "volume_ratio_surge", "name": "量比放大",         "params": {}},
+        {"key": "turnover_free_surge","name": "自由流通换手率突变","params": {"lookback": 20}},
+        {"key": "float_ratio",        "name": "流通股比例",       "params": {}},
+        {"key": "net_mf_strength",    "name": "净资金流入强度",   "params": {}},
+        {"key": "smart_retail_div",   "name": "聪明钱散户背离",   "params": {}},
+        {"key": "amount_surge",       "name": "成交额突变",       "params": {"lookback": 20}},
+        {"key": "limit_distance",     "name": "涨跌停区间位置",   "params": {}},
+        {"key": "roe",                "name": "ROE筛选",          "params": {}},
     ]
 
     TEMPLATES = _TREND + _MR + _INNOVATIVE + _EXTENDED + _FUNDAMENTAL

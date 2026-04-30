@@ -40,7 +40,7 @@ def _ind_cache_path(csv_path: Path, n: int) -> Path:
 
 
 def _load_daily_basic(symbol: str) -> Optional[dict]:
-    """加载 daily_basic CSV（PE/PB/换手率/市值），返回 {trade_date: {key: val}}。"""
+    """加载 daily_basic CSV（PE/PB/换手率/市值/股息率等）。"""
     base = Path("data/tushare/daily_basic")
     csv_path = base / f"{symbol}.csv"
     if not csv_path.exists():
@@ -49,20 +49,25 @@ def _load_daily_basic(symbol: str) -> Optional[dict]:
     with open(csv_path, newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f):
             out[r["trade_date"]] = {
-                "pe":            _safe_float(r.get("pe")),
-                "pe_ttm":        _safe_float(r.get("pe_ttm")),
-                "pb":            _safe_float(r.get("pb")),
-                "turnover_rate": _safe_float(r.get("turnover_rate")),
-                "volume_ratio":  _safe_float(r.get("volume_ratio")),
-                "dv_ratio":      _safe_float(r.get("dv_ratio")),
-                "total_mv":      _safe_float(r.get("total_mv")),
-                "circ_mv":       _safe_float(r.get("circ_mv")),
+                "pe":             _safe_float(r.get("pe")),
+                "pe_ttm":         _safe_float(r.get("pe_ttm")),
+                "pb":             _safe_float(r.get("pb")),
+                "ps_ttm":         _safe_float(r.get("ps_ttm")),
+                "turnover_rate":  _safe_float(r.get("turnover_rate")),
+                "turnover_rate_f":_safe_float(r.get("turnover_rate_f")),
+                "volume_ratio":   _safe_float(r.get("volume_ratio")),
+                "dv_ratio":       _safe_float(r.get("dv_ratio")),
+                "dv_ttm":         _safe_float(r.get("dv_ttm")),
+                "total_mv":       _safe_float(r.get("total_mv")),
+                "circ_mv":        _safe_float(r.get("circ_mv")),
+                "float_share":    _safe_float(r.get("float_share")),
+                "total_share":    _safe_float(r.get("total_share")),
             }
     return out if out else None
 
 
 def _load_moneyflow(symbol: str) -> Optional[dict]:
-    """加载 moneyflow CSV（资金流向），返回 {trade_date: {key: val}}。"""
+    """加载 moneyflow CSV（资金流向：大中小单）。"""
     base = Path("data/tushare/moneyflow")
     csv_path = base / f"{symbol}.csv"
     if not csv_path.exists():
@@ -71,13 +76,52 @@ def _load_moneyflow(symbol: str) -> Optional[dict]:
     with open(csv_path, newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f):
             out[r["trade_date"]] = {
-                "buy_elg_amount": _safe_float(r.get("buy_elg_amount")),
-                "sell_elg_amount":_safe_float(r.get("sell_elg_amount")),
+                "buy_sm_amount":  _safe_float(r.get("buy_sm_amount")),
+                "sell_sm_amount": _safe_float(r.get("sell_sm_amount")),
+                "buy_md_amount":  _safe_float(r.get("buy_md_amount")),
+                "sell_md_amount": _safe_float(r.get("sell_md_amount")),
                 "buy_lg_amount":  _safe_float(r.get("buy_lg_amount")),
                 "sell_lg_amount": _safe_float(r.get("sell_lg_amount")),
+                "buy_elg_amount": _safe_float(r.get("buy_elg_amount")),
+                "sell_elg_amount":_safe_float(r.get("sell_elg_amount")),
                 "net_mf_amount":  _safe_float(r.get("net_mf_amount")),
                 "net_mf_vol":     _safe_float(r.get("net_mf_vol")),
             }
+    return out if out else None
+
+
+def _load_stk_limit(symbol: str) -> Optional[dict]:
+    """加载 stk_limit CSV（每日涨跌停价）。"""
+    base = Path("data/tushare/stk_limit")
+    csv_path = base / f"{symbol}.csv"
+    if not csv_path.exists():
+        return None
+    out = {}
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            out[r["trade_date"]] = {
+                "up_limit":   _safe_float(r.get("up_limit")),
+                "down_limit": _safe_float(r.get("down_limit")),
+            }
+    return out if out else None
+
+
+def _load_fina_basic(symbol: str) -> Optional[dict]:
+    """加载 fina_basic CSV（季度财务数据），返回 {ann_date: {key: val}}。"""
+    base = Path("data/tushare/fina_basic")
+    csv_path = base / f"{symbol}.csv"
+    if not csv_path.exists():
+        return None
+    out = {}
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            ann_date = r.get("ann_date", "")
+            if ann_date:
+                out[ann_date] = {
+                    "roe": _safe_float(r.get("roe")),
+                    "eps": _safe_float(r.get("eps")),
+                    "bps": _safe_float(r.get("bps")),
+                }
     return out if out else None
 
 
@@ -102,6 +146,7 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
                 "low":     float(r["low"]),
                 "close":   float(r["close"]),
                 "vol":     float(r["vol"]),
+                "amount":  float(r["amount"]) if r.get("amount") else 0.0,
                 "pct_chg": float(r["pct_chg"]) if r.get("pct_chg") else 0.0,
             })
     if not rows:
@@ -133,22 +178,28 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
     dates_raw = [r["date"] for r in rows]  # YYYYMMDD for extension lookup
     dates   = [f"{d[:4]}-{d[4:6]}-{d[6:]}" for d in dates_raw]
 
-    # ── 加载扩展数据（daily_basic / moneyflow）─────────────────
+    # ── 加载扩展数据（daily_basic / moneyflow / stk_limit / fina_basic）─
     # 转为按时间索引的数组 ext["pe"][t]，因子函数直接用
     symbol = csv_path.stem
-    basic = _load_daily_basic(symbol)
-    money = _load_moneyflow(symbol)
+    basic   = _load_daily_basic(symbol)
+    money   = _load_moneyflow(symbol)
+    stk_lim = _load_stk_limit(symbol)
+    fina    = _load_fina_basic(symbol)
     ext_arrays = {}
-    if basic or money:
-        # 收集所有可能的 key
+    # 合并所有数据源的 keys
+    sources = {}
+    if basic:   sources["basic"]   = basic
+    if money:   sources["money"]   = money
+    if stk_lim: sources["stk_lim"] = stk_lim
+    if fina:    sources["fina"]    = fina
+    if sources:
         all_keys = set()
-        sample = basic or money
-        sample_date = next(iter(sample))
-        if basic:
-            all_keys.update(basic[sample_date].keys())
-        if money:
-            all_keys.update(money[sample_date].keys())
-        # 构建数组
+        for name, src in sources.items():
+            sample_date = next(iter(src))
+            all_keys.update(src[sample_date].keys())
+        # forward-fill fina basic: sort ann_dates ascending
+        fina_dates = sorted(fina.keys()) if fina else []
+        fina_ptr = 0
         for k in sorted(all_keys):
             vals = []
             for raw_date in dates_raw:
@@ -157,6 +208,15 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
                     v = basic[raw_date].get(k)
                 if v is None and money and raw_date in money:
                     v = money[raw_date].get(k)
+                if v is None and stk_lim and raw_date in stk_lim:
+                    v = stk_lim[raw_date].get(k)
+                if v is None and fina:
+                    # forward-fill: use most recent fina data
+                    while (fina_ptr + 1 < len(fina_dates)
+                           and fina_dates[fina_ptr + 1] <= raw_date):
+                        fina_ptr += 1
+                    if fina_dates and fina_dates[fina_ptr] <= raw_date:
+                        v = fina[fina_dates[fina_ptr]].get(k)
                 vals.append(v)
             if any(v is not None for v in vals):
                 ext_arrays[k] = vals
@@ -169,6 +229,7 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
         "lows":       [r["low"]     for r in rows],
         "closes":     closes,
         "volumes":    [r["vol"]     for r in rows],
+        "amounts":    [r["amount"]  for r in rows],
         "pct_chgs":   [r["pct_chg"] for r in rows],
         "returns":    returns,
         "indicators": ind,

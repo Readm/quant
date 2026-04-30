@@ -151,12 +151,28 @@
 - [x] smoke_test 通过
 - [x] 零签名改动：extensions 通过已有 data dict 传递
 
-## Last Verification: 2026-04-30 17:50 UTC
+### 7. 大量扩展基本面因子（v5.21+）
+- [x] 数据加载层扩展:
+  - daily_basic: 新增 ps_ttm, turnover_rate_f, dv_ttm, float_share, total_share
+  - moneyflow: 新增 buy/sell_sm_amount, buy/sell_md_amount
+  - 新增 _load_stk_limit(): up_limit, down_limit
+  - 新增 _load_fina_basic(): roe, eps, bps（forward-filled）
+  - daily CSV: 新增 amount（成交额）列
+- [x] 新增 11 个基本面/资金面因子:
+  earnings_yield / pe_trend / dv_yield / volume_ratio_surge
+  turnover_free_surge / float_ratio / net_mf_strength
+  smart_retail_div / amount_surge / limit_distance / roe
+- [x] _FUNDAMENTAL 从 4 → 15 模板
+- [x] 总模板数: 42 → 53
+- [x] 93 tests 通过
+- [x] smoke_test 通过
+
+## Last Verification: 2026-04-30 18:15 UTC
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
 |------|--------|:----:|---------|
-| 2026-04-30 17:50 UTC | Hermes | ✅ PASS | v5.21: 扩展因子数据源 — daily_basic + moneyflow |
+| 2026-04-30 18:15 UTC | Hermes | ✅ PASS | v5.21+: 15 个基本面因子 + 4 数据源扩展 |
 | 2026-04-30 13:55 UTC | Hermes | ✅ PASS | v5.20: 修复6因子bug(mass_index/ppo/accdist/signal_horizon等) + factor单元测试 |
 | 2026-04-29 17:10 UTC | Hermes | ✅ PASS | v5.15d: 展示用原始分(display_score)，迭代用含多样性修正分(composite) |
 | 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |

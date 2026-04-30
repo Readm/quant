@@ -109,7 +109,7 @@ def _load_one(sym: str, n_days: int) -> tuple:
     local = load_multiple([sym], n=n_days)
     if sym in local and local[sym].get('closes'):
         ld = local[sym]
-        d = {k: ld.get(k, []) for k in ('closes', 'dates', 'opens', 'highs', 'lows', 'volumes', 'pct_chgs')}
+        d = {k: ld.get(k, []) for k in ('closes', 'dates', 'opens', 'highs', 'lows', 'volumes', 'amounts', 'pct_chgs')}
         d['extensions'] = ld.get('extensions', {})
         inds = ld.get('indicators') or compute_indicators(d)
         return sym, {'data': d, 'indicators': inds}
@@ -161,6 +161,7 @@ def load_symbols_data(symbols: list, n_days: int) -> list:
                 "highs":      raw_d.get("highs",      closes),
                 "lows":       raw_d.get("lows",       closes),
                 "volumes":    raw_d.get("volumes",    [1e9] * len(closes)),
+                "amounts":    raw_d.get("amounts",    []),
                 "dates":      raw_d.get("dates",      []),
                 "pct_chgs":   raw_d.get("pct_chgs",   []),
                 "extensions": raw_d.get("extensions", {}),

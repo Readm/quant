@@ -724,6 +724,148 @@ def _score_mcap_filter(c, data, indicators, params, t):
     return (1.0 - pct) * 100  # 小市值=高分
 
 
+# ── v5.21 扩展基本面/资金面因子 ────────────────────────────────────────
+
+def _ext_arr(data, key):
+    """安全获取扩展数据数组。"""
+    return data.get("extensions", {}).get(key, [])
+
+def _ext_val(data, key, t):
+    """安全获取第 t 天的扩展数据值。"""
+    arr = _ext_arr(data, key)
+    return arr[t] if t < len(arr) else None
+
+
+def _score_earnings_yield(c, data, indicators, params, t):
+    """盈利收益率 = 1/pe_ttm × 100。越高越便宜。"""
+    pe = _ext_val(data, "pe_ttm", t)
+    if pe is None or pe <= 0:
+        return 0.0
+    ey = (1.0 / pe) * 100  # PE=10 → ey=10%, PE=50 → ey=2%
+    return max(-100, min(100, (ey - 3.0) * 10))  # centered at 3% earnings yield
+
+
+def _score_pe_trend(c, data, indicators, params, t):
+    """PE 趋势：当前PE / 60日均PE。下降=变便宜→正信号。"""
+    pe_arr = _ext_arr(data, "pe_ttm")
+    if t >= len(pe_arr) or pe_arr[t] is None or pe_arr[t] <= 0:
+        return 0.0
+    lb = int(params.get("lookback", 60))
+    if t < lb:
+        return 0.0
+    window = [v for v in pe_arr[t - lb:t] if v is not None and v > 0]
+    if len(window) < lb // 2:
+        return 0.0
+    avg = sum(window) / len(window)
+    ratio = pe_arr[t] / avg if avg > 0 else 1.0
+    return (1.0 - ratio) * 100  # ratio<1 (PE下降) → 正信号
+
+
+def _score_dv_yield(c, data, indicators, params, t):
+    """股息率：dv_ratio > 阈值。高股息→正信号。"""
+    dv = _ext_val(data, "dv_ratio", t)
+    if dv is None or dv <= 0:
+        return 0.0
+    thr = float(params.get("threshold", 2.0))
+    return min(100, (dv - thr) * 20)  # dv=5% → 60分
+
+
+def _score_volume_ratio_surge(c, data, indicators, params, t):
+    """量比放大：volume_ratio 高频交易量/5日均量。"""
+    vr = _ext_val(data, "volume_ratio", t)
+    if vr is None or vr <= 0:
+        return 0.0
+    # volume_ratio 已经是当日量/5日均量
+    signal = (vr - 1.0) * 50  # vr=1.5 → +25, vr=0.5 → -25
+    return max(-100, min(100, signal))
+
+
+def _score_turnover_free_surge(c, data, indicators, params, t):
+    """自由流通换手率突变：turnover_rate_f / 20日均值。"""
+    tr_arr = _ext_arr(data, "turnover_rate_f")
+    if t >= len(tr_arr) or tr_arr[t] is None or tr_arr[t] <= 0:
+        return 0.0
+    lb = int(params.get("lookback", 20))
+    if t < lb:
+        return 0.0
+    baseline = [v for v in tr_arr[t - lb:t] if v is not None and v > 0]
+    if len(baseline) < lb // 2:
+        return 0.0
+    avg = sum(baseline) / len(baseline)
+    ratio = tr_arr[t] / avg if avg > 0 else 1.0
+    return max(-100, min(100, (ratio - 1.0) * 100))
+
+
+def _score_float_ratio(c, data, indicators, params, t):
+    """流通股比例：float_share/total_share。高=低解禁风险→正信号。"""
+    fs = _ext_val(data, "float_share", t)
+    ts = _ext_val(data, "total_share", t)
+    if fs is None or ts is None or ts <= 0:
+        return 0.0
+    ratio = fs / ts
+    return (ratio - 0.5) * 200  # 0.5→0, 1.0→100, 0.0→-100
+
+
+def _score_net_mf_strength(c, data, indicators, params, t):
+    """净资金流入强度：net_mf_amount/circ_mv×100（占流通市值百分比）。"""
+    nf = _ext_val(data, "net_mf_amount", t)
+    mv = _ext_val(data, "circ_mv", t)
+    if nf is None or mv is None or mv <= 0:
+        return 0.0
+    pct = nf / mv * 100
+    return max(-100, min(100, pct * 500))  # 0.2% → 100分
+
+
+def _score_smart_retail_divergence(c, data, indicators, params, t):
+    """聪明钱-散户背离：(超大单净额-小单净额)/流通市值×10000 bp。"""
+    belg = _ext_val(data, "buy_elg_amount", t)
+    selg = _ext_val(data, "sell_elg_amount", t)
+    bsm  = _ext_val(data, "buy_sm_amount", t)
+    ssm  = _ext_val(data, "sell_sm_amount", t)
+    mv   = _ext_val(data, "circ_mv", t)
+    if any(v is None for v in [belg, selg, bsm, ssm, mv]) or mv <= 0:
+        return 0.0
+    net_elg = belg - selg
+    net_sm  = bsm - ssm
+    divergence = (net_elg - net_sm) / mv * 10000  # basis points of market cap
+    return max(-100, min(100, divergence * 10))
+
+
+def _score_amount_surge(c, data, indicators, params, t):
+    """成交额突变：当日成交额/20日均成交额。"""
+    amt = data.get("amounts", [])
+    if t >= len(amt) or amt[t] is None or amt[t] <= 0:
+        return 0.0
+    lb = int(params.get("lookback", 20))
+    if t < lb:
+        return 0.0
+    base = [v for v in amt[t - lb:t] if v is not None and v > 0]
+    if len(base) < lb // 2:
+        return 0.0
+    avg = sum(base) / len(base)
+    ratio = amt[t] / avg if avg > 0 else 1.0
+    return max(-100, min(100, (ratio - 1.0) * 100))
+
+
+def _score_limit_distance(c, data, indicators, params, t):
+    """涨跌停区间位置：(close-down_limit)/(up_limit-down_limit)。低位→正信号。"""
+    up   = _ext_val(data, "up_limit", t)
+    down = _ext_val(data, "down_limit", t)
+    if up is None or down is None or up <= down:
+        return 0.0
+    pos = (c[t] - down) / (up - down)  # 0.0=跌停, 1.0=涨停
+    return (0.5 - pos) * 200  # 低位→正信号
+
+
+def _score_roe(c, data, indicators, params, t):
+    """ROE 筛选：高 ROE → 正信号。"""
+    roe = _ext_val(data, "roe", t)
+    if roe is None or roe <= 0:
+        return 0.0
+    return min(100, roe * 5)  # roe=20% → 100分
+
+
+
 # ── 因子打分注册表 ────────────────────────────────────────────────────
 _SCORE_REGISTRY = {
     "ma_cross":          _score_ma_cross,
@@ -779,6 +921,18 @@ _SCORE_REGISTRY = {
     "turnover_surge":      _score_turnover_surge,
     "big_money_flow":      _score_big_money_flow,
     "mcap_filter":         _score_mcap_filter,
+    # extended fundamental factors (v5.21+)
+    "earnings_yield":       _score_earnings_yield,
+    "pe_trend":             _score_pe_trend,
+    "dv_yield":             _score_dv_yield,
+    "volume_ratio_surge":   _score_volume_ratio_surge,
+    "turnover_free_surge":  _score_turnover_free_surge,
+    "float_ratio":          _score_float_ratio,
+    "net_mf_strength":      _score_net_mf_strength,
+    "smart_retail_div":     _score_smart_retail_divergence,
+    "amount_surge":         _score_amount_surge,
+    "limit_distance":       _score_limit_distance,
+    "roe":                  _score_roe,
 }
 
 
