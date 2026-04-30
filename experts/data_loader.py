@@ -109,7 +109,8 @@ def _load_one(sym: str, n_days: int) -> tuple:
     local = load_multiple([sym], n=n_days)
     if sym in local and local[sym].get('closes'):
         ld = local[sym]
-        d = {k: ld.get(k, []) for k in ('closes', 'dates', 'opens', 'highs', 'lows', 'volumes')}
+        d = {k: ld.get(k, []) for k in ('closes', 'dates', 'opens', 'highs', 'lows', 'volumes', 'pct_chgs')}
+        d['extensions'] = ld.get('extensions', {})
         inds = ld.get('indicators') or compute_indicators(d)
         return sym, {'data': d, 'indicators': inds}
     return sym, None

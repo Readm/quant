@@ -92,7 +92,15 @@ class FactorComboExpert:
         {"key": "chanlun_tao",               "name": "缠论套",         "params": {}},
     ]
 
-    TEMPLATES = _TREND + _MR + _INNOVATIVE + _EXTENDED
+    # v5.21: 基本面/资金面因子（依赖 tushare daily_basic / moneyflow）
+    _FUNDAMENTAL = [
+        {"key": "pe_percentile",   "name": "PE分位数低估",   "params": {"lookback": 60}},
+        {"key": "turnover_surge",  "name": "换手率突变",     "params": {"lookback": 20}},
+        {"key": "big_money_flow",  "name": "超大单资金流向", "params": {}},
+        {"key": "mcap_filter",     "name": "小市值选股",     "params": {"lookback": 120}},
+    ]
+
+    TEMPLATES = _TREND + _MR + _INNOVATIVE + _EXTENDED + _FUNDAMENTAL
 
     # ── 组合模式 ─────────────────────────────────────────────────
     COMBO_MODES = ["single", "and", "or", "weighted", "rank", "product", "hierarchical", "conditional"]

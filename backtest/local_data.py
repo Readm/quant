@@ -39,6 +39,56 @@ def _ind_cache_path(csv_path: Path, n: int) -> Path:
     return csv_path.with_name(f"{csv_path.stem}.{n}.ind.pkl")
 
 
+def _load_daily_basic(symbol: str) -> Optional[dict]:
+    """加载 daily_basic CSV（PE/PB/换手率/市值），返回 {trade_date: {key: val}}。"""
+    base = Path("data/tushare/daily_basic")
+    csv_path = base / f"{symbol}.csv"
+    if not csv_path.exists():
+        return None
+    out = {}
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            out[r["trade_date"]] = {
+                "pe":            _safe_float(r.get("pe")),
+                "pe_ttm":        _safe_float(r.get("pe_ttm")),
+                "pb":            _safe_float(r.get("pb")),
+                "turnover_rate": _safe_float(r.get("turnover_rate")),
+                "volume_ratio":  _safe_float(r.get("volume_ratio")),
+                "dv_ratio":      _safe_float(r.get("dv_ratio")),
+                "total_mv":      _safe_float(r.get("total_mv")),
+                "circ_mv":       _safe_float(r.get("circ_mv")),
+            }
+    return out if out else None
+
+
+def _load_moneyflow(symbol: str) -> Optional[dict]:
+    """加载 moneyflow CSV（资金流向），返回 {trade_date: {key: val}}。"""
+    base = Path("data/tushare/moneyflow")
+    csv_path = base / f"{symbol}.csv"
+    if not csv_path.exists():
+        return None
+    out = {}
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            out[r["trade_date"]] = {
+                "buy_elg_amount": _safe_float(r.get("buy_elg_amount")),
+                "sell_elg_amount":_safe_float(r.get("sell_elg_amount")),
+                "buy_lg_amount":  _safe_float(r.get("buy_lg_amount")),
+                "sell_lg_amount": _safe_float(r.get("sell_lg_amount")),
+                "net_mf_amount":  _safe_float(r.get("net_mf_amount")),
+                "net_mf_vol":     _safe_float(r.get("net_mf_vol")),
+            }
+    return out if out else None
+
+
+def _safe_float(v) -> Optional[float]:
+    """安全转换 float，空值/非数值返回 None。"""
+    if v is None or v == "":
+        return None
+    try:
+        return float(v)
+    except (ValueError, TypeError):
+        return None
 def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
     """从 tushare CSV 加载 OHLCV，升序返回。先切片再计算指标，缓存到 .N.ind.pkl。"""
     rows = []
@@ -80,7 +130,37 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
 
     closes  = [r["close"] for r in rows]
     returns = [0.0] + [(closes[i] - closes[i-1]) / closes[i-1] for i in range(1, len(closes))]
-    dates   = [f"{d[:4]}-{d[4:6]}-{d[6:]}" for d in (r["date"] for r in rows)]
+    dates_raw = [r["date"] for r in rows]  # YYYYMMDD for extension lookup
+    dates   = [f"{d[:4]}-{d[4:6]}-{d[6:]}" for d in dates_raw]
+
+    # ── 加载扩展数据（daily_basic / moneyflow）─────────────────
+    # 转为按时间索引的数组 ext["pe"][t]，因子函数直接用
+    symbol = csv_path.stem
+    basic = _load_daily_basic(symbol)
+    money = _load_moneyflow(symbol)
+    ext_arrays = {}
+    if basic or money:
+        # 收集所有可能的 key
+        all_keys = set()
+        sample = basic or money
+        sample_date = next(iter(sample))
+        if basic:
+            all_keys.update(basic[sample_date].keys())
+        if money:
+            all_keys.update(money[sample_date].keys())
+        # 构建数组
+        for k in sorted(all_keys):
+            vals = []
+            for raw_date in dates_raw:
+                v = None
+                if basic and raw_date in basic:
+                    v = basic[raw_date].get(k)
+                if v is None and money and raw_date in money:
+                    v = money[raw_date].get(k)
+                vals.append(v)
+            if any(v is not None for v in vals):
+                ext_arrays[k] = vals
+
     return {
         "symbol":     csv_path.stem,
         "dates":      dates,
@@ -92,7 +172,7 @@ def _load_tushare_csv(csv_path: Path, n: int = 0) -> Optional[dict]:
         "pct_chgs":   [r["pct_chg"] for r in rows],
         "returns":    returns,
         "indicators": ind,
-        "extensions": {},
+        "extensions": ext_arrays,
         "source":     f"tushare:{csv_path.name}",
         "count":      len(rows),
     }

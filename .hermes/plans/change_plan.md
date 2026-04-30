@@ -1,41 +1,19 @@
-# Change Plan — 修正 trade_return 计算 bug
+# Change Plan — 移除废弃 data/raw 代码 + 扩展因子数据源
 
-## 需求
-修复 `backtest/engine.py` 中 trade return 计算：卖出的收益率用 `net / initial_cash` 而非实际成本，导致所有交易的 win_rate=100%。
+## Phase 1: 移除 data/raw 废弃代码（isolated）
+- 目标: `backtest/local_data.py`
+- 移除 `load_symbol()` 中优先读 `data/raw/*.json` 的逻辑
+- 保留 `load_symbol()` 接口不变，直接走 tushare CSV
+- 移除 `data/raw` 相关的 docstring 引用
+- 风险: isolated（单文件，无数据格式变化，路径是空目录）
 
-## 风险等级: isolated
-不改接口签名（BacktestReport字段名不变），只改计算逻辑内部。
-
-## 任务分派
-
-### Task 1 — 回测引擎工程师
-- **文件**: `backtest/engine.py`
-- **改动点**:
-  1. **Line 951**（常规卖出）: `trades.append(net / initial_cash - 1.0 / max(len(sym_list), 1))`
-     → 改为用 `shares * entry_price * (1 + BUY_COST)` 作为成本基准计算 trade_return
-     → 需要从 `self._holding_entry_prices.pop(sym, None)` 读取 entry_price
-  
-  2. **Line 815**（风险覆盖卖出）: `trades_list.append(net / initial_cash - 1.0 / max(len(closes_by_sym), 1))`
-     → 同理改为成本基准计算
-     → 已有 `entry_price = self._holding_entry_prices.get(sym, 0)` 可用
-  
-  3. 卖出后清理 `_holding_entry_prices` 和 `_holding_peak_prices` 中已平仓的符号
-     
-  4. 风险覆盖方法 `_apply_risk_overlay` 返回时，需同步清理已平仓符号的 `_holding_entry_prices` 和 `_holding_peak_prices`
-
-- **验证方法**:
-  1. `python3 -c "compile(open('backtest/engine.py').read(), 'backtest/engine.py', 'exec')"` → 语法正确
-  2. 写一段双随机行情验证：买入100元，50元卖出 → trade_return ≈ -50%
-
-### Task 2 — 代码质量审查
-- 审查 `backtest/engine.py` 的改动
-- 重点: 异常路径（entry_price=0时的兜底）、并发安全
-- 输出质量报告
-
-### Task 3 — DevOps
-- 冒烟测试 + dashboard验证 + build + commit
+## Phase 2: 扩展数据源到 daily_basic / moneyflow（data_format）
+- 目标: `backtest/local_data.py` + `experts/data_loader.py` + `factors/`
+- 在 `_load_tushare_csv` 同级加 `_load_daily_basic()` 和 `_load_moneyflow()`
+- 将扩展数据通过 `extensions` 字段传递（已有空 dict）
+- 新增基本面因子（PE 分位数、PB 分位数、换手率突变等）
+- 注册到 `_SCORE_REGISTRY` 和 FactorComboExpert 模板
+- 风险: data_format（跨 backtest/ → factors/ → experts/）
 
 ## 依赖顺序
-```
-Task 1 ─→ Task 2 ─→ Task 3
-```
+Phase 1 → Phase 2（先清理再扩展）

@@ -653,6 +653,77 @@ def _detect_regime(closes, indicators, t):
     return "mean_reversion"
 
 
+
+# ── 基本面/资金面因子（读取 data["extensions"]）───────────────────────
+
+def _score_pe_percentile(c, data, indicators, params, t):
+    """PE 分位数：低分位（低估）→ 正信号"""
+    pe_arr = data.get("extensions", {}).get("pe", [])
+    if t >= len(pe_arr) or pe_arr[t] is None or pe_arr[t] <= 0:
+        return 0.0
+    lb = int(params.get("lookback", 60))
+    window = [v for v in pe_arr[max(0, t - lb + 1):t + 1]
+              if v is not None and v > 0]
+    if len(window) < max(10, lb // 4):
+        return 0.0
+    cur = pe_arr[t]
+    rank = sum(1 for v in window if v <= cur)
+    pct = rank / len(window)  # 0.0=最便宜, 1.0=最贵
+    return (0.5 - pct) * 200  # [-100, 100]
+
+
+def _score_turnover_surge(c, data, indicators, params, t):
+    """换手率突变：当前/20日均值。放量 → 正信号"""
+    tr_arr = data.get("extensions", {}).get("turnover_rate", [])
+    if t >= len(tr_arr) or tr_arr[t] is None or tr_arr[t] <= 0:
+        return 0.0
+    lb = int(params.get("lookback", 20))
+    if t < lb:
+        return 0.0
+    baseline = []
+    for i in range(t - lb, t):
+        v = tr_arr[i]
+        if v is not None and v > 0:
+            baseline.append(v)
+    if len(baseline) < lb // 2:
+        return 0.0
+    avg = sum(baseline) / len(baseline)
+    ratio = tr_arr[t] / avg if avg > 0 else 1.0
+    # ratio > 1.5 → 放量突破; ratio < 0.5 → 缩量低迷
+    signal = (ratio - 1.0) * 100
+    return max(-100, min(100, signal))
+
+
+def _score_big_money_flow(c, data, indicators, params, t):
+    """超大单资金流向强度：净流入/总成交额占比 × 100"""
+    buy  = data.get("extensions", {}).get("buy_elg_amount", [])
+    sell = data.get("extensions", {}).get("sell_elg_amount", [])
+    if t >= len(buy) or t >= len(sell):
+        return 0.0
+    b = buy[t]
+    s = sell[t]
+    if b is None or s is None or (b + s) <= 0:
+        return 0.0
+    net_ratio = (b - s) / (b + s)  # [-1, 1]
+    return net_ratio * 100
+
+
+def _score_mcap_filter(c, data, indicators, params, t):
+    """市值分位数：小市值 → 正信号（A 股小市值效应）"""
+    mv_arr = data.get("extensions", {}).get("circ_mv", [])
+    if t >= len(mv_arr) or mv_arr[t] is None or mv_arr[t] <= 0:
+        return 0.0
+    lb = int(params.get("lookback", 120))
+    window = [v for v in mv_arr[max(0, t - lb + 1):t + 1]
+              if v is not None and v > 0]
+    if len(window) < max(10, lb // 4):
+        return 0.0
+    cur = mv_arr[t]
+    rank_high = sum(1 for v in window if v >= cur)  # 排名越大=市值越大
+    pct = rank_high / len(window)  # 1.0=最大市值, 0.0=最小市值
+    return (1.0 - pct) * 100  # 小市值=高分
+
+
 # ── 因子打分注册表 ────────────────────────────────────────────────────
 _SCORE_REGISTRY = {
     "ma_cross":          _score_ma_cross,
@@ -703,6 +774,11 @@ _SCORE_REGISTRY = {
     "_combo_product":      _combo_score_product,
     "_combo_hierarchical": _combo_score_hierarchical,
     "_combo_conditional":  _combo_score_conditional,
+    # fundamental / money-flow factors (v5.21)
+    "pe_percentile":       _score_pe_percentile,
+    "turnover_surge":      _score_turnover_surge,
+    "big_money_flow":      _score_big_money_flow,
+    "mcap_filter":         _score_mcap_filter,
 }
 
 

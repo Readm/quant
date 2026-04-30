@@ -135,12 +135,28 @@
 - [x] smoke_test 通过
 - [x] 影响范围: 仅 backtest/local_data.py（data/raw/ 目录本来就空，零功能影响）
 
-## Last Verification: 2026-04-30 17:10 UTC
+### 6. 扩展因子数据源: tushare daily_basic + moneyflow（v5.21）
+- [x] local_data.py: 新增 _load_daily_basic() / _load_moneyflow() / _safe_float()
+- [x] _load_tushare_csv() 加载扩展数据为 ext["pe"][t] 数组格式
+- [x] data_loader.py: 修复 _load_one() 丢弃 extensions 的 bug
+- [x] engine.py: 新增 4 个基本面/资金面因子 + _SCORE_REGISTRY 注册
+  - pe_percentile: PE 分位数（低估值→正信号）
+  - turnover_surge: 换手率/20日均值（放量→正信号）
+  - big_money_flow: 超大单净流入占比
+  - mcap_filter: 小市值选股
+- [x] factor_combo_expert.py: 新增 _FUNDAMENTAL 类别（4 模板）
+- [x] 新因子在有扩展数据时产生非零信号（验证通过）
+- [x] 新因子在无扩展数据时返回 0.0（单元测试不受影响）
+- [x] 93 tests 通过
+- [x] smoke_test 通过
+- [x] 零签名改动：extensions 通过已有 data dict 传递
+
+## Last Verification: 2026-04-30 17:50 UTC
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
 |------|--------|:----:|---------|
-| 2026-04-30 17:10 UTC | Hermes | ✅ PASS | 移除废弃 data/raw JSON 代码路径 |
+| 2026-04-30 17:50 UTC | Hermes | ✅ PASS | v5.21: 扩展因子数据源 — daily_basic + moneyflow |
 | 2026-04-30 13:55 UTC | Hermes | ✅ PASS | v5.20: 修复6因子bug(mass_index/ppo/accdist/signal_horizon等) + factor单元测试 |
 | 2026-04-29 17:10 UTC | Hermes | ✅ PASS | v5.15d: 展示用原始分(display_score)，迭代用含多样性修正分(composite) |
 | 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |
