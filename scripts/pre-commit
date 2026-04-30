@@ -39,11 +39,20 @@ if [ -n "$LAST_COMMIT" ]; then
 fi
 
 # 4. 检查是否有未暂存的 .py/.tsx 修改（说明改了代码但没走检查流程）
-UNSTAGED=$(git diff --name-only | grep -E '\.(py|tsx)$' | head -5)
+UNSTAGED=$(git diff --name-only | grep -E '\\.(py|tsx)$' | head -5)
 if [ -n "$UNSTAGED" ]; then
     echo "⚠️  有未暂存的代码修改，可能未经验证:"
     echo "$UNSTAGED"
     echo "   建议: git add 这些文件并重新检查"
+fi
+
+# 5. 检查代码变更是否走 pipeline（警告，不阻止）
+STAGED_CODE=$(git diff --cached --name-only | grep -E "^(backtest/|experts/|factors/|tests/|dashboard/src/|scripts/(?!pre-commit))" | head -1)
+STAGED_PLAN=$(git diff --cached --name-only | grep "^.hermes/plans/" | head -1)
+if [ -n "$STAGED_CODE" ] && [ -z "$STAGED_PLAN" ]; then
+    echo "⚠️  代码变更但未发现 pipeline artifact (.hermes/plans/)"
+    echo "   工作流: Architect → change_plan → 分派 → 审查 → DevOps"
+    echo "   这是警告，不阻止提交。但如果只是跳过流程，用户可能会纠正你。"
 fi
 
 echo ""
