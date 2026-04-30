@@ -47,7 +47,7 @@ if [ -n "$UNSTAGED" ]; then
 fi
 
 # 5. 检查代码变更是否走 pipeline（警告，不阻止）
-STAGED_CODE=$(git diff --cached --name-only | grep -E "^(backtest/|experts/|factors/|tests/|dashboard/src/|scripts/(?!pre-commit))" | head -1)
+STAGED_CODE=$(git diff --cached --name-only | grep -E "^(backtest/|experts/|factors/|tests/|dashboard/src/|scripts/)" | head -1)
 STAGED_PLAN=$(git diff --cached --name-only | grep "^.hermes/plans/" | head -1)
 if [ -n "$STAGED_CODE" ] && [ -z "$STAGED_PLAN" ]; then
     echo "⚠️  代码变更但未发现 pipeline artifact (.hermes/plans/)"

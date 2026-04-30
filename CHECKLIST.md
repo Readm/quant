@@ -127,12 +127,12 @@
 - [x] 已安装到 .git/hooks/pre-commit
 - [x] scripts/smoke_test.py 通过
 
-## Last Verification: 2026-04-30 16:30 UTC
+## Last Verification: 2026-04-30 16:32 UTC
 
 ### 检查历史
 | 时间 | 检查者 | 结果 | 变更描述 |
 |------|--------|:----:|---------|
-| 2026-04-30 16:30 UTC | Hermes | ✅ PASS | Pre-commit workflow audit: 代码变更无pipeline artifact时打印警告 |
+| 2026-04-30 16:32 UTC | Hermes | ✅ PASS | Fix pre-commit grep lookahead 不兼容问题 |
 | 2026-04-30 13:55 UTC | Hermes | ✅ PASS | v5.20: 修复6因子bug(mass_index/ppo/accdist/signal_horizon等) + factor单元测试 |
 | 2026-04-29 17:10 UTC | Hermes | ✅ PASS | v5.15d: 展示用原始分(display_score)，迭代用含多样性修正分(composite) |
 | 2026-04-26 22:40 UTC | Hermes | ✅ PASS | evaluator.py 3项修复(PBO/OOS/反垄断) |
